@@ -47,11 +47,10 @@ export async function DELETE(request: NextRequest) {
       }, { status: 400 })
     }
 
-    const { prisma } = await import('@/lib/prisma')
+    const { CustomerService } = await import('@/lib/customer-service')
 
-    const deletedCustomer = await prisma.customer.delete({
-      where: { id: customerId }
-    })
+    // Use CustomerService which handles cascade deletion properly
+    const deletedCustomer = await CustomerService.deleteCustomer(customerId)
 
     return NextResponse.json({
       success: true,
@@ -102,25 +101,17 @@ export async function GET(request: NextRequest) {
         totalPages: 1
       })
     } else {
-      // List customers with pagination
-      const skip = (page - 1) * limit
-
-      const [customers, total] = await Promise.all([
-        prisma.customer.findMany({
-          skip,
-          take: limit,
-          orderBy: { createdAt: 'desc' }
-        }),
-        prisma.customer.count()
-      ])
+      // List customers with pagination using CustomerService
+      const { CustomerService } = await import('@/lib/customer-service')
+      const result = await CustomerService.listCustomers(page, limit)
 
       return NextResponse.json({
         success: true,
-        customers,
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit)
+        customers: result.customers,
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+        totalPages: result.totalPages
       })
     }
 

@@ -161,7 +161,7 @@ export class CustomerService {
     }
   }
 
-  static async addMissingIdentifiers(customerId: string, identificationData: CustomerIdentificationData) {
+  static async addMissingIdentifiers(customerId: string, identificationData: CustomerIdentificationData, verificationData?: any) {
     const identifiersToAdd = []
 
     if (identificationData.email) {
@@ -174,7 +174,13 @@ export class CustomerService {
           type: 'EMAIL' as IdentifierType,
           value: identificationData.email,
           isPrimary: true,
-          isVerified: false
+          isVerified: verificationData?.emailVerified || false
+        })
+      } else if (verificationData?.emailVerified && !exists.isVerified) {
+        // Update existing identifier if verification status changed
+        await prisma.identifier.update({
+          where: { id: exists.id },
+          data: { isVerified: true }
         })
       }
     }
@@ -189,7 +195,13 @@ export class CustomerService {
           type: 'PHONE' as IdentifierType,
           value: identificationData.phone,
           isPrimary: !identificationData.email,
-          isVerified: false
+          isVerified: verificationData?.smsVerified || false
+        })
+      } else if (verificationData?.smsVerified && !exists.isVerified) {
+        // Update existing identifier if verification status changed
+        await prisma.identifier.update({
+          where: { id: exists.id },
+          data: { isVerified: true }
         })
       }
     }
@@ -321,9 +333,69 @@ export class CustomerService {
       where: { id: customerId },
       include: {
         identifiers: true,
-        clicks: { orderBy: { createdAt: 'desc' }, take: 50 },
-        leads: { orderBy: { createdAt: 'desc' }, take: 50 },
-        events: { orderBy: { createdAt: 'desc' }, take: 50 },
+        clicks: {
+          orderBy: { createdAt: 'desc' },
+          take: 50,
+          select: {
+            id: true,
+            clickId: true,
+            campaign: true,
+            source: true,
+            medium: true,
+            ip: true,
+            country: true,
+            city: true,
+            device: true,
+            browser: true,
+            os: true,
+            landingPage: true,
+            userAgent: true,
+            createdAt: true
+          }
+        },
+        leads: {
+          orderBy: { createdAt: 'desc' },
+          take: 50,
+          select: {
+            id: true,
+            email: true,
+            phone: true,
+            firstName: true,
+            lastName: true,
+            campaign: true,
+            source: true,
+            medium: true,
+            ip: true,
+            country: true,
+            city: true,
+            landingPage: true,
+            formUrl: true,
+            userAgent: true,
+            customFields: true,
+            qualityScore: true,
+            isDuplicate: true,
+            value: true,
+            createdAt: true
+          }
+        },
+        events: {
+          orderBy: { createdAt: 'desc' },
+          take: 50,
+          select: {
+            id: true,
+            eventType: true,
+            eventName: true,
+            category: true,
+            value: true,
+            currency: true,
+            isRevenue: true,
+            isConverted: true,
+            campaign: true,
+            clickId: true,
+            properties: true,
+            createdAt: true
+          }
+        },
         _count: {
           select: {
             clicks: true,
@@ -381,6 +453,7 @@ export class CustomerService {
               userAgent: true,
               ip: true,
               landingPage: true,
+              customFields: true,
               createdAt: true
             }
           },

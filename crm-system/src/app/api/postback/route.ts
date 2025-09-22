@@ -151,6 +151,30 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Forward to Zapier webhook (async, don't wait for response)
+    console.log('🔗 [POSTBACK API] Forwarding to Zapier webhook...')
+    try {
+      const zapierUrl = 'https://hooks.zapier.com/hooks/catch/23120323/udholkd/'
+      const zapierData = new URLSearchParams({
+        clickid: validatedData.clickid,
+        status: validatedData.status || 'approved',
+        type: validatedData.type || 'Conversion',
+        value: validatedData.value?.toString() || '0',
+        campaign: finalCampaign || 'unknown',
+        source: validatedData.source || latestLead?.source || 'unknown'
+      }).toString()
+
+      // Fire and forget to Zapier
+      fetch(`${zapierUrl}?${zapierData}`, {
+        method: 'GET',
+        headers: { 'User-Agent': 'CRM-Postback-Forwarder/1.0' }
+      }).catch(err => console.log('⚠️ [POSTBACK API] Zapier forward failed:', err.message))
+
+      console.log('✅ [POSTBACK API] Zapier forward initiated')
+    } catch (zapierError) {
+      console.log('⚠️ [POSTBACK API] Zapier forward error:', zapierError)
+    }
+
     const processingTime = Date.now() - startTime
     console.log(`🎉 [POSTBACK API] Conversion tracking completed successfully in ${processingTime}ms`)
     console.log('📤 [POSTBACK API] Returning success response:', {
@@ -172,7 +196,8 @@ export async function POST(request: NextRequest) {
       campaign: finalCampaign,
       source: validatedData.source || latestLead?.source || 'unknown',
       processingTime,
-      message: 'Conversion tracked successfully'
+      zapierForwarded: true,
+      message: 'Conversion tracked successfully and forwarded to Zapier'
     })
 
   } catch (error) {

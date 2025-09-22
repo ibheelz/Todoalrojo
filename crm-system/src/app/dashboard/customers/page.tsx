@@ -88,7 +88,7 @@ interface Customer {
   clicks?: { clickId: string; campaign: string; ip: string; userAgent?: string; landingPage?: string }[]
   leads?: { campaign: string; ip: string; userAgent?: string; landingPage?: string; ageVerified?: boolean; promotionalConsent?: boolean }[]
   events?: { eventType: string }[]
-  identifiers?: { type: string; isVerified: boolean }[]
+  identifiers?: { type: string; value: string; isVerified: boolean }[]
 }
 
 export default function CustomersPage() {
@@ -1223,7 +1223,7 @@ export default function CustomersPage() {
                   />
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider w-12">#</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider w-[120px]">Click ID</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider w-[200px]">Click ID</th>
                 <th className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
                   <button
                     className="flex items-center gap-2 hover:text-yellow-400 transition-colors"
@@ -1356,12 +1356,12 @@ export default function CustomersPage() {
                   <td className="px-6 py-3 text-sm text-muted-foreground font-medium w-12">
                     {(currentPage - 1) * customersPerPage + index + 1}
                   </td>
-                  <td className="px-6 py-3 w-[120px]">
-                    <span className="text-sm font-mono text-yellow-400 px-2 py-1 rounded truncate max-w-[100px] inline-block" style={{
+                  <td className="px-6 py-3 w-[200px]">
+                    <span className="text-sm font-mono text-yellow-400 px-2 py-1 rounded inline-block" style={{
                       background: 'rgba(253, 198, 0, 0.1)',
                       border: '1px solid rgba(253, 198, 0, 0.3)'
-                    }} title={customer.clicks?.[0]?.clickId || 'N/A'}>
-                      {customer.clicks?.[0]?.clickId || 'N/A'}
+                    }} title={customer.identifiers?.find(id => id.type === 'CLICK_ID')?.value || 'N/A'}>
+                      {customer.identifiers?.find(id => id.type === 'CLICK_ID')?.value || 'N/A'}
                     </span>
                   </td>
                   <td className="px-6 py-3">
@@ -1462,7 +1462,7 @@ export default function CustomersPage() {
                     <div className="space-y-1 whitespace-nowrap">
                       <div className="flex items-center gap-2 text-xs">
                         <span className="text-muted-foreground">Age:</span>
-                        {customer.leads?.[0]?.ageVerified ? (
+                        {(customer.leads?.[0]?.customFields as any)?.ageVerification ? (
                           <CheckIcon className="w-3 h-3 text-green-400 flex-shrink-0" />
                         ) : (
                           <XIcon className="w-3 h-3 text-red-400 flex-shrink-0" />
@@ -1470,7 +1470,7 @@ export default function CustomersPage() {
                       </div>
                       <div className="flex items-center gap-2 text-xs">
                         <span className="text-muted-foreground">Promo:</span>
-                        {customer.leads?.[0]?.promotionalConsent ? (
+                        {(customer.leads?.[0]?.customFields as any)?.promoConsent ? (
                           <CheckIcon className="w-3 h-3 text-green-400 flex-shrink-0" />
                         ) : (
                           <XIcon className="w-3 h-3 text-red-400 flex-shrink-0" />
@@ -1666,17 +1666,13 @@ export default function CustomersPage() {
                       size="md"
                       className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12"
                     />
-                    {/* Status indicator */}
-                    <div className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 w-3 h-3 sm:w-4 sm:h-4 rounded-full border-2 border-white/20" style={{
-                      background: 'linear-gradient(135deg, rgba(253, 198, 0, 0.9), rgba(253, 198, 0, 0.7))'
-                    }}></div>
                   </div>
                   <div className="min-w-0 flex-1">
                     <h3 className="font-semibold text-sm sm:text-base lg:text-lg truncate" style={{ color: 'white !important' }}>
                       {customer.firstName} {customer.lastName}
                     </h3>
                     <p className="text-xs sm:text-sm text-muted-foreground truncate font-mono">
-                      {customer.clicks?.[0]?.clickId || 'N/A'}
+                      {customer.identifiers?.find(id => id.type === 'CLICK_ID')?.value || 'N/A'}
                     </p>
                   </div>
                 </div>
@@ -1786,7 +1782,7 @@ export default function CustomersPage() {
               <div className="space-y-1.5 sm:space-y-2 mb-3 sm:mb-4">
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-xs text-muted-foreground flex-shrink-0">Age Verified</span>
-                  {customer.leads?.[0]?.ageVerified ? (
+                  {(customer.leads?.[0]?.customFields as any)?.ageVerification ? (
                     <div className="flex items-center gap-1">
                       <CheckIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-green-400 flex-shrink-0" />
                       <span className="text-xs text-green-400">Yes</span>
@@ -1800,7 +1796,7 @@ export default function CustomersPage() {
                 </div>
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-xs text-muted-foreground flex-shrink-0">Promo Consent</span>
-                  {customer.leads?.[0]?.promotionalConsent ? (
+                  {(customer.leads?.[0]?.customFields as any)?.promoConsent ? (
                     <div className="flex items-center gap-1">
                       <CheckIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-green-400 flex-shrink-0" />
                       <span className="text-xs text-green-400">Yes</span>

@@ -114,6 +114,38 @@ export async function POST(request: NextRequest) {
     }
 
     const user = await UserService.findOrCreateUser(userSearchData, userProfileData)
+
+    // Update identifiers with verification status from customFields
+    if (user && validatedData.customFields) {
+      const verificationData = {
+        emailVerified: validatedData.customFields.emailVerified,
+        smsVerified: validatedData.customFields.smsVerified
+      }
+
+      // Update email identifier if verified
+      if (validatedData.email && verificationData.emailVerified) {
+        await prisma.identifier.updateMany({
+          where: {
+            customerId: user.id,
+            type: 'EMAIL',
+            value: validatedData.email
+          },
+          data: { isVerified: true }
+        })
+      }
+
+      // Update phone identifier if verified
+      if (validatedData.phone && verificationData.smsVerified) {
+        await prisma.identifier.updateMany({
+          where: {
+            customerId: user.id,
+            type: 'PHONE',
+            value: validatedData.phone
+          },
+          data: { isVerified: true }
+        })
+      }
+    }
     console.log('👤 [LEAD API] User result:', user ? `Found/Created user ID: ${user.id}` : 'Failed to create user')
 
     if (!user) {

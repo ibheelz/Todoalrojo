@@ -61,6 +61,14 @@ interface CustomerDetails {
     lastName: string | null
     campaign: string | null
     source: string | null
+    medium: string | null
+    ip: string | null
+    country: string | null
+    city: string | null
+    landingPage: string | null
+    formUrl: string | null
+    userAgent: string | null
+    customFields: any
     qualityScore: number | null
     isDuplicate: boolean
     value: number | null
@@ -307,10 +315,293 @@ export default function CustomerDetailPage() {
         </div>
       </div>
 
-      <div className="p-6">
-        <div className="text-center">
-          <div className="text-lg font-medium text-foreground mb-2">Customer Tracking Profile</div>
-          <div className="text-sm text-muted-foreground">Profile page has been cleared</div>
+      <div className="p-6 space-y-6">
+        {/* Key Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="premium-card text-center p-6">
+            <div className="text-primary text-2xl mb-2">
+              <ClicksIcon size={24} className="mx-auto" />
+            </div>
+            <div className="text-2xl font-bold text-foreground">{customer.totalClicks}</div>
+            <div className="text-sm text-muted-foreground">Total Clicks</div>
+          </div>
+
+          <div className="premium-card text-center p-6">
+            <div className="text-primary text-2xl mb-2">
+              <TargetIcon size={24} className="mx-auto" />
+            </div>
+            <div className="text-2xl font-bold text-foreground">{customer.totalLeads}</div>
+            <div className="text-sm text-muted-foreground">Total Leads</div>
+          </div>
+
+          <div className="premium-card text-center p-6">
+            <div className="text-primary text-2xl mb-2">
+              <EventsIcon size={24} className="mx-auto" />
+            </div>
+            <div className="text-2xl font-bold text-foreground">{customer.totalEvents}</div>
+            <div className="text-sm text-muted-foreground">Events</div>
+          </div>
+
+          <div className="premium-card text-center p-6">
+            <div className="text-primary text-2xl mb-2">
+              <RevenueIcon size={24} className="mx-auto" />
+            </div>
+            <div className="text-2xl font-bold text-foreground">${Number(customer.totalRevenue).toFixed(2)}</div>
+            <div className="text-sm text-muted-foreground">Total Revenue</div>
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex space-x-2 border-b border-border/20">
+          {[
+            { id: 'overview', label: 'Overview', icon: UserIcon },
+            { id: 'identifiers', label: 'Identifiers', icon: CompanyIcon },
+            { id: 'journey', label: 'Journey', icon: TargetIcon },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-t-xl transition-all ${
+                activeTab === tab.id
+                  ? 'bg-primary/20 border-b-2 border-primary text-primary'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <tab.icon size={16} />
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Tab Content */}
+        <div className="premium-card p-6">
+          {activeTab === 'overview' && (
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold text-foreground mb-4">Customer Overview</h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Personal Information */}
+                <div>
+                  <h4 className="text-md font-medium text-foreground mb-3">Personal Information</h4>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <UserIcon size={16} className="text-muted-foreground" />
+                      <div>
+                        <div className="text-sm text-muted-foreground">Name</div>
+                        <div className="text-foreground">{getDisplayName()}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <EmailIcon size={16} className="text-muted-foreground" />
+                      <div>
+                        <div className="text-sm text-muted-foreground">Email</div>
+                        <div className="text-foreground">{customer.masterEmail || 'Not provided'}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <PhoneIcon size={16} className="text-muted-foreground" />
+                      <div>
+                        <div className="text-sm text-muted-foreground">Phone</div>
+                        <div className="text-foreground">{customer.masterPhone || 'Not provided'}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <LocationIcon size={16} className="text-muted-foreground" />
+                      <div>
+                        <div className="text-sm text-muted-foreground">Location</div>
+                        <div className="text-foreground">
+                          {getCountryFlag(customer.country)} {customer.city || 'Unknown'}, {customer.country || 'Unknown'}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted-foreground">
+                        <path d="M9 12l2 2 4-4"/>
+                        <circle cx="12" cy="12" r="9"/>
+                      </svg>
+                      <div>
+                        <div className="text-sm text-muted-foreground">Primary Click ID</div>
+                        <div className="text-foreground font-mono text-sm">
+                          {customer.identifiers?.find(id => id.type === 'CLICK_ID')?.value || 'Not available'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Verification Status */}
+                <div>
+                  <h4 className="text-md font-medium text-foreground mb-3">Verification Status</h4>
+                  <div className="space-y-3">
+                    {(() => {
+                      // Get verification data from the latest lead's customFields
+                      const latestLead = customer.leads?.[0];
+                      const customFields = latestLead?.customFields as any || {};
+
+                      return (
+                        <>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-muted-foreground">Email Verified</span>
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              customFields.emailVerified
+                                ? 'bg-green-500/20 text-green-400'
+                                : 'bg-red-500/20 text-red-400'
+                            }`}>
+                              {customFields.emailVerified ? 'Verified' : 'Unverified'}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-muted-foreground">SMS Verified</span>
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              customFields.smsVerified
+                                ? 'bg-green-500/20 text-green-400'
+                                : 'bg-red-500/20 text-red-400'
+                            }`}>
+                              {customFields.smsVerified ? 'Verified' : 'Unverified'}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-muted-foreground">Age Verification</span>
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              customFields.ageVerification
+                                ? 'bg-green-500/20 text-green-400'
+                                : 'bg-red-500/20 text-red-400'
+                            }`}>
+                              {customFields.ageVerification ? 'Confirmed' : 'Not Confirmed'}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-muted-foreground">Promo Consent</span>
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              customFields.promoConsent
+                                ? 'bg-blue-500/20 text-blue-400'
+                                : 'bg-gray-500/20 text-gray-400'
+                            }`}>
+                              {customFields.promoConsent ? 'Opted In' : 'Opted Out'}
+                            </span>
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </div>
+                </div>
+              </div>
+
+              {/* Technical Details */}
+              <div>
+                <h4 className="text-md font-medium text-foreground mb-3">Technical Details</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {(() => {
+                    const latestLead = customer.leads?.[0] || customer.clicks?.[0];
+                    return (
+                      <>
+                        <div>
+                          <div className="text-sm text-muted-foreground">IP Address</div>
+                          <div className="text-foreground font-mono text-sm">{latestLead?.ip || 'Unknown'}</div>
+                        </div>
+                        <div>
+                          <div className="text-sm text-muted-foreground">Landing Page</div>
+                          <div className="text-foreground text-sm truncate">{latestLead?.landingPage || 'Unknown'}</div>
+                        </div>
+                        <div>
+                          <div className="text-sm text-muted-foreground">First Seen</div>
+                          <div className="text-foreground text-sm">{new Date(customer.firstSeen).toLocaleDateString()}</div>
+                        </div>
+                        <div>
+                          <div className="text-sm text-muted-foreground">Last Seen</div>
+                          <div className="text-foreground text-sm">{new Date(customer.lastSeen).toLocaleDateString()}</div>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'identifiers' && (
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold text-foreground mb-4">Customer Identifiers</h3>
+
+              {customer.identifiers.length > 0 ? (
+                <div className="space-y-3">
+                  {customer.identifiers.map((identifier) => (
+                    <div key={identifier.id} className="flex items-center justify-between p-4 bg-muted/20 rounded-xl">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
+                          identifier.type === 'EMAIL' ? 'bg-blue-500/20 text-blue-400' :
+                          identifier.type === 'PHONE' ? 'bg-green-500/20 text-green-400' :
+                          identifier.type === 'CLICK_ID' ? 'bg-primary/20 text-primary' :
+                          'bg-gray-500/20 text-gray-400'
+                        }`}>
+                          {identifier.type === 'EMAIL' ? '📧' :
+                           identifier.type === 'PHONE' ? '📱' :
+                           identifier.type === 'CLICK_ID' ? '🔗' : '🆔'}
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-foreground">{identifier.type}</div>
+                          <div className="text-sm text-muted-foreground font-mono">{identifier.value}</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {identifier.isPrimary && (
+                          <span className="px-2 py-1 bg-primary/20 text-primary text-xs rounded-full">Primary</span>
+                        )}
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          identifier.isVerified ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+                        }`}>
+                          {identifier.isVerified ? 'Verified' : 'Unverified'}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  No identifiers found for this customer.
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'journey' && (
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold text-foreground mb-4">Customer Journey Timeline</h3>
+
+              {timeline.length > 0 ? (
+                <div className="space-y-4">
+                  {timeline.map((item, index) => (
+                    <div key={index} className="flex gap-4">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium"
+                           style={{
+                             background: item.type === 'click' ? '#3b82f6' :
+                                       item.type === 'lead' ? '#10b981' :
+                                       '#8b5cf6'
+                           }}>
+                        {item.type === 'click' ? '👆' : item.type === 'lead' ? '📝' : '⚡'}
+                      </div>
+                      <div className="flex-1 min-w-0 p-4 bg-muted/20 rounded-xl">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="text-sm font-medium text-foreground">{item.title}</h4>
+                          <span className="text-xs text-muted-foreground">
+                            {item.date.toLocaleDateString()} {item.date.toLocaleTimeString()}
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">{item.description}</p>
+                        {item.clickId && (
+                          <div className="mt-2 text-xs text-primary font-mono">Click ID: {item.clickId}</div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  No journey events found for this customer.
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

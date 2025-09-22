@@ -15,6 +15,7 @@ interface Lead {
   phone: string | null
   firstName: string | null
   lastName: string | null
+  clickId: string | null
   campaign: string | null
   source: string | null
   medium: string | null
@@ -685,6 +686,15 @@ export default function LeadsPage() {
                         <span>Contact</span>
                       </div>
                     </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-white/80 uppercase tracking-wide w-[200px]">
+                      <div className="flex items-center space-x-2">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary">
+                          <path d="M9 12l2 2 4-4"/>
+                          <circle cx="12" cy="12" r="9"/>
+                        </svg>
+                        <span>Click ID</span>
+                      </div>
+                    </th>
                     <th className="px-6 py-4 text-left text-xs font-semibold text-white/80 uppercase tracking-wide">
                       <div className="flex items-center space-x-2">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary">
@@ -771,6 +781,14 @@ export default function LeadsPage() {
                           )}
                         </div>
                       </td>
+                      <td className="px-6 py-4 w-[200px]">
+                        <span className="text-sm font-mono text-yellow-400 px-2 py-1 rounded inline-block" style={{
+                          background: 'rgba(253, 198, 0, 0.1)',
+                          border: '1px solid rgba(253, 198, 0, 0.3)'
+                        }} title={lead.clickId || 'N/A'}>
+                          {lead.clickId || 'N/A'}
+                        </span>
+                      </td>
                       <td className="px-6 py-4 text-white/80">{lead.campaign || '-'}</td>
                       <td className="px-6 py-4">
                         <div className="flex flex-col">
@@ -847,6 +865,9 @@ export default function LeadsPage() {
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-white text-sm sm:text-base truncate">{getDisplayName(lead)}</h3>
                     <p className="text-white/60 text-xs sm:text-sm truncate">{lead.campaign || 'No Campaign'}</p>
+                    {lead.clickId && (
+                      <p className="text-xs font-mono text-yellow-400 truncate mt-1">{lead.clickId}</p>
+                    )}
                   </div>
                 </div>
 
