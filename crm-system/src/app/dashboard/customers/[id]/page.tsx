@@ -98,6 +98,8 @@ export default function CustomerDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState('overview')
+  const [selectedLead, setSelectedLead] = useState<any>(null)
+  const [showLeadModal, setShowLeadModal] = useState(false)
 
   console.log('🚀 CustomerDetailPage mounted with ID:', customerId)
   console.log('📊 Current state - loading:', loading, 'error:', error, 'customer:', !!customer)
@@ -201,6 +203,11 @@ export default function CustomerDetailPage() {
       const member = teamMembers.find(m => m.id === teamId)
       return member || { id: teamId, name: 'Unknown', role: 'Team Member', color: 'bg-gray-500' }
     })
+  }
+
+  const handleViewLead = (leadData: any) => {
+    setSelectedLead(leadData)
+    setShowLeadModal(true)
   }
 
   const getCountryFlag = (country: string | null) => {
@@ -402,7 +409,7 @@ export default function CustomerDetailPage() {
             Customer Overview
           </h2>
 
-          <div className="grid grid-cols-4 gap-6">
+          <div className="grid grid-cols-3 gap-6">
             {/* Contact Information */}
             <div className="space-y-3">
               <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Contact</h3>
@@ -437,22 +444,6 @@ export default function CustomerDetailPage() {
                     <LocationIcon size={16} className="text-muted-foreground" />
                     <span className="text-foreground">{customer.city}</span>
                   </div>
-                )}
-              </div>
-            </div>
-
-            {/* Business Information */}
-            <div className="space-y-3">
-              <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Business</h3>
-              <div className="space-y-2">
-                {customer.company && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <CompanyIcon size={16} className="text-muted-foreground" />
-                    <span className="text-foreground">{customer.company}</span>
-                  </div>
-                )}
-                {customer.jobTitle && (
-                  <div className="text-sm text-foreground">{customer.jobTitle}</div>
                 )}
               </div>
             </div>
@@ -505,7 +496,7 @@ export default function CustomerDetailPage() {
         <div className="premium-card p-6">
           <h2 className="text-xl font-semibold text-foreground mb-6 flex items-center gap-2">
             🗺️ Customer Journey
-            <span className="text-sm text-muted-foreground ml-2">({timeline.length} conversions)</span>
+            <span className="text-sm text-muted-foreground ml-2">({timeline.filter(item => item.type === 'conversion').length} conversions)</span>
           </h2>
 
           {timeline.length > 0 ? (
@@ -548,7 +539,7 @@ export default function CustomerDetailPage() {
                   {/* Timeline content */}
                   <div className="ml-6 flex-1 bg-white/5 border border-white/10 rounded-lg p-4">
                     <div className="flex items-start justify-between">
-                      <div>
+                      <div className="flex-1 mr-4">
                         <h4 className="font-semibold text-foreground">{item.title}</h4>
                         <p className="text-sm text-muted-foreground mt-1">{item.description}</p>
                         {item.clickId && (
@@ -562,13 +553,23 @@ export default function CustomerDetailPage() {
                           </div>
                         )}
                       </div>
-                      <div className="text-right">
-                        <div className="text-xs text-muted-foreground">
-                          {new Date(item.date).toLocaleDateString()}
+                      <div className="text-right flex flex-col items-end gap-2">
+                        <div>
+                          <div className="text-xs text-muted-foreground">
+                            {new Date(item.date).toLocaleDateString()}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {new Date(item.date).toLocaleTimeString()}
+                          </div>
                         </div>
-                        <div className="text-xs text-muted-foreground">
-                          {new Date(item.date).toLocaleTimeString()}
-                        </div>
+                        {item.type === 'lead' && (
+                          <button
+                            onClick={() => handleViewLead(item.data)}
+                            className="px-3 py-1 text-xs font-medium bg-yellow-400 text-black rounded-lg transition-all duration-200 hover:bg-yellow-300 hover:shadow-lg border border-yellow-500"
+                          >
+                            View
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -584,6 +585,209 @@ export default function CustomerDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Lead Details Modal */}
+      {showLeadModal && selectedLead && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="premium-card max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-semibold text-foreground">Lead Submission Details</h3>
+                <button
+                  onClick={() => setShowLeadModal(false)}
+                  className="p-2 rounded-lg hover:bg-white/10 transition-all duration-200"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M18 6L6 18M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                {/* Personal Information */}
+                <div>
+                  <h4 className="text-lg font-medium text-foreground mb-4 flex items-center gap-2">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                      <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    Personal Information
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {selectedLead.firstName && (
+                      <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+                        <div className="text-xs text-muted-foreground uppercase tracking-wide">First Name</div>
+                        <div className="text-sm font-medium text-foreground mt-1">{selectedLead.firstName}</div>
+                      </div>
+                    )}
+                    {selectedLead.lastName && (
+                      <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+                        <div className="text-xs text-muted-foreground uppercase tracking-wide">Last Name</div>
+                        <div className="text-sm font-medium text-foreground mt-1">{selectedLead.lastName}</div>
+                      </div>
+                    )}
+                    {selectedLead.email && (
+                      <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+                        <div className="text-xs text-muted-foreground uppercase tracking-wide">Email</div>
+                        <div className="text-sm font-medium text-foreground mt-1">{selectedLead.email}</div>
+                      </div>
+                    )}
+                    {selectedLead.phone && (
+                      <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+                        <div className="text-xs text-muted-foreground uppercase tracking-wide">Phone</div>
+                        <div className="text-sm font-medium text-foreground mt-1">{selectedLead.phone}</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Campaign & Attribution */}
+                <div>
+                  <h4 className="text-lg font-medium text-foreground mb-4 flex items-center gap-2">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    Campaign & Attribution
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {selectedLead.campaign && (
+                      <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+                        <div className="text-xs text-muted-foreground uppercase tracking-wide">Campaign</div>
+                        <div className="text-sm font-medium text-foreground mt-1">{selectedLead.campaign}</div>
+                      </div>
+                    )}
+                    {selectedLead.source && (
+                      <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+                        <div className="text-xs text-muted-foreground uppercase tracking-wide">Source</div>
+                        <div className="text-sm font-medium text-foreground mt-1">{selectedLead.source}</div>
+                      </div>
+                    )}
+                    {selectedLead.medium && (
+                      <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+                        <div className="text-xs text-muted-foreground uppercase tracking-wide">Medium</div>
+                        <div className="text-sm font-medium text-foreground mt-1">{selectedLead.medium}</div>
+                      </div>
+                    )}
+                    {selectedLead.clickId && (
+                      <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+                        <div className="text-xs text-muted-foreground uppercase tracking-wide">Click ID</div>
+                        <div className="text-sm font-mono text-yellow-400 mt-1 px-2 py-1 rounded inline-block" style={{
+                          background: 'rgba(253, 198, 0, 0.1)',
+                          border: '1px solid rgba(253, 198, 0, 0.3)'
+                        }}>
+                          {selectedLead.clickId}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Technical Information */}
+                <div>
+                  <h4 className="text-lg font-medium text-foreground mb-4 flex items-center gap-2">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M9 12l2 2 4-4"/>
+                      <path d="M21 12c.552 0 1-.448 1-1s-.448-1-1-1H3c-.552 0-1 .448-1 1s.448 1 1 1h18z"/>
+                    </svg>
+                    Technical Information
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {selectedLead.ip && (
+                      <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+                        <div className="text-xs text-muted-foreground uppercase tracking-wide">IP Address</div>
+                        <div className="text-sm font-medium text-foreground mt-1">{selectedLead.ip}</div>
+                      </div>
+                    )}
+                    {selectedLead.country && (
+                      <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+                        <div className="text-xs text-muted-foreground uppercase tracking-wide">Country</div>
+                        <div className="text-sm font-medium text-foreground mt-1 flex items-center gap-2">
+                          <span className="text-lg">{getCountryFlag(selectedLead.country)}</span>
+                          {selectedLead.country}
+                        </div>
+                      </div>
+                    )}
+                    {selectedLead.city && (
+                      <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+                        <div className="text-xs text-muted-foreground uppercase tracking-wide">City</div>
+                        <div className="text-sm font-medium text-foreground mt-1">{selectedLead.city}</div>
+                      </div>
+                    )}
+                    {selectedLead.landingPage && (
+                      <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+                        <div className="text-xs text-muted-foreground uppercase tracking-wide">Landing Page</div>
+                        <div className="text-sm font-medium text-foreground mt-1 truncate">{selectedLead.landingPage}</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Custom Fields */}
+                {selectedLead.customFields && Object.keys(selectedLead.customFields).length > 0 && (
+                  <div>
+                    <h4 className="text-lg font-medium text-foreground mb-4 flex items-center gap-2">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                      </svg>
+                      Custom Form Fields
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {Object.entries(selectedLead.customFields).map(([key, value]) => (
+                        <div key={key} className="bg-white/5 border border-white/10 rounded-lg p-3">
+                          <div className="text-xs text-muted-foreground uppercase tracking-wide">{key.replace(/([A-Z])/g, ' $1').trim()}</div>
+                          <div className="text-sm font-medium text-foreground mt-1">
+                            {typeof value === 'boolean' ? (value ? 'Yes' : 'No') : String(value)}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Submission Details */}
+                <div>
+                  <h4 className="text-lg font-medium text-foreground mb-4 flex items-center gap-2">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="3"/>
+                      <path d="M12 1v6m0 6v6"/>
+                      <path d="m21 12-6 0m-6 0-6 0"/>
+                    </svg>
+                    Submission Details
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+                      <div className="text-xs text-muted-foreground uppercase tracking-wide">Submitted At</div>
+                      <div className="text-sm font-medium text-foreground mt-1">
+                        {new Date(selectedLead.createdAt).toLocaleString()}
+                      </div>
+                    </div>
+                    {selectedLead.value && (
+                      <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+                        <div className="text-xs text-muted-foreground uppercase tracking-wide">Lead Value</div>
+                        <div className="text-sm font-medium text-foreground mt-1">${selectedLead.value}</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 pt-6 border-t border-white/10">
+                <button
+                  onClick={() => setShowLeadModal(false)}
+                  className="w-full px-4 py-3 rounded-lg font-medium transition-all duration-200 hover:shadow-lg"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(253, 198, 0, 0.9), rgba(253, 198, 0, 0.7))',
+                    color: '#0a0a0a',
+                    border: '1px solid rgba(253, 198, 0, 0.3)'
+                  }}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
