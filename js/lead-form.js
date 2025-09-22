@@ -12,6 +12,8 @@ const CONFIG = {
   AIRTABLE_API_KEY:
     'patCu0mKmtp2MPQIw.a90c3234fc52abb951cdacc3725d97442bc7f364ac822eee5960ce09ce2f86cd', // local testing only
   PROXY_URL: 'https://verification-backend-isemtzpeo-miela-digitals-projects.vercel.app/api/airtable-proxy',
+  // CRM API endpoint (local development)
+  CRM_API_URL: 'http://localhost:3005/api/ingest/lead',
   DEFAULT_REDIRECT_URL: 'https://mieladigital.com',
   REDIRECT_DELAY: 0,
   DEBUG: true,
@@ -1832,12 +1834,19 @@ async function handleSubmit(evt) {
       console.log('Skipping phone + source duplicate check (missing phone or source)');
     }
 
-    console.log('Starting Airtable submission...');
+    console.log('Starting dual submission (CRM + Airtable)...');
     debugLog('Form data', state.formData);
     toggleLoading(true);
 
+    // Submit to CRM first
+    console.log('Calling submitToCRM...');
+    const crmResult = await submitToCRM();
+
+    // Submit to Airtable as backup (always submit regardless of CRM result)
     console.log('Calling submitToAirtable...');
     await submitToAirtable();
+
+    console.log('Dual submission completed:', { crmResult });
 
     console.log('Airtable submission completed, tracking conversion...');
 
@@ -1896,6 +1905,86 @@ function trackLeadConversion(clickId) {
     
   } catch (error) {
     debugLog('Error tracking lead conversion:', error);
+  }
+}
+
+async function submitToCRM() {
+  console.log('=== CRM SUBMISSION START ===');
+  console.log('Building CRM lead data...');
+
+  // Prepare data for CRM API
+  const crmData = {
+    // Required fields
+    email: state.formData.email,
+    phone: state.formData.phone,
+    ip: state.geoData.ip || '127.0.0.1',
+
+    // Personal data
+    firstName: state.formData.fullName.split(' ')[0] || state.formData.fullName,
+    lastName: state.formData.fullName.split(' ').slice(1).join(' ') || '',
+
+    // Custom fields for form-specific data
+    customFields: {
+      ageVerification: state.formData.ageVerification,
+      promoConsent: state.formData.promoConsent,
+      emailVerified: state.formData.emailVerified,
+      smsVerified: state.formData.smsVerified,
+      fullFormName: state.formData.fullName
+    },
+
+    // Attribution
+    clickId: state.trackingData.clickId || '',
+    campaign: state.trackingData.promo || state.trackingData.campaign || '',
+    source: state.trackingData.source || 'Direct',
+    medium: 'form',
+
+    // Technical
+    userAgent: state.geoData.userAgent || '',
+    referrer: state.trackingData.referrer || 'direct',
+    landingPage: state.trackingData.landingPage || location.href,
+    formUrl: location.href,
+
+    // Geographic
+    country: state.geoData.country || '',
+    city: state.geoData.city || '',
+
+    // Timing
+    submittedAt: new Date().toISOString(),
+  };
+
+  console.log('CRM data prepared:', crmData);
+  debugLog('CRM submission data', crmData);
+
+  try {
+    const response = await fetch(CONFIG.CRM_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(crmData)
+    });
+
+    console.log('CRM response status:', response.status);
+
+    if (!response.ok) {
+      let errorData = {};
+      try {
+        errorData = await response.json();
+      } catch {}
+      console.error('CRM submission failed:', response.status, errorData);
+      throw new Error(`CRM API error ${response.status}: ${JSON.stringify(errorData)}`);
+    }
+
+    const result = await response.json();
+    console.log('CRM submission successful:', result);
+    debugLog('CRM response', result);
+    return result;
+
+  } catch (error) {
+    console.error('CRM submission error:', error);
+    debugLog('CRM submission failed', error);
+    // Don't throw - let Airtable be the fallback
+    return { success: false, error: error.message };
   }
 }
 
