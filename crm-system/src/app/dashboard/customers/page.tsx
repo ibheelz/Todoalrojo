@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Search, Edit, Trash2, Grid3X3, List, Plus, X } from 'lucide-react'
@@ -88,7 +89,7 @@ interface Customer {
   clicks?: { clickId: string; campaign: string; ip: string; userAgent?: string; landingPage?: string }[]
   leads?: { campaign: string; ip: string; userAgent?: string; landingPage?: string; ageVerified?: boolean; promotionalConsent?: boolean }[]
   events?: { eventType: string }[]
-  identifiers?: { type: string; value: string; isVerified: boolean }[]
+  identifiers?: { type: string; value: string; isVerified: boolean; isPrimary: boolean }[]
 }
 
 export default function CustomersPage() {
@@ -105,9 +106,15 @@ export default function CustomersPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null)
   const isSmallScreen = useScreenSize()
+  const router = useRouter()
 
   // Force cards view on small screens
   const effectiveViewMode = isSmallScreen ? 'cards' : viewMode
+
+  // Navigation function to customer tracking profile
+  const navigateToCustomer = (customerId: string) => {
+    router.push(`/dashboard/customers/${customerId}`)
+  }
 
   // Using custom Avatar component instead of external API
 
@@ -1331,13 +1338,15 @@ export default function CustomersPage() {
               {currentCustomers.map((customer, index) => (
                 <tr
                   key={customer.id}
-                  className="border-b border-white/5 hover:bg-white/5 transition-colors duration-200"
+                  className="border-b border-white/5 hover:bg-white/5 transition-colors duration-200 cursor-pointer"
+                  onClick={() => navigateToCustomer(customer.id)}
                 >
                   <td className="px-6 py-3 w-12">
                     <input
                       type="checkbox"
                       checked={selectedCustomers.has(customer.id)}
                       onChange={(e) => {
+                        e.stopPropagation()
                         const newSelected = new Set(selectedCustomers)
                         if (e.target.checked) {
                           newSelected.add(customer.id)
@@ -1360,8 +1369,10 @@ export default function CustomersPage() {
                     <span className="text-sm font-mono text-yellow-400 px-2 py-1 rounded inline-block" style={{
                       background: 'rgba(253, 198, 0, 0.1)',
                       border: '1px solid rgba(253, 198, 0, 0.3)'
-                    }} title={customer.identifiers?.find(id => id.type === 'CLICK_ID')?.value || 'N/A'}>
-                      {customer.identifiers?.find(id => id.type === 'CLICK_ID')?.value || 'N/A'}
+                    }} title={customer.identifiers?.find(id => id.type === 'CLICK_ID' && id.isPrimary)?.value ||
+                             customer.identifiers?.find(id => id.type === 'CLICK_ID')?.value || 'N/A'}>
+                      {customer.identifiers?.find(id => id.type === 'CLICK_ID' && id.isPrimary)?.value ||
+                       customer.identifiers?.find(id => id.type === 'CLICK_ID')?.value || 'N/A'}
                     </span>
                   </td>
                   <td className="px-6 py-3">
@@ -1486,7 +1497,10 @@ export default function CustomersPage() {
                   <td className="px-6 py-3 w-[100px]">
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => openEditModal(customer)}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          openEditModal(customer)
+                        }}
                         className="p-2 rounded-xl transition-all duration-200 text-muted-foreground hover:text-foreground" style={{
                         background: 'rgba(255, 255, 255, 0.05)',
                         border: '1px solid rgba(255, 255, 255, 0.1)'
@@ -1494,7 +1508,10 @@ export default function CustomersPage() {
                         <Edit className="h-4 w-4" />
                       </button>
                       <button
-                        onClick={() => customer.isRealData && handleDeleteCustomer(customer.id)}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          customer.isRealData && handleDeleteCustomer(customer.id)
+                        }}
                         disabled={!customer.isRealData}
                         className="p-2 rounded-xl transition-all duration-200 text-red-400 hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed" style={{
                         background: 'rgba(255, 255, 255, 0.05)',
@@ -1528,6 +1545,7 @@ export default function CustomersPage() {
                   border: '1px solid rgba(255, 255, 255, 0.15)',
                   boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
                 }}
+                onClick={() => navigateToCustomer(customer.id)}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.background = 'rgba(255, 255, 255, 0.12)'
                   e.currentTarget.style.boxShadow = '0 12px 40px rgba(0, 0, 0, 0.2)'
@@ -1615,7 +1633,10 @@ export default function CustomersPage() {
                   </span>
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => openEditModal(customer)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        openEditModal(customer)
+                      }}
                       className="p-1.5 rounded-lg transition-all duration-200 text-muted-foreground hover:text-foreground" style={{
                       background: 'rgba(255, 255, 255, 0.05)',
                       border: '1px solid rgba(255, 255, 255, 0.1)'
@@ -1623,7 +1644,10 @@ export default function CustomersPage() {
                       <Edit className="h-3 w-3" />
                     </button>
                     <button
-                      onClick={() => customer.isRealData && handleDeleteCustomer(customer.id)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        customer.isRealData && handleDeleteCustomer(customer.id)
+                      }}
                       disabled={!customer.isRealData}
                       className="p-1.5 rounded-lg transition-all duration-200 text-red-400 hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed" style={{
                       background: 'rgba(255, 255, 255, 0.05)',
@@ -1646,6 +1670,7 @@ export default function CustomersPage() {
                 border: '1px solid rgba(255, 255, 255, 0.15)',
                 boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
               }}
+              onClick={() => navigateToCustomer(customer.id)}
               onMouseEnter={(e) => {
                 e.currentTarget.style.background = 'rgba(255, 255, 255, 0.12)'
                 e.currentTarget.style.boxShadow = '0 12px 40px rgba(0, 0, 0, 0.2)'
@@ -1672,7 +1697,8 @@ export default function CustomersPage() {
                       {customer.firstName} {customer.lastName}
                     </h3>
                     <p className="text-xs sm:text-sm text-muted-foreground truncate font-mono">
-                      {customer.identifiers?.find(id => id.type === 'CLICK_ID')?.value || 'N/A'}
+                      {customer.identifiers?.find(id => id.type === 'CLICK_ID' && id.isPrimary)?.value ||
+                       customer.identifiers?.find(id => id.type === 'CLICK_ID')?.value || 'N/A'}
                     </p>
                   </div>
                 </div>
@@ -1828,7 +1854,10 @@ export default function CustomersPage() {
                 </span>
                 <div className="flex items-center gap-1 sm:gap-2">
                   <button
-                    onClick={() => openEditModal(customer)}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      openEditModal(customer)
+                    }}
                     className="p-1 sm:p-1.5 rounded-lg transition-all duration-200 text-muted-foreground hover:text-foreground" style={{
                     background: 'rgba(255, 255, 255, 0.05)',
                     border: '1px solid rgba(255, 255, 255, 0.1)'
@@ -1836,7 +1865,10 @@ export default function CustomersPage() {
                     <Edit className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                   </button>
                   <button
-                    onClick={() => customer.isRealData && handleDeleteCustomer(customer.id)}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      customer.isRealData && handleDeleteCustomer(customer.id)
+                    }}
                     disabled={!customer.isRealData}
                     className="p-1 sm:p-1.5 rounded-lg transition-all duration-200 text-red-400 hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed" style={{
                     background: 'rgba(255, 255, 255, 0.05)',

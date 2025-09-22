@@ -99,6 +99,28 @@ export class CustomerService {
         updateData.masterPhone = phone
       }
 
+      // Handle clickId replacement strategy
+      if (clickId) {
+        // Check if this is a new clickId for this customer
+        const existingClickId = existingCustomer.identifiers.find(id => id.type === 'CLICK_ID' && id.value === clickId)
+
+        if (!existingClickId) {
+          // Set the new clickId as non-primary for all existing CLICK_ID identifiers
+          await prisma.identifier.updateMany({
+            where: {
+              customerId: existingCustomer.id,
+              type: 'CLICK_ID'
+            },
+            data: {
+              isPrimary: false
+            }
+          })
+
+          console.log(`🔄 [CUSTOMER SERVICE] Replacing primary clickId for customer ${existingCustomer.id}`)
+          console.log(`   Old clickIds set to non-primary, new clickId: ${clickId}`)
+        }
+      }
+
       // Update context data if provided
       if (contextData) {
         Object.keys(contextData).forEach(key => {
@@ -114,7 +136,7 @@ export class CustomerService {
         include: { identifiers: true }
       })
 
-      // Add new identifiers if they don't exist
+      // Add new identifiers if they don't exist (new clickId will be added as primary)
       await this.addMissingIdentifiers(updatedCustomer.id, identificationData)
 
       return updatedCustomer
@@ -211,11 +233,12 @@ export class CustomerService {
         where: { customerId, type: 'CLICK_ID', value: identificationData.clickId }
       })
       if (!exists) {
+        // New clickIds become the primary clickId (most recent)
         identifiersToAdd.push({
           customerId,
           type: 'CLICK_ID' as IdentifierType,
           value: identificationData.clickId,
-          isPrimary: false,
+          isPrimary: true,
           isVerified: true
         })
       }
