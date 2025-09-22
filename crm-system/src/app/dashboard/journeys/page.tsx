@@ -385,7 +385,15 @@ function JourneyTimelineCard({ journey }: { journey: any[] }) {
                       <div><span className="font-medium">Value:</span> ${step.data.value} {step.data.currency || 'USD'}</div>
                     )}
                     {step.data.clickId && (
-                      <div><span className="font-medium">Click ID:</span> {step.data.clickId}</div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">Click ID:</span>
+                        <span className="text-sm font-mono text-yellow-400 px-2 py-1 rounded inline-block" style={{
+                          background: 'rgba(253, 198, 0, 0.1)',
+                          border: '1px solid rgba(253, 198, 0, 0.3)'
+                        }}>
+                          {step.data.clickId}
+                        </span>
+                      </div>
                     )}
                   </div>
                 </div>

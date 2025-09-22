@@ -866,7 +866,12 @@ export default function LeadsPage() {
                     <h3 className="font-semibold text-white text-sm sm:text-base truncate">{getDisplayName(lead)}</h3>
                     <p className="text-white/60 text-xs sm:text-sm truncate">{lead.campaign || 'No Campaign'}</p>
                     {lead.clickId && (
-                      <p className="text-xs font-mono text-yellow-400 truncate mt-1">{lead.clickId}</p>
+                      <span className="text-xs font-mono text-yellow-400 px-2 py-1 rounded inline-block mt-1" style={{
+                        background: 'rgba(253, 198, 0, 0.1)',
+                        border: '1px solid rgba(253, 198, 0, 0.3)'
+                      }}>
+                        {lead.clickId}
+                      </span>
                     )}
                   </div>
                 </div>

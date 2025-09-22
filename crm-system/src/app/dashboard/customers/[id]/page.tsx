@@ -131,8 +131,15 @@ export default function CustomerDetailPage() {
   }
 
   const getDisplayName = () => {
-    if (customer?.firstName && customer?.lastName) {
-      return `${customer.firstName} ${customer.lastName}`
+    const firstName = customer?.firstName?.trim()
+    const lastName = customer?.lastName?.trim()
+
+    if (firstName && lastName) {
+      return `${firstName} ${lastName}`
+    } else if (firstName) {
+      return firstName
+    } else if (lastName) {
+      return lastName
     }
     return customer?.masterEmail || customer?.masterPhone || 'Unknown Customer'
   }
@@ -161,6 +168,7 @@ export default function CustomerDetailPage() {
         date: new Date(lead.createdAt),
         title: 'Lead Submission',
         description: `Campaign: ${lead.campaign || 'Unknown'} | Quality: ${lead.qualityScore || 0}%`,
+        clickId: lead.clickId,
         data: lead
       })
     })
@@ -172,6 +180,7 @@ export default function CustomerDetailPage() {
         date: new Date(event.createdAt),
         title: event.eventName || event.eventType,
         description: `${event.eventType} | ${event.isRevenue ? `Revenue: $${event.value}` : 'No revenue'}`,
+        clickId: event.clickId,
         data: event
       })
     })
@@ -421,9 +430,12 @@ export default function CustomerDetailPage() {
                       </svg>
                       <div>
                         <div className="text-sm text-muted-foreground">Primary Click ID</div>
-                        <div className="text-foreground font-mono text-sm">
+                        <span className="text-sm font-mono text-yellow-400 px-2 py-1 rounded inline-block mt-1" style={{
+                          background: 'rgba(253, 198, 0, 0.1)',
+                          border: '1px solid rgba(253, 198, 0, 0.3)'
+                        }}>
                           {customer.identifiers?.find(id => id.type === 'CLICK_ID')?.value || 'Not available'}
-                        </div>
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -540,7 +552,16 @@ export default function CustomerDetailPage() {
                         </div>
                         <div>
                           <div className="text-sm font-medium text-foreground">{identifier.type}</div>
-                          <div className="text-sm text-muted-foreground font-mono">{identifier.value}</div>
+                          {identifier.type === 'CLICK_ID' ? (
+                            <span className="text-sm font-mono text-yellow-400 px-2 py-1 rounded inline-block mt-1" style={{
+                              background: 'rgba(253, 198, 0, 0.1)',
+                              border: '1px solid rgba(253, 198, 0, 0.3)'
+                            }}>
+                              {identifier.value}
+                            </span>
+                          ) : (
+                            <div className="text-sm text-muted-foreground font-mono">{identifier.value}</div>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
@@ -589,7 +610,14 @@ export default function CustomerDetailPage() {
                         </div>
                         <p className="text-sm text-muted-foreground">{item.description}</p>
                         {item.clickId && (
-                          <div className="mt-2 text-xs text-primary font-mono">Click ID: {item.clickId}</div>
+                          <div className="mt-2">
+                            <span className="text-xs font-mono text-yellow-400 px-2 py-1 rounded inline-block" style={{
+                              background: 'rgba(253, 198, 0, 0.1)',
+                              border: '1px solid rgba(253, 198, 0, 0.3)'
+                            }}>
+                              Click ID: {item.clickId}
+                            </span>
+                          </div>
                         )}
                       </div>
                     </div>
