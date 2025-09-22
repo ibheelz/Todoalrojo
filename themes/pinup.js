@@ -279,5 +279,9 @@
     module.exports = PinUpTheme;
   } else {
     window.PinUpTheme = PinUpTheme;
+    // Register with ThemeRegistry
+    if (window.ThemeRegistry && window.ThemeRegistry.register) {
+      window.ThemeRegistry.register('pinup', PinUpTheme);
+    }
   }
 })();
