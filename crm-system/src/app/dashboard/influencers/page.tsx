@@ -142,6 +142,23 @@ export default function InfluencersPage() {
     fetchData()
   }, [])
 
+  // Listen for reset events from modal and zero local stats
+  useEffect(() => {
+    const handler = (e: any) => {
+      const id = e.detail?.id
+      if (!id) return
+      setInfluencers(prev => prev.map(inf => inf.id === id ? {
+        ...inf,
+        totalClicks: 0,
+        totalLeads: 0,
+        totalRegs: 0,
+        totalFtd: 0,
+      } : inf))
+    }
+    window.addEventListener('influencer:reset' as any, handler as any)
+    return () => window.removeEventListener('influencer:reset' as any, handler as any)
+  }, [])
+
   const fetchData = async () => {
     try {
       setLoading(true)

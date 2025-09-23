@@ -310,6 +310,22 @@ export default function CampaignModal({ isOpen, onClose, onSubmit, onDelete, edi
     }
   }
 
+  const handleResetStats = async () => {
+    try {
+      if (!editMode?.id) return
+      const res = await fetch(`/api/campaigns/${editMode.id}/reset`, { method: 'POST' })
+      const json = await res.json()
+      if (json.success) {
+        window.dispatchEvent(new CustomEvent('campaign:reset', { detail: { id: editMode.id } }))
+        onClose()
+      } else {
+        console.error('Reset campaign failed:', json.error)
+      }
+    } catch (e) {
+      console.error('Reset campaign error:', e)
+    }
+  }
+
   if (!isOpen) return null
 
   return (
@@ -758,19 +774,31 @@ export default function CampaignModal({ isOpen, onClose, onSubmit, onDelete, edi
         }}>
           <div className="flex items-center justify-between">
             {editMode ? (
-              <button
-                type="button"
-                onClick={handleDelete}
-                className="px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white font-medium transition-all duration-300 text-sm flex items-center space-x-2"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <polyline points="3,6 5,6 21,6"/>
-                  <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"/>
-                  <line x1="10" y1="11" x2="10" y2="17"/>
-                  <line x1="14" y1="11" x2="14" y2="17"/>
-                </svg>
-                <span>Delete</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleResetStats}
+                  className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white font-medium transition-all duration-300 text-sm flex items-center space-x-2 border border-white/20"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 12a9 9 0 1 1-9-9v3m0-3l-3 3m3-3l3 3"/>
+                  </svg>
+                  <span>Reset Stats</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  className="px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white font-medium transition-all duration-300 text-sm flex items-center space-x-2"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="3,6 5,6 21,6"/>
+                    <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"/>
+                    <line x1="10" y1="11" x2="10" y2="17"/>
+                    <line x1="14" y1="11" x2="14" y2="17"/>
+                  </svg>
+                  <span>Delete</span>
+                </button>
+              </div>
             ) : (
               <div></div>
             )}

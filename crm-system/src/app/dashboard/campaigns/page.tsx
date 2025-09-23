@@ -110,6 +110,39 @@ export default function CampaignsPage() {
     fetchInfluencers()
   }, [])
 
+  // Listen for campaign reset events and zero local stats
+  useEffect(() => {
+    const handler = (e: any) => {
+      const id = e.detail?.id
+      if (!id) return
+      setCampaigns(prev => prev.map(c => c.id === id ? {
+        ...c,
+        registrations: 0,
+        ftd: 0,
+        approvedRegistrations: 0,
+        qualifiedDeposits: 0,
+        stats: {
+          ...c.stats,
+          totalClicks: 0,
+          totalLeads: 0,
+          totalEvents: 0,
+          totalLeadValue: 0,
+          totalEventValue: 0,
+          totalRevenue: 0,
+          conversionRate: 0,
+          duplicateRate: 0,
+          fraudRate: 0,
+          avgQualityScore: 0,
+          uniqueUsers: 0,
+          duplicateLeads: 0,
+          fraudClicks: 0,
+        }
+      } : c))
+    }
+    window.addEventListener('campaign:reset' as any, handler as any)
+    return () => window.removeEventListener('campaign:reset' as any, handler as any)
+  }, [])
+
   // Helper function to get influencer name
   const getInfluencerName = (influencerId: string | null | undefined): string => {
     if (!influencerId) return 'No influencer'
