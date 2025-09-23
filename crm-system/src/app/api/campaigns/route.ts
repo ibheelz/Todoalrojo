@@ -94,12 +94,20 @@ export async function GET(request: NextRequest) {
       // Calculate stats for each campaign
       const campaignsWithStats = await Promise.all(
         campaigns.map(async (campaign) => {
+          // Merge date range with campaign.resetAt (non-destructive reset)
+          const range: any = (dateWhere as any).createdAt ? { ...(dateWhere as any).createdAt } : {}
+          if ((campaign as any).resetAt) {
+            const r = (campaign as any).resetAt as Date
+            range.gte = range.gte ? new Date(Math.max(range.gte.getTime(), r.getTime())) : r
+          }
+          const createdFilter = Object.keys(range).length > 0 ? { createdAt: range } : {}
+
           const [clickStats, leadStats, eventStats, registrationStats, ftdStats] = await Promise.all([
             // Clicks
             prisma.click.aggregate({
               where: {
                 campaign: campaign.slug,
-                ...dateWhere
+                ...createdFilter
               },
               _count: true
             }),
@@ -107,7 +115,7 @@ export async function GET(request: NextRequest) {
             prisma.lead.aggregate({
               where: {
                 campaign: campaign.slug,
-                ...dateWhere
+                ...createdFilter
               },
               _count: true,
               _sum: { value: true },
@@ -117,7 +125,7 @@ export async function GET(request: NextRequest) {
             prisma.event.aggregate({
               where: {
                 campaign: campaign.slug,
-                ...dateWhere
+                ...createdFilter
               },
               _count: true,
               _sum: { value: true }
@@ -127,7 +135,7 @@ export async function GET(request: NextRequest) {
               where: {
                 campaign: campaign.slug,
                 eventType: { in: ['registration', 'signup', 'register'] },
-                ...dateWhere
+                ...createdFilter
               },
               _count: true
             }),
@@ -139,7 +147,7 @@ export async function GET(request: NextRequest) {
                   { eventType: { in: ['deposit', 'ftd', 'first_deposit'] } },
                   { eventName: { in: ['deposit', 'ftd', 'first_deposit'] } }
                 ],
-                ...dateWhere
+                ...createdFilter
               },
               _count: true
             })
@@ -149,9 +157,9 @@ export async function GET(request: NextRequest) {
           const uniqueCustomers = await prisma.customer.count({
             where: {
               OR: [
-                { clicks: { some: { campaign: campaign.slug, ...dateWhere } } },
-                { leads: { some: { campaign: campaign.slug, ...dateWhere } } },
-                { events: { some: { campaign: campaign.slug, ...dateWhere } } }
+                { clicks: { some: { campaign: campaign.slug, ...createdFilter } } },
+                { leads: { some: { campaign: campaign.slug, ...createdFilter } } },
+                { events: { some: { campaign: campaign.slug, ...createdFilter } } }
               ]
             }
           })
@@ -161,7 +169,7 @@ export async function GET(request: NextRequest) {
             where: {
               campaign: campaign.slug,
               isDuplicate: true,
-              ...dateWhere
+              ...createdFilter
             }
           })
 
@@ -170,7 +178,7 @@ export async function GET(request: NextRequest) {
             where: {
               campaign: campaign.slug,
               isFraud: true,
-              ...dateWhere
+              ...createdFilter
             }
           })
 

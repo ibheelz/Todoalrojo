@@ -83,8 +83,15 @@ export async function GET(request: NextRequest) {
       const linkClickWhere: any = {
         link: { linkInfluencers: { some: { influencerId: influencer.id } } }
       }
-      if (createdAtWhere && Object.keys(createdAtWhere).length > 0) {
-        linkClickWhere.createdAt = createdAtWhere
+      // Build combined date range including influencer.resetAt
+      const rangeFilter: any = {}
+      if (createdAtWhere && Object.keys(createdAtWhere).length > 0) Object.assign(rangeFilter, createdAtWhere)
+      const resetAt = (influencer as any).resetAt as Date | null
+      if (resetAt) {
+        rangeFilter.gte = rangeFilter.gte ? new Date(Math.max(rangeFilter.gte.getTime(), resetAt.getTime())) : resetAt
+      }
+      if (Object.keys(rangeFilter).length > 0) {
+        linkClickWhere.createdAt = rangeFilter
       }
 
       const [clicksCount, linkClicks] = await Promise.all([
@@ -98,11 +105,9 @@ export async function GET(request: NextRequest) {
       if (clickIds.length > 0) {
         const leadWhere: any = { clickId: { in: clickIds } }
         const eventWhereBase: any = { clickId: { in: clickIds } }
-        if (createdAtWhere && Object.keys(createdAtWhere).length > 0) {
-          leadWhere.createdAt = createdAtWhere
-        }
-        if (createdAtWhere && Object.keys(createdAtWhere).length > 0) {
-          eventWhereBase.createdAt = createdAtWhere
+        if (Object.keys(rangeFilter).length > 0) {
+          leadWhere.createdAt = rangeFilter
+          eventWhereBase.createdAt = rangeFilter
         }
 
         const [leadCnt, regsCnt, ftdCnt] = await Promise.all([

@@ -10,6 +10,7 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
     const updated = await prisma.influencer.update({
       where: { id },
       data: {
+        resetAt: new Date(),
         totalClicks: 0,
         totalLeads: 0,
         totalRegs: 0,

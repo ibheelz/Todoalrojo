@@ -223,6 +223,7 @@ model Campaign {
   clientId              String?
   brandId               String?
   logoUrl               String?
+  resetAt               DateTime?
   conversionTypes       Json?
   isActive              Boolean              @default(true)
   totalClicks           Int                  @default(0)
@@ -386,6 +387,7 @@ model Influencer {
   engagementRate      Decimal?             @db.Decimal(5, 2)
   category            String?
   location            String?
+  resetAt             DateTime?
   profileImage        String?
   status              String               @default("active")
   totalLeads          Int                  @default(0)
