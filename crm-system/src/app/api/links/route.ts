@@ -19,6 +19,7 @@ const createLinkSchema = z.object({
   isPublic: z.boolean().default(true),
   allowBots: z.boolean().default(false),
   trackClicks: z.boolean().default(true),
+  influencerId: z.string().optional(),
 })
 
 function generateShortCode(length = 6): string {
@@ -77,6 +78,7 @@ export async function POST(request: NextRequest) {
         isPublic: validatedData.isPublic,
         allowBots: validatedData.allowBots,
         trackClicks: validatedData.trackClicks,
+        influencerId: validatedData.influencerId || null,
       }
     })
 

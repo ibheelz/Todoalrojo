@@ -299,6 +299,7 @@ model ShortLink {
   trackClicks     Boolean     @default(true)
   userId          String?
   clientId        String?
+  influencerId    String?
   totalClicks     Int         @default(0)
   uniqueClicks    Int         @default(0)
   lastClickAt     DateTime?
@@ -310,6 +311,7 @@ model ShortLink {
   @@index([userId])
   @@index([clientId])
   @@index([campaign])
+  @@index([influencerId])
   @@index([isActive])
   @@index([createdAt])
   @@map("short_links")
