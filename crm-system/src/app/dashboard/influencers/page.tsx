@@ -328,7 +328,8 @@ export default function InfluencersPage() {
           clicks: true,
           registrations: true,
           ftd: true
-        }
+        },
+        assignedCampaignIds: influencerData.assignedCampaignIds || []
       }
 
       console.log('📊 [INFLUENCERS PAGE] Sending data:', transformedData)
@@ -354,16 +355,16 @@ export default function InfluencersPage() {
                   ...inf,
                   ...result.influencer,
                   conversionTypes: result.influencer.conversionTypes || [],
-                  conversionConfig: result.influencer.conversionConfig || inf.conversionConfig
+                  conversionConfig: influencerData.conversionConfig || inf.conversionConfig
                 }
               : inf
           ))
 
-          // Update conversion config for existing influencer
-          if (result.influencer.conversionConfig) {
+          // Update conversion config for existing influencer (from modal state)
+          if (influencerData.conversionConfig) {
             setConversionTypesConfig(prev => ({
               ...prev,
-              [editingInfluencer.id]: result.influencer.conversionConfig
+              [editingInfluencer.id]: influencerData.conversionConfig
             }))
           }
 
@@ -977,16 +978,24 @@ export default function InfluencersPage() {
                         </div>
                       </td>
                       <td className="px-2 sm:px-4 py-3 sm:py-4">
-                        <div className="text-primary font-semibold text-xs sm:text-sm">{influencer.totalClicks.toLocaleString()}</div>
+                        <div className="text-primary font-semibold text-xs sm:text-sm">
+                          {conversionTypesConfig[influencer.id]?.clicks !== false ? influencer.totalClicks.toLocaleString() : '—'}
+                        </div>
                       </td>
                       <td className="px-2 sm:px-4 py-3 sm:py-4">
-                        <div className="text-primary font-semibold text-xs sm:text-sm">{influencer.totalLeads.toLocaleString()}</div>
+                        <div className="text-primary font-semibold text-xs sm:text-sm">
+                          {conversionTypesConfig[influencer.id]?.leads !== false ? influencer.totalLeads.toLocaleString() : '—'}
+                        </div>
                       </td>
                       <td className="px-2 sm:px-4 py-3 sm:py-4">
-                        <div className="text-primary font-semibold text-xs sm:text-sm">{influencer.totalRegs.toLocaleString()}</div>
+                        <div className="text-primary font-semibold text-xs sm:text-sm">
+                          {conversionTypesConfig[influencer.id]?.registrations !== false ? influencer.totalRegs.toLocaleString() : '—'}
+                        </div>
                       </td>
                       <td className="px-2 sm:px-4 py-3 sm:py-4">
-                        <div className="text-primary font-semibold text-xs sm:text-sm">{influencer.totalFtd.toLocaleString()}</div>
+                        <div className="text-primary font-semibold text-xs sm:text-sm">
+                          {conversionTypesConfig[influencer.id]?.ftd !== false ? influencer.totalFtd.toLocaleString() : '—'}
+                        </div>
                       </td>
                       <td className="px-2 sm:px-4 py-3 sm:py-4">
                         <div className="text-white text-xs sm:text-sm">
