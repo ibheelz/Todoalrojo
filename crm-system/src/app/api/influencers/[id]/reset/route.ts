@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { emitStats } from '@/lib/event-bus'
 
 export async function POST(_req: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -16,10 +17,10 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
       }
     })
 
+    emitStats({ type: 'resetInfluencer', payload: { id: updated.id } })
     return NextResponse.json({ success: true, id: updated.id })
   } catch (error) {
     console.error('Reset influencer stats error:', error)
     return NextResponse.json({ success: false, error: 'Failed to reset influencer stats' }, { status: 500 })
   }
 }
-

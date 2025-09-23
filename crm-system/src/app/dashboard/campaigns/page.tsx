@@ -143,6 +143,23 @@ export default function CampaignsPage() {
     return () => window.removeEventListener('campaign:reset' as any, handler as any)
   }, [])
 
+  // Subscribe to server-sent events to refresh instantly
+  useEffect(() => {
+    const es = new EventSource('/api/events')
+    const onStats = (e: MessageEvent) => {
+      try {
+        const evt = JSON.parse((e as MessageEvent).data)
+        if (!evt || !evt.type) return
+        if (['click', 'lead', 'ftd', 'campaignDelta', 'resetCampaign'].includes(evt.type)) {
+          fetchCampaigns()
+        }
+      } catch {}
+    }
+    // @ts-ignore
+    es.addEventListener('stats', onStats)
+    return () => es.close()
+  }, [dateFilter, customDateRange])
+
   // Helper function to get influencer name
   const getInfluencerName = (influencerId: string | null | undefined): string => {
     if (!influencerId) return 'No influencer'

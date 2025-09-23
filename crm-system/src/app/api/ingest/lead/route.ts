@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { UserService } from '@/lib/user-service'
 import { incrementCampaignCounters, incrementInfluencerCountersByClickId } from '@/lib/attribution'
+import { emitStats } from '@/lib/event-bus'
 
 const leadSchema = z.object({
   // Required fields
@@ -283,6 +284,7 @@ export async function POST(request: NextRequest) {
 
     // Attribute to influencer via the short link (if clickId came from a tracked short link)
     await incrementInfluencerCountersByClickId(validatedData.clickId, { leads: 1 })
+    emitStats({ type: 'lead', payload: { campaign: validatedData.campaign, clickId: validatedData.clickId } })
 
     const processingTime = Date.now() - startTime
     console.log(`🎉 [LEAD API] Lead processing completed successfully in ${processingTime}ms`)

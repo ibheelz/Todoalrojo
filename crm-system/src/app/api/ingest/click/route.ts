@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
+import { emitStats } from '@/lib/event-bus'
 import { incrementInfluencerCountersByClickId } from '@/lib/attribution'
 import { UserService } from '@/lib/user-service'
 
@@ -157,6 +158,7 @@ export async function POST(request: NextRequest) {
 
     // Attribute click to influencer via link mapping
     await incrementInfluencerCountersByClickId(validatedData.clickId, { clicks: 1 })
+    emitStats({ type: 'click', payload: { campaign: validatedData.campaign, clickId: validatedData.clickId } })
 
     return NextResponse.json({
       success: true,

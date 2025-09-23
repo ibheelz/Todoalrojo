@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
+import { emitStats } from '@/lib/event-bus'
 import { incrementCampaignCounters, incrementInfluencerCountersByClickId } from '@/lib/attribution'
 
 export const dynamic = 'force-dynamic'
@@ -255,6 +256,7 @@ export async function POST(request: NextRequest) {
     await incrementInfluencerCountersByClickId(clickId, { clicks: 1 })
 
     console.log('🎉 [CLICK-TRACKING] Click tracking processed successfully')
+    emitStats({ type: 'click', payload: { campaign: validatedData.campaign, clickId } })
 
     return NextResponse.json({
       success: true,

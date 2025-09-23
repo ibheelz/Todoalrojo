@@ -159,6 +159,24 @@ export default function InfluencersPage() {
     return () => window.removeEventListener('influencer:reset' as any, handler as any)
   }, [])
 
+  // Subscribe to server-sent events to refresh instantly
+  useEffect(() => {
+    const es = new EventSource('/api/events')
+    const onStats = (e: MessageEvent) => {
+      try {
+        const evt = JSON.parse((e as MessageEvent).data)
+        if (!evt || !evt.type) return
+        // For simplicity, refetch on relevant events
+        if (['click', 'lead', 'ftd', 'influencerDelta', 'campaignDelta', 'resetInfluencer'].includes(evt.type)) {
+          fetchData()
+        }
+      } catch {}
+    }
+    // @ts-ignore - EventSource typings
+    es.addEventListener('stats', onStats)
+    return () => es.close()
+  }, [dateFilter, customDateRange])
+
   const fetchData = async () => {
     try {
       setLoading(true)
