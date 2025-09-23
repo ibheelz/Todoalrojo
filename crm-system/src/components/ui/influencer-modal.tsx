@@ -46,6 +46,14 @@ export default function InfluencerModal({ isOpen, onClose, onSubmit, onDelete, e
     description: ''
   })
 
+  // For existing influencers, track which conversion types are enabled
+  const [conversionConfig, setConversionConfig] = useState({
+    leads: true,
+    clicks: true,
+    registrations: true,
+    ftd: true
+  })
+
   // Fetch existing influencers for validation
   React.useEffect(() => {
     const fetchInfluencers = async () => {
@@ -91,6 +99,16 @@ export default function InfluencerModal({ isOpen, onClose, onSubmit, onDelete, e
       if (editMode.profileImage) {
         setImagePreview(editMode.profileImage)
       }
+
+      // Initialize conversion types for existing influencer
+      if (editMode.conversionTypes) {
+        setConversionTypes(editMode.conversionTypes)
+      }
+
+      // Initialize conversion config for existing influencer
+      if (editMode.conversionConfig) {
+        setConversionConfig(editMode.conversionConfig)
+      }
     } else {
       setFormData({
         name: '',
@@ -111,6 +129,15 @@ export default function InfluencerModal({ isOpen, onClose, onSubmit, onDelete, e
       setProfileImage(null)
       setImagePreview(null)
       setNameValidationError(null)
+
+      // Reset conversion types and config for new influencer
+      setConversionTypes([])
+      setConversionConfig({
+        leads: true,
+        clicks: true,
+        registrations: true,
+        ftd: true
+      })
     }
   }, [editMode])
 
@@ -214,6 +241,14 @@ export default function InfluencerModal({ isOpen, onClose, onSubmit, onDelete, e
     setConversionTypes(prev => prev.filter(type => type.id !== id))
   }
 
+  // Toggle conversion type configuration for existing influencers
+  const toggleConversionType = (type: 'leads' | 'clicks' | 'registrations' | 'ftd') => {
+    setConversionConfig(prev => ({
+      ...prev,
+      [type]: !prev[type]
+    }))
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -241,7 +276,11 @@ export default function InfluencerModal({ isOpen, onClose, onSubmit, onDelete, e
       commissionRate: formData.commissionRate ? parseFloat(formData.commissionRate) : null,
       profileImage: imagePreview,
       profileImageFile: profileImage,
-      conversionTypes: conversionTypes
+      conversionTypes: conversionTypes,
+      // For existing influencers, include conversion type configuration
+      ...(editMode && {
+        conversionConfig: conversionConfig
+      })
     }
 
     console.log('📊 [INFLUENCER MODAL] Submitting influencer:', {
@@ -707,100 +746,182 @@ export default function InfluencerModal({ isOpen, onClose, onSubmit, onDelete, e
               </div>
             </div>
 
-            {/* Conversion Types Management */}
+            {/* Analytics Dashboard */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-yellow-400">
-                  <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                  <circle cx="9" cy="7" r="4"/>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                  <polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/>
                 </svg>
-                <span>Conversion Types</span>
+                <span>Analytics Dashboard</span>
               </h3>
 
-              {/* Display existing conversion types */}
-              {conversionTypes.length > 0 && (
-                <div className="space-y-2">
-                  <h4 className="text-sm font-medium text-white/80 mb-2">Added Conversion Types</h4>
-                  <div className="space-y-2">
-                    {conversionTypes.map((type) => (
-                      <div key={type.id} className="flex items-center justify-between p-3 rounded-lg" style={{
-                        background: 'rgba(255, 255, 255, 0.08)',
-                        border: '1px solid rgba(255, 255, 255, 0.15)'
-                      }}>
+              {editMode ? (
+                /* Existing Influencer - Show conversion type configuration */
+                <div className="space-y-3">
+                  <p className="text-sm text-white/60 mb-4">
+                    Manage analytics data for this influencer. Disabled types will not appear in cards.
+                  </p>
+
+                  {/* Available conversion types to add */}
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-medium text-white/80">Available Analytics Types</h4>
+                    {[
+                      { key: 'leads', label: 'Leads', description: 'Total number of leads generated' },
+                      { key: 'clicks', label: 'Clicks', description: 'Total number of clicks tracked' },
+                      { key: 'registrations', label: 'Registrations', description: 'User registrations from campaigns' },
+                      { key: 'ftd', label: 'FTD', description: 'First Time Deposits' }
+                    ].filter(({ key }) => !conversionConfig[key as keyof typeof conversionConfig]).map(({ key, label, description }) => (
+                      <div
+                        key={key}
+                        className="flex items-center justify-between p-4 rounded-xl"
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.05)',
+                          border: '1px solid rgba(255, 255, 255, 0.1)'
+                        }}
+                      >
                         <div className="flex-1">
-                          <div className="text-white font-medium text-sm">{type.name}</div>
-                          {type.description && (
-                            <div className="text-white/60 text-xs mt-1">{type.description}</div>
-                          )}
+                          <div className="font-medium text-white">{label}</div>
+                          <div className="text-sm text-white/60">{description}</div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => toggleConversionType(key as 'leads' | 'clicks' | 'registrations' | 'ftd')}
+                          className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors text-sm font-medium"
+                        >
+                          Add
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Active conversion types */}
+                  {[
+                    { key: 'leads', label: 'Leads', description: 'Total number of leads generated' },
+                    { key: 'clicks', label: 'Clicks', description: 'Total number of clicks tracked' },
+                    { key: 'registrations', label: 'Registrations', description: 'User registrations from campaigns' },
+                    { key: 'ftd', label: 'FTD', description: 'First Time Deposits' }
+                  ].filter(({ key }) => conversionConfig[key as keyof typeof conversionConfig]).length > 0 && (
+                    <div className="space-y-3 mt-6">
+                      <h4 className="text-sm font-medium text-white/80">Active Analytics Types</h4>
+                      {[
+                        { key: 'leads', label: 'Leads', description: 'Total number of leads generated' },
+                        { key: 'clicks', label: 'Clicks', description: 'Total number of clicks tracked' },
+                        { key: 'registrations', label: 'Registrations', description: 'User registrations from campaigns' },
+                        { key: 'ftd', label: 'FTD', description: 'First Time Deposits' }
+                      ].filter(({ key }) => conversionConfig[key as keyof typeof conversionConfig]).map(({ key, label, description }) => (
+                        <div
+                          key={key}
+                          className="flex items-center justify-between p-4 rounded-xl"
+                          style={{
+                            background: 'rgba(34, 197, 94, 0.1)',
+                            border: '1px solid rgba(34, 197, 94, 0.3)'
+                          }}
+                        >
+                          <div className="flex-1">
+                            <div className="font-medium text-white flex items-center space-x-2">
+                              <span>{label}</span>
+                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            </div>
+                            <div className="text-sm text-white/60">{description}</div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => toggleConversionType(key as 'leads' | 'clicks' | 'registrations' | 'ftd')}
+                            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm font-medium"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                /* New Influencer - Show conversion type builder */
+                <>
+                  {/* Existing Custom Conversion Types */}
+                  <div className="space-y-3">
+                    {conversionTypes.map((type) => (
+                      <div
+                        key={type.id}
+                        className="flex items-center justify-between p-4 rounded-xl"
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.05)',
+                          border: '1px solid rgba(255, 255, 255, 0.1)'
+                        }}
+                      >
+                        <div className="flex-1">
+                          <div className="font-medium text-white">{type.name}</div>
+                          <div className="text-sm text-white/60">{type.description}</div>
                         </div>
                         <button
                           type="button"
                           onClick={() => removeConversionType(type.id)}
-                          className="ml-3 w-6 h-6 bg-red-500/20 hover:bg-red-500/30 rounded-lg flex items-center justify-center transition-all duration-300"
-                          title="Remove conversion type"
+                          className="w-8 h-8 bg-red-500 hover:bg-red-600 rounded-lg flex items-center justify-center text-white transition-all duration-300"
+                          title="Delete conversion type"
                         >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-red-400">
-                            <line x1="18" y1="6" x2="6" y2="18"/>
-                            <line x1="6" y1="6" x2="18" y2="18"/>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <polyline points="3,6 5,6 21,6"/>
+                            <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"/>
+                            <line x1="10" y1="11" x2="10" y2="17"/>
+                            <line x1="14" y1="11" x2="14" y2="17"/>
                           </svg>
                         </button>
                       </div>
                     ))}
                   </div>
-                </div>
-              )}
 
-              {/* Add new conversion type */}
-              <div className="space-y-3 p-4 rounded-xl" style={{
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.1)'
-              }}>
-                <h4 className="text-sm font-medium text-white/80 mb-3 flex items-center space-x-2">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-yellow-400">
-                    <line x1="12" y1="5" x2="12" y2="19"/>
-                    <line x1="5" y1="12" x2="19" y2="12"/>
-                  </svg>
-                  <span>Add New Conversion Type</span>
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <input
-                    type="text"
-                    value={newConversionType.name}
-                    onChange={(e) => setNewConversionType(prev => ({ ...prev, name: e.target.value }))}
-                    className="px-3 py-2 rounded-lg text-white placeholder-white/50 text-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary/50"
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.08)',
-                      border: '1px solid rgba(255, 255, 255, 0.15)'
-                    }}
-                    placeholder="Type name *"
-                  />
-                  <input
-                    type="text"
-                    value={newConversionType.description}
-                    onChange={(e) => setNewConversionType(prev => ({ ...prev, description: e.target.value }))}
-                    className="px-3 py-2 rounded-lg text-white placeholder-white/50 text-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary/50"
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.08)',
-                      border: '1px solid rgba(255, 255, 255, 0.15)'
-                    }}
-                    placeholder="Description (optional)"
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={addConversionType}
-                  disabled={!newConversionType.name.trim()}
-                  className="w-full px-4 py-2 rounded-lg bg-primary text-black font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center gap-2"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <line x1="12" y1="5" x2="12" y2="19"/>
-                    <line x1="5" y1="12" x2="19" y2="12"/>
-                  </svg>
-                  Add Conversion Type
-                </button>
-              </div>
+                  {/* Add new custom conversion type */}
+                  <div className="space-y-3 p-4 rounded-xl" style={{
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)'
+                  }}>
+                    <h4 className="text-sm font-medium text-white/80 mb-3 flex items-center space-x-2">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-yellow-400">
+                        <line x1="12" y1="5" x2="12" y2="19"/>
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                      </svg>
+                      <span>Add Custom Analytics Type</span>
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <input
+                        type="text"
+                        value={newConversionType.name}
+                        onChange={(e) => setNewConversionType(prev => ({ ...prev, name: e.target.value }))}
+                        className="px-3 py-2 rounded-lg text-white placeholder-white/50 text-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.08)',
+                          border: '1px solid rgba(255, 255, 255, 0.15)'
+                        }}
+                        placeholder="Type name *"
+                      />
+                      <input
+                        type="text"
+                        value={newConversionType.description}
+                        onChange={(e) => setNewConversionType(prev => ({ ...prev, description: e.target.value }))}
+                        className="px-3 py-2 rounded-lg text-white placeholder-white/50 text-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.08)',
+                          border: '1px solid rgba(255, 255, 255, 0.15)'
+                        }}
+                        placeholder="Description (optional)"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={addConversionType}
+                      disabled={!newConversionType.name.trim()}
+                      className="w-full px-4 py-2 rounded-lg bg-primary text-black font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center gap-2"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="12" y1="5" x2="12" y2="19"/>
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                      </svg>
+                      Add Analytics Type
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </form>
         </div>

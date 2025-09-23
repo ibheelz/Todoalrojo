@@ -62,6 +62,12 @@ export async function GET(request: NextRequest) {
       paymentMethod: influencer.paymentMethod,
       notes: influencer.notes,
       conversionTypes: influencer.conversionTypes ? JSON.parse(influencer.conversionTypes) : [],
+      conversionConfig: influencer.conversionConfig ? JSON.parse(influencer.conversionConfig) : {
+        leads: true,
+        clicks: true,
+        registrations: true,
+        ftd: true
+      },
       campaigns: influencer.campaignInfluencers.map(ci => ({
         id: ci.campaign.id,
         name: ci.campaign.name,
@@ -105,6 +111,108 @@ const createInfluencerSchema = z.object({
   notes: z.string().optional()
 })
 
+export async function PUT(request: NextRequest) {
+  try {
+    const url = new URL(request.url)
+    const id = url.pathname.split('/').pop()
+
+    if (!id) {
+      return NextResponse.json({
+        success: false,
+        error: 'Influencer ID is required'
+      }, { status: 400 })
+    }
+
+    const body = await request.json()
+    console.log('📊 [API] Updating influencer:', id, JSON.stringify(body, null, 2))
+
+    // Validate input data
+    const validatedData = createInfluencerSchema.parse(body)
+
+    // Update influencer
+    const updatedInfluencer = await prisma.influencer.update({
+      where: { id },
+      data: {
+        name: validatedData.name,
+        email: validatedData.email,
+        phone: validatedData.phone,
+        socialHandle: validatedData.socialHandle,
+        platform: validatedData.platform,
+        followers: validatedData.followers,
+        engagementRate: validatedData.engagementRate,
+        category: validatedData.category,
+        location: validatedData.location,
+        commissionRate: validatedData.commissionRate,
+        paymentMethod: validatedData.paymentMethod,
+        notes: validatedData.notes,
+        conversionTypes: body.conversionTypes ? JSON.stringify(body.conversionTypes) : null
+      },
+      include: {
+        campaignInfluencers: {
+          include: {
+            campaign: {
+              select: {
+                id: true,
+                name: true,
+                slug: true
+              }
+            }
+          }
+        }
+      }
+    })
+
+    // Transform data to match frontend expectations
+    const transformedInfluencer = {
+      id: updatedInfluencer.id,
+      name: updatedInfluencer.name,
+      email: updatedInfluencer.email,
+      phone: updatedInfluencer.phone,
+      socialHandle: updatedInfluencer.socialHandle,
+      platform: updatedInfluencer.platform,
+      followers: updatedInfluencer.followers,
+      engagementRate: Number(updatedInfluencer.engagementRate),
+      category: updatedInfluencer.category,
+      location: updatedInfluencer.location,
+      status: updatedInfluencer.status,
+      assignedCampaigns: [],
+      totalLeads: updatedInfluencer.totalLeads,
+      totalClicks: updatedInfluencer.totalClicks,
+      totalRegs: updatedInfluencer.totalRegs,
+      totalFtd: updatedInfluencer.totalFtd,
+      createdAt: updatedInfluencer.createdAt.toISOString(),
+      commissionRate: updatedInfluencer.commissionRate ? Number(updatedInfluencer.commissionRate) : null,
+      paymentMethod: updatedInfluencer.paymentMethod,
+      notes: updatedInfluencer.notes,
+      conversionTypes: updatedInfluencer.conversionTypes ? JSON.parse(updatedInfluencer.conversionTypes) : [],
+      campaigns: [],
+      leads: []
+    }
+
+    return NextResponse.json({
+      success: true,
+      influencer: transformedInfluencer,
+      message: 'Influencer updated successfully'
+    }, { status: 200 })
+
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      console.log('❌ [API] Validation errors:', JSON.stringify(error.errors, null, 2))
+      return NextResponse.json({
+        success: false,
+        error: 'Validation failed',
+        details: error.errors
+      }, { status: 400 })
+    }
+
+    console.error('Update influencer error:', error)
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to update influencer'
+    }, { status: 500 })
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -145,7 +253,13 @@ export async function POST(request: NextRequest) {
         commissionRate: validatedData.commissionRate,
         paymentMethod: validatedData.paymentMethod,
         notes: validatedData.notes,
-        conversionTypes: body.conversionTypes ? JSON.stringify(body.conversionTypes) : null
+        conversionTypes: body.conversionTypes ? JSON.stringify(body.conversionTypes) : null,
+        conversionConfig: body.conversionConfig ? JSON.stringify(body.conversionConfig) : JSON.stringify({
+          leads: true,
+          clicks: true,
+          registrations: true,
+          ftd: true
+        })
       },
       include: {
         campaignInfluencers: {
@@ -185,6 +299,12 @@ export async function POST(request: NextRequest) {
       paymentMethod: newInfluencer.paymentMethod,
       notes: newInfluencer.notes,
       conversionTypes: newInfluencer.conversionTypes ? JSON.parse(newInfluencer.conversionTypes) : [],
+      conversionConfig: newInfluencer.conversionConfig ? JSON.parse(newInfluencer.conversionConfig) : {
+        leads: true,
+        clicks: true,
+        registrations: true,
+        ftd: true
+      },
       campaigns: [],
       leads: []
     }

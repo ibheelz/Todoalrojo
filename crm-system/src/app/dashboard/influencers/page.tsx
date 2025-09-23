@@ -104,7 +104,6 @@ export default function InfluencersPage() {
   const [showInfluencerModal, setShowInfluencerModal] = useState(false)
   const [editingInfluencer, setEditingInfluencer] = useState<Influencer | null>(null)
   const [managingInfluencer, setManagingInfluencer] = useState<Influencer | null>(null)
-  const [showConversionTypesModal, setShowConversionTypesModal] = useState(false)
   const [conversionTypesConfig, setConversionTypesConfig] = useState<{ [key: string]: InfluencerConversionConfig }>({})
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -172,7 +171,9 @@ export default function InfluencersPage() {
             totalRegs: inf.totalRegs || 0,
             totalFtd: inf.totalFtd || 0,
             createdAt: inf.createdAt,
-            leads: inf.leads || []
+            leads: inf.leads || [],
+            conversionTypes: inf.conversionTypes || [],
+            conversionConfig: inf.conversionConfig
           }))
           setInfluencers(transformedInfluencers)
         }
@@ -317,47 +318,112 @@ export default function InfluencersPage() {
         ...influencerData,
         followers: parseInt(influencerData.followers) || 0,
         engagementRate: parseFloat(influencerData.engagementRate) || 0,
-        commissionRate: influencerData.commissionRate ? parseFloat(influencerData.commissionRate) : undefined
+        commissionRate: influencerData.commissionRate ? parseFloat(influencerData.commissionRate) : undefined,
+        // Include conversionTypes and conversionConfig in the transformed data
+        conversionTypes: influencerData.conversionTypes || [],
+        conversionConfig: influencerData.conversionConfig || {
+          leads: true,
+          clicks: true,
+          registrations: true,
+          ftd: true
+        }
       }
 
       console.log('📊 [INFLUENCERS PAGE] Sending data:', transformedData)
 
-      const response = await fetch('/api/influencers', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(transformedData)
-      })
+      if (editingInfluencer) {
+        // Update existing influencer
+        console.log('📊 [INFLUENCERS PAGE] Updating influencer:', editingInfluencer.id)
 
-      const result = await response.json()
+        // Make API call to update influencer
+        const response = await fetch(`/api/influencers/${editingInfluencer.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(transformedData)
+        })
 
-      if (result.success) {
-        // Add new influencer to local state
-        const newInfluencer: Influencer = {
-          id: result.influencer.id,
-          name: result.influencer.name,
-          email: result.influencer.email,
-          phone: result.influencer.phone,
-          socialHandle: result.influencer.socialHandle,
-          platform: result.influencer.platform,
-          followers: result.influencer.followers,
-          engagementRate: result.influencer.engagementRate,
-          category: result.influencer.category,
-          location: result.influencer.location,
-          status: result.influencer.status,
-          assignedCampaigns: result.influencer.assignedCampaigns,
-          totalLeads: result.influencer.totalLeads,
-          totalClicks: result.influencer.totalClicks,
-          totalRegs: result.influencer.totalRegs,
-          totalFtd: result.influencer.totalFtd,
-          createdAt: result.influencer.createdAt,
-          leads: result.influencer.leads || []
+        const result = await response.json()
+
+        if (result.success) {
+          // Update local state with response data
+          setInfluencers(prev => prev.map(inf =>
+            inf.id === editingInfluencer.id
+              ? {
+                  ...inf,
+                  ...result.influencer,
+                  conversionTypes: result.influencer.conversionTypes || [],
+                  conversionConfig: result.influencer.conversionConfig || inf.conversionConfig
+                }
+              : inf
+          ))
+
+          // Update conversion config for existing influencer
+          if (result.influencer.conversionConfig) {
+            setConversionTypesConfig(prev => ({
+              ...prev,
+              [editingInfluencer.id]: result.influencer.conversionConfig
+            }))
+          }
+
+          setShowInfluencerModal(false)
+          setEditingInfluencer(null)
+        } else {
+          console.error('Failed to update influencer:', result.error)
+          // You could show a toast notification here
         }
-
-        setInfluencers(prev => [newInfluencer, ...prev])
-        setShowInfluencerModal(false)
       } else {
-        console.error('Failed to create influencer:', result.error)
-        // You could show a toast notification here
+        // Create new influencer
+        const response = await fetch('/api/influencers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(transformedData)
+        })
+
+        const result = await response.json()
+
+        if (result.success) {
+          // Add new influencer to local state
+          const newInfluencer: Influencer = {
+            id: result.influencer.id,
+            name: result.influencer.name,
+            email: result.influencer.email,
+            phone: result.influencer.phone,
+            socialHandle: result.influencer.socialHandle,
+            platform: result.influencer.platform,
+            followers: result.influencer.followers,
+            engagementRate: result.influencer.engagementRate,
+            category: result.influencer.category,
+            location: result.influencer.location,
+            status: result.influencer.status,
+            assignedCampaigns: result.influencer.assignedCampaigns,
+            totalLeads: result.influencer.totalLeads,
+            totalClicks: result.influencer.totalClicks,
+            totalRegs: result.influencer.totalRegs,
+            totalFtd: result.influencer.totalFtd,
+            createdAt: result.influencer.createdAt,
+            leads: result.influencer.leads || [],
+            conversionTypes: result.influencer.conversionTypes || []
+          }
+
+          setInfluencers(prev => [newInfluencer, ...prev])
+
+          // Initialize conversion config for new influencer (default all enabled)
+          setConversionTypesConfig(prev => ({
+            ...prev,
+            [newInfluencer.id]: {
+              leads: true,
+              clicks: true,
+              registrations: true,
+              ftd: true,
+              customTypes: {}
+            }
+          }))
+
+          setShowInfluencerModal(false)
+        } else {
+          console.error('Failed to create influencer:', result.error)
+          // You could show a toast notification here
+        }
       }
 
     } catch (error) {
@@ -1092,140 +1158,6 @@ export default function InfluencersPage() {
           editMode={editingInfluencer}
         />
 
-        {/* Conversion Types Management Modal */}
-        {showConversionTypesModal && managingInfluencer && (
-          <>
-            {/* Backdrop */}
-            <div
-              className="fixed inset-0 bg-black/40 z-[24]"
-              style={{
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
-              }}
-              onClick={() => setShowConversionTypesModal(false)}
-            />
-
-            {/* Modal */}
-            <div className="fixed top-0 bottom-0 right-0 z-[25] flex items-center justify-center p-4 left-16 lg:left-80">
-              <div
-                className="w-full max-w-lg max-h-[90vh] overflow-hidden rounded-3xl"
-                style={{
-                  background: 'rgba(0, 0, 0, 0.25)',
-                  backdropFilter: 'blur(20px)',
-                  WebkitBackdropFilter: 'blur(20px)',
-                  border: '1px solid rgba(255, 255, 255, 0.15)',
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)'
-                }}
-              >
-                {/* Header */}
-                <div className="px-6 py-4 border-b border-white/10" style={{ background: '#0f0f0f' }}>
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-bold text-yellow-400">Manage Conversion Types</h2>
-                    <button
-                      onClick={() => setShowConversionTypesModal(false)}
-                      className="w-8 h-8 bg-yellow-400 hover:bg-yellow-300 rounded-lg flex items-center justify-center transition-all duration-300"
-                    >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-black">
-                        <line x1="18" y1="6" x2="6" y2="18"/>
-                        <line x1="6" y1="6" x2="18" y2="18"/>
-                      </svg>
-                    </button>
-                  </div>
-                  <p className="text-white/60 text-sm mt-1">Configure which stats to display for {managingInfluencer.name}</p>
-                </div>
-
-                {/* Content */}
-                <div className="p-6 max-h-[calc(90vh-120px)] overflow-y-auto">
-                  <div className="space-y-4">
-                    {/* Standard Conversion Types */}
-                    <div>
-                      <h3 className="text-lg font-semibold text-white mb-3">Standard Metrics</h3>
-                      <div className="space-y-3">
-                        {[
-                          { key: 'leads', label: 'Leads', description: 'Total number of leads generated' },
-                          { key: 'clicks', label: 'Clicks', description: 'Total number of clicks tracked' },
-                          { key: 'registrations', label: 'Registrations', description: 'User registrations from campaigns' },
-                          { key: 'ftd', label: 'FTD', description: 'First Time Deposits' }
-                        ].map((metric) => (
-                          <label key={metric.key} className="flex items-center justify-between p-3 rounded-lg cursor-pointer hover:bg-white/5 transition-colors" style={{
-                            background: 'rgba(255, 255, 255, 0.03)',
-                            border: '1px solid rgba(255, 255, 255, 0.1)'
-                          }}>
-                            <div className="flex-1">
-                              <div className="text-white font-medium">{metric.label}</div>
-                              <div className="text-white/60 text-sm">{metric.description}</div>
-                            </div>
-                            <input
-                              type="checkbox"
-                              checked={conversionTypesConfig[managingInfluencer.id]?.[metric.key as keyof InfluencerConversionConfig] || false}
-                              onChange={(e) => {
-                                const config = conversionTypesConfig[managingInfluencer.id] || {
-                                  leads: true, clicks: true, registrations: true, ftd: true, customTypes: {}
-                                }
-                                updateConversionConfig(managingInfluencer.id, {
-                                  ...config,
-                                  [metric.key]: e.target.checked
-                                })
-                              }}
-                              className="w-5 h-5 rounded text-yellow-400 bg-white/10 border-white/30 focus:ring-yellow-400 focus:ring-2"
-                            />
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Custom Conversion Types */}
-                    {managingInfluencer.conversionTypes && managingInfluencer.conversionTypes.length > 0 && (
-                      <div>
-                        <h3 className="text-lg font-semibold text-white mb-3">Custom Conversion Types</h3>
-                        <div className="space-y-3">
-                          {managingInfluencer.conversionTypes.map((type) => (
-                            <label key={type.id} className="flex items-center justify-between p-3 rounded-lg cursor-pointer hover:bg-white/5 transition-colors" style={{
-                              background: 'rgba(255, 255, 255, 0.03)',
-                              border: '1px solid rgba(255, 255, 255, 0.1)'
-                            }}>
-                              <div className="flex-1">
-                                <div className="text-white font-medium">{type.name}</div>
-                                {type.description && <div className="text-white/60 text-sm">{type.description}</div>}
-                              </div>
-                              <input
-                                type="checkbox"
-                                checked={conversionTypesConfig[managingInfluencer.id]?.customTypes[type.id] || false}
-                                onChange={(e) => {
-                                  const config = conversionTypesConfig[managingInfluencer.id] || {
-                                    leads: true, clicks: true, registrations: true, ftd: true, customTypes: {}
-                                  }
-                                  updateConversionConfig(managingInfluencer.id, {
-                                    ...config,
-                                    customTypes: {
-                                      ...config.customTypes,
-                                      [type.id]: e.target.checked
-                                    }
-                                  })
-                                }}
-                                className="w-5 h-5 rounded text-yellow-400 bg-white/10 border-white/30 focus:ring-yellow-400 focus:ring-2"
-                              />
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Footer */}
-                <div className="px-6 py-4 border-t border-white/10" style={{ background: '#0f0f0f' }}>
-                  <button
-                    onClick={() => setShowConversionTypesModal(false)}
-                    className="w-full px-4 py-2 rounded-xl bg-primary text-black font-semibold hover:bg-primary/90 transition-all duration-300"
-                  >
-                    Save Changes
-                  </button>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
       </div>
     </div>
   )
