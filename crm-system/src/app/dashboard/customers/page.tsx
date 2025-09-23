@@ -86,10 +86,15 @@ interface Customer {
   createdAt: Date
   isRealData?: boolean // Flag to identify real vs sample data
   // Additional fields for comprehensive data
-  clicks?: { clickId: string; campaign: string; ip: string; userAgent?: string; landingPage?: string }[]
-  leads?: { campaign: string; ip: string; userAgent?: string; landingPage?: string; ageVerified?: boolean; promotionalConsent?: boolean }[]
-  events?: { eventType: string }[]
+  clicks?: { id: string; campaign: string; source: string; medium: string; ip: string; createdAt: string }[]
+  leads?: { id: string; campaign: string; source: string; medium: string; value: number; createdAt: string }[]
+  events?: { id: string; eventType: string; campaign: string; value: number; createdAt: string }[]
   identifiers?: { type: string; value: string; isVerified: boolean; isPrimary: boolean }[]
+  _count?: {
+    clicks: number
+    leads: number
+    events: number
+  }
 }
 
 export default function CustomersPage() {
@@ -141,19 +146,43 @@ export default function CustomersPage() {
         addDebugInfo('🔄 Refreshing customer data (background)...')
       }
 
-      const response = await fetch('/api/customers?limit=50')
+      // Fetch customers with related data
+      const response = await fetch('/api/customers?limit=50&includeRelated=true')
       const data = await response.json()
 
-      if (data.success) {
-        addDebugInfo(`✅ Fetched ${data.customers.length} real customers from API`)
+      console.log('👥 Customer data received:', {
+        success: data.success,
+        totalCustomers: data.customers?.length || 0,
+        includesRelatedData: true,
+        timestamp: new Date().toISOString()
+      })
 
-        // Combine real data with sample data to maintain the 20 sample customers
-        const realCustomers = data.customers.map((customer: any) => ({
-          ...customer,
-          isRealData: true, // Flag to identify real data
-          lastSeen: new Date(customer.lastSeen),
-          createdAt: new Date(customer.createdAt)
-        }))
+      if (data.success) {
+        addDebugInfo(`✅ Fetched ${data.customers.length} real customers from API with related data`)
+
+        // Process real customers with related data
+        const realCustomers = data.customers.map((customer: any) => {
+          const processedCustomer = {
+            ...customer,
+            isRealData: true, // Flag to identify real data
+            lastSeen: customer.lastSeen ? new Date(customer.lastSeen) : null,
+            createdAt: new Date(customer.createdAt)
+          }
+
+          // Log related data counts for debugging
+          if (customer._count) {
+            console.log(`📊 Customer ${customer.masterEmail || customer.id} related data:`, {
+              clicks: customer._count.clicks,
+              leads: customer._count.leads,
+              events: customer._count.events,
+              recentClicks: customer.clicks?.length || 0,
+              recentLeads: customer.leads?.length || 0,
+              recentEvents: customer.events?.length || 0
+            })
+          }
+
+          return processedCustomer
+        })
 
         // Add sample data as backup/demo data
         const sampleCustomers = getSampleCustomers()
@@ -164,13 +193,20 @@ export default function CustomersPage() {
         setCustomers(combinedCustomers)
         setLastRefresh(new Date())
         addDebugInfo(`📊 Total customers displayed: ${combinedCustomers.length} (${realCustomers.length} real + ${sampleCustomers.length} sample)`)
+
+        // Additional debugging for related data
+        const totalClicks = realCustomers.reduce((sum, c) => sum + (c._count?.clicks || 0), 0)
+        const totalLeads = realCustomers.reduce((sum, c) => sum + (c._count?.leads || 0), 0)
+        const totalEvents = realCustomers.reduce((sum, c) => sum + (c._count?.events || 0), 0)
+        addDebugInfo(`📋 Related data totals - Clicks: ${totalClicks}, Leads: ${totalLeads}, Events: ${totalEvents}`)
       } else {
+        console.error('❌ Failed to fetch customers:', data.error)
         addDebugInfo('❌ Failed to fetch real customers, using sample data only')
         setCustomers(getSampleCustomers())
       }
     } catch (error) {
+      console.error('❌ Error fetching customers:', error)
       addDebugInfo(`❌ Error fetching customers: ${error}`)
-      console.error('Error fetching customers:', error)
       // Fallback to sample data
       setCustomers(getSampleCustomers())
     } finally {

@@ -23,6 +23,8 @@ interface ConversionSummary {
   totalValue: number
   uniqueCustomers: number
   conversionRate: number
+  campaigns: Array<{ name: string; count: number }>
+  eventTypes: Array<{ type: string; count: number }>
 }
 
 export default function ConversionsPage() {
@@ -35,6 +37,7 @@ export default function ConversionsPage() {
   const [customDateRange, setCustomDateRange] = useState({ from: '', to: '' })
   const [showCustomDatePicker, setShowCustomDatePicker] = useState(false)
   const [selectedEventType, setSelectedEventType] = useState('all')
+  const [selectedCampaign, setSelectedCampaign] = useState('all')
 
   const eventTypes = [
     'all', 'registration', 'signup', 'register', 'deposit', 'ftd', 'first_deposit',
@@ -43,14 +46,24 @@ export default function ConversionsPage() {
 
   useEffect(() => {
     fetchConversions()
-  }, [dateFilter, customDateRange, selectedEventType])
+  }, [dateFilter, customDateRange, selectedEventType, selectedCampaign])
 
   const fetchConversions = async () => {
     try {
       setLoading(true)
+
+      console.log('🔄 Fetching conversions with filters:', {
+        dateFilter,
+        selectedEventType,
+        selectedCampaign,
+        customDateRange,
+        timestamp: new Date().toISOString()
+      })
+
       const params = new URLSearchParams({
         dateFilter,
         eventType: selectedEventType,
+        campaign: selectedCampaign,
       })
 
       if (dateFilter === 'custom' && customDateRange.from && customDateRange.to) {
@@ -64,10 +77,18 @@ export default function ConversionsPage() {
       if (data.success) {
         setConversions(data.events || [])
         setSummary(data.summary || null)
+        console.log('✅ Conversions loaded successfully:', {
+          totalConversions: data.events?.length || 0,
+          recognizedCustomers: data.events?.filter(e => e.customer).length || 0,
+          summary: data.summary,
+          timestamp: new Date().toISOString()
+        })
       } else {
+        console.error('❌ Failed to load conversions:', data.error)
         setError('Failed to load conversions')
       }
     } catch (err) {
+      console.error('❌ Error fetching conversions:', err)
       setError('Failed to fetch conversions')
     } finally {
       setLoading(false)

@@ -224,6 +224,7 @@ model Campaign {
   brandId        String?
   logoUrl        String?
   conversionTypes Json?
+  influencerId   String?
   isActive       Boolean  @default(true)
   totalClicks    Int      @default(0)
   totalLeads     Int      @default(0)
@@ -241,6 +242,7 @@ model Campaign {
 
   @@index([slug])
   @@index([clientId])
+  @@index([influencerId])
   @@index([isActive])
   @@map("campaigns")
 }

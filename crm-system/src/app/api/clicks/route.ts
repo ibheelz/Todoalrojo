@@ -14,6 +14,18 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '50')
     const offset = (page - 1) * limit
 
+    console.log('🔍 Fetching clicks with parameters:', {
+      dateFilter,
+      campaign,
+      source,
+      search,
+      fromDate,
+      toDate,
+      page,
+      limit,
+      timestamp: new Date().toISOString()
+    })
+
     // Calculate date range for filtering
     let dateWhere = {}
     if (dateFilter && dateFilter !== 'all') {
@@ -102,6 +114,11 @@ export async function GET(request: NextRequest) {
       ...searchWhere
     }
 
+    console.log('🔍 Applying where conditions:', {
+      whereConditions,
+      totalConditions: Object.keys(whereConditions).length
+    })
+
     // Get clicks with pagination
     const clicks = await prisma.click.findMany({
       where: whereConditions,
@@ -111,7 +128,8 @@ export async function GET(request: NextRequest) {
             id: true,
             masterEmail: true,
             firstName: true,
-            lastName: true
+            lastName: true,
+            profileImage: true
           }
         }
       },
@@ -162,11 +180,19 @@ export async function GET(request: NextRequest) {
       orderBy: { _count: { source: 'desc' } }
     })
 
+    // Calculate customer recognition stats
+    const recognizedCustomers = clicks.filter(click => click.customer).length
+    const anonymousClicks = clicks.length - recognizedCustomers
+    const recognitionRate = clicks.length > 0 ? Math.round((recognizedCustomers / clicks.length) * 100 * 100) / 100 : 0
+
     const summary = {
       totalClicks: summaryStats._count || 0,
       uniqueCustomers: uniqueCustomers.length,
       fraudClicks,
       fraudRate: summaryStats._count > 0 ? Math.round((fraudClicks / summaryStats._count) * 100 * 100) / 100 : 0,
+      recognizedCustomers,
+      anonymousClicks,
+      recognitionRate,
       totalPages: Math.ceil(totalCount / limit),
       currentPage: page,
       campaigns: campaigns.map(c => ({
@@ -179,6 +205,17 @@ export async function GET(request: NextRequest) {
       }))
     }
 
+    console.log('✅ Clicks data processed successfully:', {
+      totalClicks: clicks.length,
+      recognizedCustomers,
+      anonymousClicks,
+      recognitionRate: `${recognitionRate}%`,
+      fraudClicks,
+      campaignsFound: campaigns.length,
+      sourcesFound: sources.length,
+      timestamp: new Date().toISOString()
+    })
+
     return NextResponse.json({
       success: true,
       clicks,
@@ -186,11 +223,12 @@ export async function GET(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Get clicks error:', error)
-    console.error('Error details:', {
+    console.error('❌ Get clicks error:', error)
+    console.error('📊 Error details:', {
       name: error?.constructor?.name,
       message: error?.message,
-      stack: error?.stack
+      stack: error?.stack?.split('\n').slice(0, 5).join('\n'), // Limit stack trace
+      timestamp: new Date().toISOString()
     })
     return NextResponse.json({
       success: false,

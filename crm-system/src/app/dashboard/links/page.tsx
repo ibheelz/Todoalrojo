@@ -102,8 +102,28 @@ export default function LinksPage() {
     return influencer ? `${influencer.name} (${influencer.socialHandle})` : 'Unknown Influencer'
   }
 
+  // Helper function to get campaign name from slug
+  const getCampaignName = (campaignSlug: string | null | undefined): string => {
+    if (!campaignSlug) return '—'
+    const campaign = campaigns.find(c => c.slug === campaignSlug)
+    return campaign ? campaign.name : campaignSlug
+  }
+
+  // Get influencers for selected campaign
+  const getAvailableInfluencers = () => {
+    if (!formData.campaign) return influencers
+
+    // Find campaigns that match the selected campaign slug and get their influencers
+    const selectedCampaign = campaigns.find(c => c.slug === formData.campaign)
+    if (!selectedCampaign) return influencers
+
+    // For now, return all influencers but we could filter based on campaign-influencer relationships
+    return influencers
+  }
+
   const fetchCampaigns = async () => {
     try {
+      console.log('📊 Fetching campaigns for links page...', { timestamp: new Date().toISOString() })
       const response = await fetch('/api/campaigns')
       const data = await response.json()
 
@@ -111,22 +131,32 @@ export default function LinksPage() {
         // Filter only active campaigns
         const activeCampaigns = data.campaigns.filter((campaign: Campaign) => campaign.isActive)
         setCampaigns(activeCampaigns)
+        console.log('✅ Campaigns loaded for links:', {
+          totalCampaigns: data.campaigns.length,
+          activeCampaigns: activeCampaigns.length,
+          campaigns: activeCampaigns.map(c => ({ id: c.id, name: c.name, slug: c.slug }))
+        })
       }
     } catch (error) {
-      console.error('Error fetching campaigns:', error)
+      console.error('❌ Error fetching campaigns:', error)
     }
   }
 
   const fetchInfluencers = async () => {
     try {
+      console.log('👤 Fetching influencers for links page...', { timestamp: new Date().toISOString() })
       const response = await fetch('/api/influencers?activeOnly=true')
       const data = await response.json()
 
       if (data.success) {
         setInfluencers(data.influencers)
+        console.log('✅ Influencers loaded for links:', {
+          totalInfluencers: data.influencers.length,
+          influencers: data.influencers.map(i => ({ id: i.id, name: i.name, socialHandle: i.socialHandle, platform: i.platform }))
+        })
       }
     } catch (error) {
-      console.error('Error fetching influencers:', error)
+      console.error('❌ Error fetching influencers:', error)
     }
   }
 
@@ -139,15 +169,26 @@ export default function LinksPage() {
         campaign: selectedCampaign
       })
 
+      console.log('🔗 Fetching links...', {
+        filters: { page, searchTerm, selectedCampaign },
+        timestamp: new Date().toISOString()
+      })
+
       const response = await fetch(`/api/links?${params}`)
       const data = await response.json()
 
       if (data.success) {
         setLinks(data.links)
         setSummary(data.summary)
+        console.log('✅ Links loaded successfully:', {
+          totalLinks: data.links.length,
+          summary: data.summary,
+          linksWithCampaigns: data.links.filter(l => l.campaign).length,
+          linksWithInfluencers: data.links.filter(l => l.influencerId).length
+        })
       }
     } catch (error) {
-      console.error('Error fetching links:', error)
+      console.error('❌ Error fetching links:', error)
     } finally {
       setLoading(false)
     }
@@ -160,6 +201,13 @@ export default function LinksPage() {
       const url = editingLink ? `/api/links/${editingLink.id}` : '/api/links'
       const method = editingLink ? 'PUT' : 'POST'
 
+      console.log('💾 Saving link...', {
+        method,
+        linkId: editingLink?.id,
+        formData,
+        timestamp: new Date().toISOString()
+      })
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
@@ -169,14 +217,21 @@ export default function LinksPage() {
       const result = await response.json()
 
       if (result.success) {
+        console.log('✅ Link saved successfully:', {
+          linkId: result.data?.id,
+          shortCode: result.data?.shortCode,
+          campaign: result.data?.campaign,
+          influencerId: result.data?.influencerId
+        })
         await fetchLinks()
         resetForm()
         alert(editingLink ? 'Link updated successfully!' : 'Link created successfully!')
       } else {
+        console.error('❌ Error saving link:', result.error)
         alert('Error: ' + result.error)
       }
     } catch (error) {
-      console.error('Error saving link:', error)
+      console.error('❌ Error saving link:', error)
       alert('Error saving link')
     }
   }
@@ -833,7 +888,19 @@ export default function LinksPage() {
                     </label>
                     <select
                       value={formData.campaign}
-                      onChange={(e) => setFormData({ ...formData, campaign: e.target.value })}
+                      onChange={(e) => {
+                        const newCampaign = e.target.value
+                        setFormData({
+                          ...formData,
+                          campaign: newCampaign,
+                          // Clear influencer if campaign changes to avoid mismatched relationships
+                          influencerId: ''
+                        })
+                        console.log('📊 Campaign selected for link:', {
+                          campaign: newCampaign,
+                          availableInfluencers: getAvailableInfluencers().length
+                        })
+                      }}
                       className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors backdrop-blur-sm"
                     >
                       <option value="" className="bg-background">Select a campaign...</option>
@@ -861,16 +928,27 @@ export default function LinksPage() {
                   <div>
                     <label className="block text-sm font-medium text-white/80 mb-2">
                       Influencer (Optional)
+                      {formData.campaign && (
+                        <span className="text-xs text-white/60 ml-2">
+                          • For campaign: {getCampaignName(formData.campaign)}
+                        </span>
+                      )}
                     </label>
                     <select
                       value={formData.influencerId}
-                      onChange={(e) => setFormData({ ...formData, influencerId: e.target.value })}
+                      onChange={(e) => {
+                        setFormData({ ...formData, influencerId: e.target.value })
+                        console.log('👤 Influencer selected for link:', {
+                          influencerId: e.target.value,
+                          campaign: formData.campaign
+                        })
+                      }}
                       className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors backdrop-blur-sm"
                     >
                       <option value="" className="bg-background">No influencer</option>
-                      {influencers.map((influencer) => (
+                      {getAvailableInfluencers().map((influencer) => (
                         <option key={influencer.id} value={influencer.id} className="bg-background">
-                          {influencer.name} ({influencer.socialHandle})
+                          {influencer.name} ({influencer.socialHandle}) - {influencer.platform}
                         </option>
                       ))}
                     </select>

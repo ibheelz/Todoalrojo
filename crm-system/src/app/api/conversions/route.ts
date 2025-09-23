@@ -12,6 +12,19 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '50')
     const offset = (page - 1) * limit
+    const campaign = searchParams.get('campaign') || 'all'
+
+    console.log('🔄 Fetching conversions with parameters:', {
+      dateFilter,
+      eventType,
+      search,
+      fromDate,
+      toDate,
+      page,
+      limit,
+      campaign,
+      timestamp: new Date().toISOString()
+    })
 
     // Calculate date range for filtering
     let dateWhere = {}
@@ -65,6 +78,12 @@ export async function GET(request: NextRequest) {
       eventTypeWhere = { eventType: eventType }
     }
 
+    // Campaign filtering
+    let campaignWhere = {}
+    if (campaign && campaign !== 'all') {
+      campaignWhere = { campaign: campaign }
+    }
+
     // Search filtering
     let searchWhere = {}
     if (search) {
@@ -89,8 +108,14 @@ export async function GET(request: NextRequest) {
     const whereConditions = {
       ...dateWhere,
       ...eventTypeWhere,
+      ...campaignWhere,
       ...searchWhere
     }
+
+    console.log('🔍 Applying where conditions for conversions:', {
+      whereConditions,
+      totalConditions: Object.keys(whereConditions).length
+    })
 
     // Get events with pagination
     const events = await prisma.event.findMany({
@@ -101,13 +126,20 @@ export async function GET(request: NextRequest) {
             id: true,
             masterEmail: true,
             firstName: true,
-            lastName: true
+            lastName: true,
+            profileImage: true
           }
         }
       },
       orderBy: { createdAt: 'desc' },
       skip: offset,
       take: limit
+    })
+
+    console.log('📊 Conversions data loaded:', {
+      totalEvents: events.length,
+      recognizedCustomers: events.filter(e => e.customer).length,
+      anonymousEvents: events.filter(e => !e.customer).length
     })
 
     // Get total count for pagination
@@ -137,18 +169,57 @@ export async function GET(request: NextRequest) {
       orderBy: { _count: { eventType: 'desc' } }
     })
 
+    // Get campaigns for the current filter
+    const campaigns = await prisma.event.groupBy({
+      by: ['campaign'],
+      where: {
+        ...whereConditions,
+        campaign: { not: null }
+      },
+      _count: { campaign: true },
+      orderBy: { _count: { campaign: 'desc' } }
+    })
+
+    // Calculate conversion rate by comparing with clicks for same period
+    let conversionRate = 0
+    try {
+      const totalClicks = await prisma.click.count({
+        where: {
+          ...dateWhere,
+          ...(campaign !== 'all' ? { campaign } : {})
+        }
+      })
+      conversionRate = totalClicks > 0 ? Math.round((summaryStats._count / totalClicks) * 100 * 100) / 100 : 0
+    } catch (error) {
+      console.log('⚠️ Warning: Could not calculate conversion rate:', error.message)
+    }
+
     const summary = {
       totalConversions: summaryStats._count || 0,
       totalValue: Number(summaryStats._sum.value || 0),
       uniqueCustomers: uniqueCustomers.length,
-      conversionRate: 0, // Would need total leads/clicks to calculate
+      conversionRate,
       totalPages: Math.ceil(totalCount / limit),
       currentPage: page,
       eventTypes: eventTypes.map(et => ({
         type: et.eventType,
         count: et._count.eventType
+      })),
+      campaigns: campaigns.map(c => ({
+        name: c.campaign,
+        count: c._count.campaign
       }))
     }
+
+    console.log('✅ Conversions summary calculated:', {
+      totalConversions: summary.totalConversions,
+      totalValue: summary.totalValue,
+      uniqueCustomers: summary.uniqueCustomers,
+      conversionRate: summary.conversionRate + '%',
+      eventTypesFound: eventTypes.length,
+      campaignsFound: campaigns.length,
+      timestamp: new Date().toISOString()
+    })
 
     return NextResponse.json({
       success: true,
@@ -157,11 +228,12 @@ export async function GET(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Get conversions error:', error)
-    console.error('Error details:', {
+    console.error('❌ Get conversions error:', error)
+    console.error('📊 Error details:', {
       name: error?.constructor?.name,
       message: error?.message,
-      stack: error?.stack
+      stack: error?.stack?.split('\n').slice(0, 5).join('\n'), // Limit stack trace
+      timestamp: new Date().toISOString()
     })
     return NextResponse.json({
       success: false,

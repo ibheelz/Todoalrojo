@@ -122,7 +122,7 @@ export default async function ShortLinkRedirect({ params, searchParams }: Props)
 
         const isUnique = !recentClick
 
-        // Create click record
+        // Create click record in LinkClick table for link-specific analytics
         await prisma.linkClick.create({
           data: {
             linkId: shortLink.id,
@@ -142,6 +142,33 @@ export default async function ShortLinkRedirect({ params, searchParams }: Props)
             isDesktop: deviceInfo.isDesktop,
             isBot: deviceInfo.isBot,
             isUnique
+          }
+        })
+
+        // Also create click record in main Click table for general analytics
+        await prisma.click.create({
+          data: {
+            clickId,
+            ip,
+            userAgent,
+            referrer: referrer || null,
+            landingPage: shortLink.originalUrl,
+            campaign: shortLink.campaign || null,
+            source: shortLink.source || 'short-link',
+            medium: shortLink.medium || 'link-shortener',
+            content: shortLink.content || null,
+            term: shortLink.term || null,
+            country: geoData.country || null,
+            region: geoData.region || null,
+            city: geoData.city || null,
+            device: deviceInfo.device,
+            browser: deviceInfo.browser,
+            os: deviceInfo.os,
+            isMobile: deviceInfo.isMobile,
+            isTablet: deviceInfo.isTablet,
+            isDesktop: deviceInfo.isDesktop,
+            isBot: deviceInfo.isBot,
+            clickTime: new Date()
           }
         })
 
@@ -176,6 +203,11 @@ export default async function ShortLinkRedirect({ params, searchParams }: Props)
     redirect(shortLink.originalUrl)
 
   } catch (error) {
+    // Check if this is a Next.js redirect error (which should be allowed to bubble up)
+    if (error?.digest?.startsWith('NEXT_REDIRECT')) {
+      throw error
+    }
+
     console.error('Short link redirect error:', error)
     redirect('/error')
   }

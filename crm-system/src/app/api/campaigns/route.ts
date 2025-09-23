@@ -9,6 +9,7 @@ const createCampaignSchema = z.object({
   clientId: z.string().optional(),
   brandId: z.string().optional(),
   logoUrl: z.string().optional(),
+  influencerId: z.string().optional(),
   conversionTypes: z.array(z.object({
     id: z.string(),
     name: z.string(),
@@ -82,6 +83,7 @@ export async function GET(request: NextRequest) {
           clientId: true,
           brandId: true,
           logoUrl: true,
+          influencerId: true,
           conversionTypes: true,
           isActive: true,
           totalClicks: true,
@@ -235,6 +237,7 @@ export async function GET(request: NextRequest) {
           clientId: true,
           brandId: true,
           logoUrl: true,
+          influencerId: true,
           conversionTypes: true,
           isActive: true,
           registrations: true,
@@ -278,6 +281,14 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
+    // Add comprehensive console debugging
+    console.log('📊 Creating new campaign:', {
+      name: validatedData.name,
+      slug: validatedData.slug,
+      influencerId: validatedData.influencerId,
+      timestamp: new Date().toISOString()
+    })
+
     // Create the campaign
     const campaign = await prisma.campaign.create({
       data: {
@@ -287,8 +298,16 @@ export async function POST(request: NextRequest) {
         clientId: validatedData.clientId,
         brandId: validatedData.brandId,
         logoUrl: validatedData.logoUrl,
+        influencerId: validatedData.influencerId || null,
         conversionTypes: validatedData.conversionTypes || []
       }
+    })
+
+    console.log('✅ Campaign created successfully:', {
+      id: campaign.id,
+      name: campaign.name,
+      influencerId: campaign.influencerId,
+      timestamp: new Date().toISOString()
     })
 
     return NextResponse.json({

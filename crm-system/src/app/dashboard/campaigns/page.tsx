@@ -30,6 +30,7 @@ interface Campaign {
   clientId: string | null
   brandId: string | null
   logoUrl?: string | null
+  influencerId?: string | null
   status: CampaignStatus
   registrations: number | null
   ftd: number | null
@@ -38,6 +39,15 @@ interface Campaign {
   createdAt: string
   updatedAt: string
   stats: CampaignStats
+}
+
+interface Influencer {
+  id: string
+  name: string
+  email: string | null
+  socialHandle: string | null
+  platform: string
+  status: string
 }
 
 const SortIcon = ({ field, sortField, sortDirection }: { field: string, sortField: string, sortDirection: 'asc' | 'desc' }) => {
@@ -62,6 +72,7 @@ const SortIcon = ({ field, sortField, sortDirection }: { field: string, sortFiel
 
 export default function CampaignsPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
+  const [influencers, setInfluencers] = useState<Influencer[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
@@ -96,7 +107,29 @@ export default function CampaignsPage() {
 
   useEffect(() => {
     fetchCampaigns()
+    fetchInfluencers()
   }, [])
+
+  // Helper function to get influencer name
+  const getInfluencerName = (influencerId: string | null | undefined): string => {
+    if (!influencerId) return 'No influencer'
+    const influencer = influencers.find(inf => inf.id === influencerId)
+    return influencer ? `${influencer.name} (${influencer.socialHandle})` : 'Unknown Influencer'
+  }
+
+  const fetchInfluencers = async () => {
+    try {
+      console.log('📊 [CAMPAIGNS] Fetching influencers...')
+      const response = await fetch('/api/influencers?activeOnly=true')
+      const data = await response.json()
+      if (data.success) {
+        setInfluencers(data.influencers)
+        console.log('✅ [CAMPAIGNS] Loaded influencers:', data.influencers.length)
+      }
+    } catch (error) {
+      console.error('❌ [CAMPAIGNS] Error fetching influencers:', error)
+    }
+  }
 
   // Refetch campaigns when date filter changes
   useEffect(() => {
@@ -772,6 +805,15 @@ export default function CampaignsPage() {
                         <SortIcon field="name" sortField={sortField} sortDirection={sortDirection} />
                       </button>
                     </th>
+                    <th className="px-3 sm:px-4 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-semibold text-white/80 uppercase tracking-wide min-w-[150px]">
+                      <div className="flex items-center space-x-1 sm:space-x-2">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary sm:w-4 sm:h-4">
+                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                          <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                        <span>INFLUENCER</span>
+                      </div>
+                    </th>
                     <th className="px-2 sm:px-4 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-semibold text-white/80 uppercase tracking-wide w-16 sm:w-24">
                       <button
                         onClick={() => handleSort('clicks')}
@@ -920,6 +962,9 @@ export default function CampaignsPage() {
                             <div className="text-[10px] sm:text-xs text-white/60 truncate">{campaign.slug}</div>
                           </div>
                         </div>
+                      </td>
+                      <td className="px-3 sm:px-4 py-3 sm:py-4">
+                        <div className="text-white/80 text-xs sm:text-sm truncate">{getInfluencerName(campaign.influencerId)}</div>
                       </td>
                       <td className="px-2 sm:px-4 py-3 sm:py-4">
                         <div className="text-primary font-semibold text-xs sm:text-sm">{campaign.stats.totalClicks.toLocaleString()}</div>
@@ -1103,6 +1148,9 @@ export default function CampaignsPage() {
                       <p className="text-white/60 text-xs font-mono truncate">
                         <span className="sm:hidden">{campaign.slug}</span>
                         <span className="hidden sm:inline">{campaign.slug} | {formatDate(campaign.createdAt)}</span>
+                      </p>
+                      <p className="text-white/50 text-[10px] sm:text-xs truncate mt-1">
+                        <span className="text-primary">Influencer:</span> {getInfluencerName(campaign.influencerId)}
                       </p>
                     </div>
                   </div>

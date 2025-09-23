@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
 
     // Create click record
     const clickData: any = {
-      userId: user?.id,
+      customerId: user?.id,
       clickId: validatedData.clickId,
       sessionId: validatedData.sessionId,
       deviceId: validatedData.deviceId,

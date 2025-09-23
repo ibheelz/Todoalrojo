@@ -73,11 +73,22 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1', 10)
     const limit = parseInt(searchParams.get('limit') || '10', 10)
     const query = searchParams.get('q')
+    const includeRelated = searchParams.get('includeRelated') === 'true'
+
+    console.log('👥 Fetching customers with parameters:', {
+      page,
+      limit,
+      query,
+      includeRelated,
+      timestamp: new Date().toISOString()
+    })
 
     const { prisma } = await import('@/lib/prisma')
 
     if (query) {
-      // Search customers with simple schema
+      console.log('🔍 Searching customers with query:', { query })
+
+      // Search customers with related data if requested
       const customers = await prisma.customer.findMany({
         where: {
           OR: [
@@ -88,8 +99,57 @@ export async function GET(request: NextRequest) {
             { company: { contains: query, mode: 'insensitive' } }
           ]
         },
+        include: includeRelated ? {
+          clicks: {
+            take: 5,
+            orderBy: { createdAt: 'desc' },
+            select: {
+              id: true,
+              campaign: true,
+              source: true,
+              medium: true,
+              ip: true,
+              createdAt: true
+            }
+          },
+          leads: {
+            take: 5,
+            orderBy: { createdAt: 'desc' },
+            select: {
+              id: true,
+              campaign: true,
+              source: true,
+              medium: true,
+              value: true,
+              createdAt: true
+            }
+          },
+          events: {
+            take: 5,
+            orderBy: { createdAt: 'desc' },
+            select: {
+              id: true,
+              eventType: true,
+              campaign: true,
+              value: true,
+              createdAt: true
+            }
+          },
+          _count: {
+            select: {
+              clicks: true,
+              leads: true,
+              events: true
+            }
+          }
+        } : undefined,
         orderBy: { createdAt: 'desc' },
         take: 50
+      })
+
+      console.log('✅ Search results:', {
+        totalFound: customers.length,
+        withRelatedData: includeRelated
       })
 
       return NextResponse.json({
@@ -101,22 +161,110 @@ export async function GET(request: NextRequest) {
         totalPages: 1
       })
     } else {
-      // List customers with pagination using CustomerService
-      const { CustomerService } = await import('@/lib/customer-service')
-      const result = await CustomerService.listCustomers(page, limit)
+      console.log('📊 Fetching customers with pagination...')
 
-      return NextResponse.json({
-        success: true,
-        customers: result.customers,
-        total: result.total,
-        page: result.page,
-        limit: result.limit,
-        totalPages: result.totalPages
-      })
+      if (includeRelated) {
+        // Get customers with related data directly
+        const customers = await prisma.customer.findMany({
+          include: {
+            clicks: {
+              take: 5,
+              orderBy: { createdAt: 'desc' },
+              select: {
+                id: true,
+                campaign: true,
+                source: true,
+                medium: true,
+                ip: true,
+                createdAt: true
+              }
+            },
+            leads: {
+              take: 5,
+              orderBy: { createdAt: 'desc' },
+              select: {
+                id: true,
+                campaign: true,
+                source: true,
+                medium: true,
+                value: true,
+                createdAt: true
+              }
+            },
+            events: {
+              take: 5,
+              orderBy: { createdAt: 'desc' },
+              select: {
+                id: true,
+                eventType: true,
+                campaign: true,
+                value: true,
+                createdAt: true
+              }
+            },
+            _count: {
+              select: {
+                clicks: true,
+                leads: true,
+                events: true
+              }
+            }
+          },
+          orderBy: { createdAt: 'desc' },
+          skip: (page - 1) * limit,
+          take: limit
+        })
+
+        const total = await prisma.customer.count()
+        const totalPages = Math.ceil(total / limit)
+
+        console.log('✅ Customers with related data loaded:', {
+          totalCustomers: customers.length,
+          totalClicks: customers.reduce((sum, c) => sum + (c._count?.clicks || 0), 0),
+          totalLeads: customers.reduce((sum, c) => sum + (c._count?.leads || 0), 0),
+          totalEvents: customers.reduce((sum, c) => sum + (c._count?.events || 0), 0),
+          page,
+          totalPages
+        })
+
+        return NextResponse.json({
+          success: true,
+          customers,
+          total,
+          page,
+          limit,
+          totalPages
+        })
+      } else {
+        // List customers with pagination using CustomerService
+        const { CustomerService } = await import('@/lib/customer-service')
+        const result = await CustomerService.listCustomers(page, limit)
+
+        console.log('✅ Basic customers loaded:', {
+          totalCustomers: result.customers.length,
+          page: result.page,
+          totalPages: result.totalPages
+        })
+
+        return NextResponse.json({
+          success: true,
+          customers: result.customers,
+          total: result.total,
+          page: result.page,
+          limit: result.limit,
+          totalPages: result.totalPages
+        })
+      }
     }
 
   } catch (error) {
-    console.error('Get customers error:', error)
+    console.error('❌ Get customers error:', error)
+    console.error('📊 Error details:', {
+      name: error?.constructor?.name,
+      message: error?.message,
+      stack: error?.stack?.split('\n').slice(0, 5).join('\n'), // Limit stack trace
+      timestamp: new Date().toISOString()
+    })
     return NextResponse.json({
       success: false,
       error: 'Failed to fetch customers'

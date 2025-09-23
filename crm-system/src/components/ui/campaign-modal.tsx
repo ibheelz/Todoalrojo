@@ -15,6 +15,15 @@ interface CampaignConversionConfig {
   qualifiedDeposits: boolean
 }
 
+interface Influencer {
+  id: string
+  name: string
+  email: string | null
+  socialHandle: string | null
+  platform: string
+  status: string
+}
+
 interface CampaignModalProps {
   isOpen: boolean
   onClose: () => void
@@ -28,8 +37,11 @@ export default function CampaignModal({ isOpen, onClose, onSubmit, onDelete, edi
     name: editMode?.name || '',
     slug: editMode?.slug || '',
     clientId: editMode?.clientId || '',
-    brandId: editMode?.brandId || ''
+    brandId: editMode?.brandId || '',
+    influencerId: editMode?.influencerId || ''
   })
+
+  const [influencers, setInfluencers] = useState<Influencer[]>([])
 
   const [conversionTypes, setConversionTypes] = useState<ConversionType[]>([])
 
@@ -52,21 +64,37 @@ export default function CampaignModal({ isOpen, onClose, onSubmit, onDelete, edi
   const [existingCampaigns, setExistingCampaigns] = useState<string[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Fetch existing campaigns for validation
+  // Fetch existing campaigns for validation and influencers
   React.useEffect(() => {
-    const fetchCampaigns = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('/api/campaigns')
-        const result = await response.json()
-        if (result.success) {
-          const campaignNames = result.campaigns.map((c: any) => c.name.toLowerCase())
+        console.log('📊 [CAMPAIGN MODAL] Fetching campaigns and influencers...')
+
+        const [campaignsResponse, influencersResponse] = await Promise.all([
+          fetch('/api/campaigns'),
+          fetch('/api/influencers?activeOnly=true')
+        ])
+
+        const campaignsResult = await campaignsResponse.json()
+        const influencersResult = await influencersResponse.json()
+
+        if (campaignsResult.success) {
+          const campaignNames = campaignsResult.campaigns.map((c: any) => c.name.toLowerCase())
           setExistingCampaigns(campaignNames)
+          console.log('✅ [CAMPAIGN MODAL] Loaded campaigns:', campaignNames.length)
+        }
+
+        if (influencersResult.success) {
+          setInfluencers(influencersResult.influencers)
+          console.log('✅ [CAMPAIGN MODAL] Loaded influencers:', influencersResult.influencers.length)
         }
       } catch (error) {
-        console.error('Failed to fetch campaigns:', error)
+        console.error('❌ [CAMPAIGN MODAL] Failed to fetch data:', error)
       }
     }
-    fetchCampaigns()
+    if (isOpen) {
+      fetchData()
+    }
   }, [isOpen])
 
   // Update form data when editMode changes
@@ -76,7 +104,8 @@ export default function CampaignModal({ isOpen, onClose, onSubmit, onDelete, edi
         name: editMode.name || '',
         slug: editMode.slug || '',
         clientId: editMode.clientId || '',
-        brandId: editMode.brandId || ''
+        brandId: editMode.brandId || '',
+        influencerId: editMode.influencerId || ''
       })
       // If there's an existing logo URL in editMode, set it as preview
       if (editMode.logoUrl) {
@@ -94,7 +123,8 @@ export default function CampaignModal({ isOpen, onClose, onSubmit, onDelete, edi
         name: '',
         slug: '',
         clientId: '',
-        brandId: ''
+        brandId: '',
+        influencerId: ''
       })
       // Reset logo states for new campaign
       setBrandLogo(null)
@@ -254,9 +284,17 @@ export default function CampaignModal({ isOpen, onClose, onSubmit, onDelete, edi
       })
     }
 
+    console.log('📊 [CAMPAIGN MODAL] Submitting campaign with influencer:', {
+      name: campaignData.name,
+      influencerId: campaignData.influencerId,
+      influencerName: influencers.find(inf => inf.id === campaignData.influencerId)?.name || 'None',
+      editMode: !!editMode
+    })
+
     // 🔍 DEBUGGING: Log what we're sending
     console.log('🔍 [MODAL DEBUG] Submitting campaign data:', {
       name: campaignData.name,
+      influencerId: campaignData.influencerId,
       conversionConfig: campaignData.conversionConfig,
       editMode: editMode?.name
     })
@@ -412,6 +450,35 @@ export default function CampaignModal({ isOpen, onClose, onSubmit, onDelete, edi
                     placeholder="campaign-slug"
                     required
                   />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-white/80 mb-2 flex items-center space-x-2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-yellow-400">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                      <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    <span>Assigned Influencer (Optional)</span>
+                  </label>
+                  <select
+                    value={formData.influencerId}
+                    onChange={(e) => handleInputChange('influencerId', e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl text-white transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.08)',
+                      border: '1px solid rgba(255, 255, 255, 0.15)'
+                    }}
+                  >
+                    <option value="" className="bg-background">No influencer assigned</option>
+                    {influencers.map((influencer) => (
+                      <option key={influencer.id} value={influencer.id} className="bg-background">
+                        {influencer.name} ({influencer.socialHandle}) - {influencer.platform}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-white/40 mt-1">
+                    Assign this campaign to a specific influencer for attribution tracking
+                  </p>
                 </div>
               </div>
 

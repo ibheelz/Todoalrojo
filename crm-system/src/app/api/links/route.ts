@@ -36,6 +36,15 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const validatedData = createLinkSchema.parse(body)
 
+    // Add comprehensive console debugging
+    console.log('🔗 Creating new short link:', {
+      originalUrl: validatedData.originalUrl,
+      campaign: validatedData.campaign,
+      influencerId: validatedData.influencerId,
+      customCode: validatedData.customCode,
+      timestamp: new Date().toISOString()
+    })
+
     let shortCode = validatedData.customCode
 
     // Generate or validate short code
@@ -60,6 +69,29 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Validate campaign and influencer relationship if both are provided
+    if (validatedData.campaign && validatedData.influencerId) {
+      const campaign = await prisma.campaign.findFirst({
+        where: {
+          slug: validatedData.campaign,
+          influencerId: validatedData.influencerId
+        }
+      })
+
+      if (!campaign) {
+        console.log('⚠️ Warning: Link created with campaign and influencer that are not connected:', {
+          campaign: validatedData.campaign,
+          influencerId: validatedData.influencerId
+        })
+      } else {
+        console.log('✅ Campaign-Influencer relationship validated:', {
+          campaignId: campaign.id,
+          campaignSlug: campaign.slug,
+          influencerId: campaign.influencerId
+        })
+      }
+    }
+
     // Create the short link
     const shortLink = await prisma.shortLink.create({
       data: {
@@ -80,6 +112,14 @@ export async function POST(request: NextRequest) {
         trackClicks: validatedData.trackClicks,
         influencerId: validatedData.influencerId || null,
       }
+    })
+
+    console.log('✅ Short link created successfully:', {
+      id: shortLink.id,
+      shortCode: shortLink.shortCode,
+      campaign: shortLink.campaign,
+      influencerId: shortLink.influencerId,
+      timestamp: new Date().toISOString()
     })
 
     const shortUrl = generateShortUrl(shortLink.shortCode)
@@ -120,6 +160,15 @@ export async function GET(request: NextRequest) {
     const campaign = searchParams.get('campaign') || 'all'
     const isActive = searchParams.get('isActive')
     const offset = (page - 1) * limit
+
+    console.log('🔍 Fetching links with filters:', {
+      page,
+      limit,
+      search,
+      campaign,
+      isActive,
+      timestamp: new Date().toISOString()
+    })
 
     // Build where conditions
     let whereConditions: any = {}

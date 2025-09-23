@@ -14,7 +14,7 @@ const mockInfluencers = [
     category: 'Lifestyle',
     location: 'Los Angeles, CA',
     status: 'active',
-    assignedCampaigns: ['camp1', 'camp2'],
+    assignedCampaigns: ['cmfwtr7cg0000lktxhpsfkx1h'], // Test Campaign with Influencer
     totalLeads: 45,
     totalClicks: 1250,
     totalRegs: 32,

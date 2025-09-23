@@ -17,11 +17,17 @@ const updateLinkSchema = z.object({
   isPublic: z.boolean().optional(),
   allowBots: z.boolean().optional(),
   trackClicks: z.boolean().optional(),
+  influencerId: z.string().optional(),
 })
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const linkId = params.id
+
+    console.log('🔍 Fetching link details:', {
+      linkId,
+      timestamp: new Date().toISOString()
+    })
 
     const link = await prisma.shortLink.findUnique({
       where: { id: linkId },
@@ -123,6 +129,29 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const body = await request.json()
     const validatedData = updateLinkSchema.parse(body)
 
+    console.log('✏️ Updating link:', {
+      linkId,
+      updateData: validatedData,
+      timestamp: new Date().toISOString()
+    })
+
+    // Validate campaign and influencer relationship if both are provided
+    if (validatedData.campaign && validatedData.influencerId) {
+      const campaign = await prisma.campaign.findFirst({
+        where: {
+          slug: validatedData.campaign,
+          influencerId: validatedData.influencerId
+        }
+      })
+
+      if (!campaign) {
+        console.log('⚠️ Warning: Link updated with campaign and influencer that are not connected:', {
+          campaign: validatedData.campaign,
+          influencerId: validatedData.influencerId
+        })
+      }
+    }
+
     const updatedLink = await prisma.shortLink.update({
       where: { id: linkId },
       data: validatedData,
@@ -133,6 +162,14 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
           }
         }
       }
+    })
+
+    console.log('✅ Link updated successfully:', {
+      id: updatedLink.id,
+      shortCode: updatedLink.shortCode,
+      campaign: updatedLink.campaign,
+      influencerId: updatedLink.influencerId,
+      timestamp: new Date().toISOString()
     })
 
     const enhancedLink = {
@@ -168,6 +205,11 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const linkId = params.id
+
+    console.log('🗑️ Deleting link:', {
+      linkId,
+      timestamp: new Date().toISOString()
+    })
 
     await prisma.shortLink.delete({
       where: { id: linkId }
