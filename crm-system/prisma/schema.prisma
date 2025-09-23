@@ -230,9 +230,13 @@ model Campaign {
   totalRevenue   Decimal  @default(0) @db.Decimal(10, 2)
   fraudRate      Decimal  @default(0) @db.Decimal(5, 4)
   duplicateRate  Decimal  @default(0) @db.Decimal(5, 4)
-  conversionRate Decimal  @default(0) @db.Decimal(5, 4)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  conversionRate        Decimal  @default(0) @db.Decimal(5, 4)
+  registrations         Int?
+  ftd                   Int?
+  approvedRegistrations Int?
+  qualifiedDeposits     Int?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 
   @@index([slug])
   @@index([clientId])

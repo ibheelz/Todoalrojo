@@ -8,6 +8,13 @@ interface ConversionType {
   description: string
 }
 
+interface CampaignConversionConfig {
+  registrations: boolean
+  ftd: boolean
+  approvedRegistrations: boolean
+  qualifiedDeposits: boolean
+}
+
 interface CampaignModalProps {
   isOpen: boolean
   onClose: () => void
@@ -25,6 +32,14 @@ export default function CampaignModal({ isOpen, onClose, onSubmit, onDelete, edi
   })
 
   const [conversionTypes, setConversionTypes] = useState<ConversionType[]>([])
+
+  // For existing campaigns, track which conversion types are enabled
+  const [conversionConfig, setConversionConfig] = useState<CampaignConversionConfig>({
+    registrations: false,
+    ftd: false,
+    approvedRegistrations: false,
+    qualifiedDeposits: false
+  })
 
   const [newConversionType, setNewConversionType] = useState({
     name: '',
@@ -67,6 +82,13 @@ export default function CampaignModal({ isOpen, onClose, onSubmit, onDelete, edi
       if (editMode.logoUrl) {
         setLogoPreview(editMode.logoUrl)
       }
+      // Initialize conversion type configuration from existing campaign (0 means disabled/deleted)
+      setConversionConfig({
+        registrations: editMode.registrations > 0,
+        ftd: editMode.ftd > 0,
+        approvedRegistrations: editMode.approvedRegistrations > 0,
+        qualifiedDeposits: editMode.qualifiedDeposits > 0
+      })
     } else {
       setFormData({
         name: '',
@@ -78,6 +100,13 @@ export default function CampaignModal({ isOpen, onClose, onSubmit, onDelete, edi
       setBrandLogo(null)
       setLogoPreview(null)
       setNameValidationError(null)
+      // Reset conversion config for new campaigns
+      setConversionConfig({
+        registrations: false,
+        ftd: false,
+        approvedRegistrations: false,
+        qualifiedDeposits: false
+      })
     }
   }, [editMode])
 
@@ -187,6 +216,14 @@ export default function CampaignModal({ isOpen, onClose, onSubmit, onDelete, edi
     setConversionTypes(prev => prev.filter(type => type.id !== id))
   }
 
+  // Toggle conversion type configuration for existing campaigns
+  const toggleConversionType = (type: keyof CampaignConversionConfig) => {
+    setConversionConfig(prev => ({
+      ...prev,
+      [type]: !prev[type]
+    }))
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -204,8 +241,25 @@ export default function CampaignModal({ isOpen, onClose, onSubmit, onDelete, edi
       ...formData,
       conversionTypes,
       brandLogo,
-      logoUrl: logoPreview // Include the current logo URL
+      logoUrl: logoPreview, // Include the current logo URL
+      // For existing campaigns, include conversion type configuration
+      ...(editMode && {
+        conversionConfig: {
+          // Convert boolean config to database format (null for disabled/deleted, keep existing value or set to 1 for enabled)
+          registrations: conversionConfig.registrations ? (editMode.registrations || 1) : null,
+          ftd: conversionConfig.ftd ? (editMode.ftd || 1) : null,
+          approvedRegistrations: conversionConfig.approvedRegistrations ? (editMode.approvedRegistrations || 1) : null,
+          qualifiedDeposits: conversionConfig.qualifiedDeposits ? (editMode.qualifiedDeposits || 1) : null
+        }
+      })
     }
+
+    // 🔍 DEBUGGING: Log what we're sending
+    console.log('🔍 [MODAL DEBUG] Submitting campaign data:', {
+      name: campaignData.name,
+      conversionConfig: campaignData.conversionConfig,
+      editMode: editMode?.name
+    })
 
     onSubmit(campaignData)
     onClose()
@@ -431,91 +485,180 @@ export default function CampaignModal({ isOpen, onClose, onSubmit, onDelete, edi
                 <span>Conversion Types</span>
               </h3>
 
-              {/* Existing Conversion Types */}
-              <div className="space-y-3">
-                {conversionTypes.map((type) => (
-                  <div
-                    key={type.id}
-                    className="flex items-center justify-between p-4 rounded-xl"
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.05)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)'
-                    }}
-                  >
-                    <div className="flex-1">
-                      <div className="font-medium text-white">{type.name}</div>
-                      <div className="text-sm text-white/60">{type.description}</div>
+              {editMode ? (
+                /* Existing Campaign - Show conversion type configuration */
+                <div className="space-y-3">
+                  <p className="text-sm text-white/60 mb-4">
+                    Manage conversion types for this campaign. Deleted types will not appear in reports.
+                  </p>
+
+                  {/* Available conversion types to add */}
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-medium text-white/80">Available Conversion Types</h4>
+                    {[
+                      { key: 'registrations', label: 'Registrations', description: 'User registrations and signups' },
+                      { key: 'ftd', label: 'First Time Deposits (FTD)', description: 'First deposits and initial payments' },
+                      { key: 'approvedRegistrations', label: 'Approved Registrations (AREG)', description: 'Approved and verified registrations' },
+                      { key: 'qualifiedDeposits', label: 'Qualified Deposits (QFTD)', description: 'Qualified first-time deposits' }
+                    ].filter(({ key }) => !conversionConfig[key as keyof CampaignConversionConfig]).map(({ key, label, description }) => (
+                      <div
+                        key={key}
+                        className="flex items-center justify-between p-4 rounded-xl"
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.05)',
+                          border: '1px solid rgba(255, 255, 255, 0.1)'
+                        }}
+                      >
+                        <div className="flex-1">
+                          <div className="font-medium text-white">{label}</div>
+                          <div className="text-sm text-white/60">{description}</div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => toggleConversionType(key as keyof CampaignConversionConfig)}
+                          className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-300 bg-green-500 hover:bg-green-600 text-white"
+                        >
+                          Add
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Active conversion types */}
+                  {[
+                    { key: 'registrations', label: 'Registrations', description: 'User registrations and signups' },
+                    { key: 'ftd', label: 'First Time Deposits (FTD)', description: 'First deposits and initial payments' },
+                    { key: 'approvedRegistrations', label: 'Approved Registrations (AREG)', description: 'Approved and verified registrations' },
+                    { key: 'qualifiedDeposits', label: 'Qualified Deposits (QFTD)', description: 'Qualified first-time deposits' }
+                  ].filter(({ key }) => conversionConfig[key as keyof CampaignConversionConfig]).length > 0 && (
+                    <div className="space-y-3 mt-6">
+                      <h4 className="text-sm font-medium text-white/80">Active Conversion Types</h4>
+                      {[
+                        { key: 'registrations', label: 'Registrations', description: 'User registrations and signups' },
+                        { key: 'ftd', label: 'First Time Deposits (FTD)', description: 'First deposits and initial payments' },
+                        { key: 'approvedRegistrations', label: 'Approved Registrations (AREG)', description: 'Approved and verified registrations' },
+                        { key: 'qualifiedDeposits', label: 'Qualified Deposits (QFTD)', description: 'Qualified first-time deposits' }
+                      ].filter(({ key }) => conversionConfig[key as keyof CampaignConversionConfig]).map(({ key, label, description }) => (
+                        <div
+                          key={key}
+                          className="flex items-center justify-between p-4 rounded-xl"
+                          style={{
+                            background: 'rgba(34, 197, 94, 0.1)',
+                            border: '1px solid rgba(34, 197, 94, 0.3)'
+                          }}
+                        >
+                          <div className="flex-1">
+                            <div className="font-medium text-white flex items-center space-x-2">
+                              <span>{label}</span>
+                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            </div>
+                            <div className="text-sm text-white/60">{description}</div>
+                            <div className="text-xs text-white/40 mt-1">
+                              Current value: {editMode[key] || 0}
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => toggleConversionType(key as keyof CampaignConversionConfig)}
+                            className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-300 bg-red-500 hover:bg-red-600 text-white"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      ))}
                     </div>
+                  )}
+                </div>
+              ) : (
+                /* New Campaign - Show conversion type builder */
+                <>
+                  {/* Existing Conversion Types */}
+                  <div className="space-y-3">
+                    {conversionTypes.map((type) => (
+                      <div
+                        key={type.id}
+                        className="flex items-center justify-between p-4 rounded-xl"
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.05)',
+                          border: '1px solid rgba(255, 255, 255, 0.1)'
+                        }}
+                      >
+                        <div className="flex-1">
+                          <div className="font-medium text-white">{type.name}</div>
+                          <div className="text-sm text-white/60">{type.description}</div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeConversionType(type.id)}
+                          className="w-8 h-8 bg-red-500 hover:bg-red-600 rounded-lg flex items-center justify-center text-white transition-all duration-300"
+                          title="Delete conversion type"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <polyline points="3,6 5,6 21,6"/>
+                            <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"/>
+                            <line x1="10" y1="11" x2="10" y2="17"/>
+                            <line x1="14" y1="11" x2="14" y2="17"/>
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Add New Conversion Type */}
+                  <div className="space-y-3 p-4 rounded-xl" style={{
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)'
+                  }}>
+                    <h4 className="text-sm font-medium text-white/80 flex items-center space-x-2">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-yellow-400">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="16"/>
+                        <line x1="8" y1="12" x2="16" y2="12"/>
+                      </svg>
+                      <span>Add New Conversion Type</span>
+                    </h4>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <input
+                        type="text"
+                        value={newConversionType.name}
+                        onChange={(e) => setNewConversionType(prev => ({ ...prev, name: e.target.value }))}
+                        className="px-3 py-2 rounded-lg text-white placeholder-white/50 text-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.08)',
+                          border: '1px solid rgba(255, 255, 255, 0.15)'
+                        }}
+                        placeholder="Type name *"
+                      />
+
+                      <input
+                        type="text"
+                        value={newConversionType.description}
+                        onChange={(e) => setNewConversionType(prev => ({ ...prev, description: e.target.value }))}
+                        className="px-3 py-2 rounded-lg text-white placeholder-white/50 text-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.08)',
+                          border: '1px solid rgba(255, 255, 255, 0.15)'
+                        }}
+                        placeholder="Description (optional)"
+                      />
+                    </div>
+
                     <button
                       type="button"
-                      onClick={() => removeConversionType(type.id)}
-                      className="w-8 h-8 bg-red-500 hover:bg-red-600 rounded-lg flex items-center justify-center text-white transition-all duration-300"
-                      title="Delete conversion type"
+                      onClick={addConversionType}
+                      disabled={!newConversionType.name.trim()}
+                      className="w-full px-4 py-2 rounded-lg bg-primary text-black font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center gap-2"
                     >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <polyline points="3,6 5,6 21,6"/>
-                        <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"/>
-                        <line x1="10" y1="11" x2="10" y2="17"/>
-                        <line x1="14" y1="11" x2="14" y2="17"/>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="12" y1="5" x2="12" y2="19"/>
+                        <line x1="5" y1="12" x2="19" y2="12"/>
                       </svg>
+                      Add Conversion Type
                     </button>
                   </div>
-                ))}
-              </div>
-
-              {/* Add New Conversion Type */}
-              <div className="space-y-3 p-4 rounded-xl" style={{
-                background: 'rgba(255, 255, 255, 0.03)',
-                border: '1px solid rgba(255, 255, 255, 0.08)'
-              }}>
-                <h4 className="text-sm font-medium text-white/80 flex items-center space-x-2">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-yellow-400">
-                    <circle cx="12" cy="12" r="10"/>
-                    <line x1="12" y1="8" x2="12" y2="16"/>
-                    <line x1="8" y1="12" x2="16" y2="12"/>
-                  </svg>
-                  <span>Add New Conversion Type</span>
-                </h4>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <input
-                    type="text"
-                    value={newConversionType.name}
-                    onChange={(e) => setNewConversionType(prev => ({ ...prev, name: e.target.value }))}
-                    className="px-3 py-2 rounded-lg text-white placeholder-white/50 text-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary/50"
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.08)',
-                      border: '1px solid rgba(255, 255, 255, 0.15)'
-                    }}
-                    placeholder="Type name *"
-                  />
-
-                  <input
-                    type="text"
-                    value={newConversionType.description}
-                    onChange={(e) => setNewConversionType(prev => ({ ...prev, description: e.target.value }))}
-                    className="px-3 py-2 rounded-lg text-white placeholder-white/50 text-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary/50"
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.08)',
-                      border: '1px solid rgba(255, 255, 255, 0.15)'
-                    }}
-                    placeholder="Description (optional)"
-                  />
-                </div>
-
-                <button
-                  type="button"
-                  onClick={addConversionType}
-                  disabled={!newConversionType.name.trim()}
-                  className="w-full px-4 py-2 rounded-lg bg-primary text-black font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center gap-2"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <line x1="12" y1="5" x2="12" y2="19"/>
-                    <line x1="5" y1="12" x2="19" y2="12"/>
-                  </svg>
-                  Add Conversion Type
-                </button>
-              </div>
+                </>
+              )}
             </div>
           </form>
         </div>

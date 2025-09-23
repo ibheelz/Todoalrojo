@@ -130,6 +130,30 @@ export async function POST(request: NextRequest) {
       })
     }
 
+    // Find existing campaign (case-insensitive) and update stats
+    if (validatedData.campaign) {
+      const existingCampaign = await prisma.campaign.findFirst({
+        where: {
+          OR: [
+            { slug: { equals: validatedData.campaign, mode: 'insensitive' } },
+            { name: { equals: validatedData.campaign, mode: 'insensitive' } }
+          ]
+        }
+      })
+
+      if (existingCampaign) {
+        await prisma.campaign.update({
+          where: { id: existingCampaign.id },
+          data: {
+            totalClicks: { increment: 1 }
+          }
+        })
+        console.log(`📈 [CLICK API] Updated campaign stats for: ${existingCampaign.name} (matched: ${validatedData.campaign})`)
+      } else {
+        console.log(`⚠️ [CLICK API] Campaign not found: ${validatedData.campaign}`)
+      }
+    }
+
     return NextResponse.json({
       success: true,
       clickId: click.id,

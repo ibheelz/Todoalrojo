@@ -31,6 +31,10 @@ interface Campaign {
   brandId: string | null
   logoUrl?: string | null
   status: CampaignStatus
+  registrations: number | null
+  ftd: number | null
+  approvedRegistrations: number | null
+  qualifiedDeposits: number | null
   createdAt: string
   updatedAt: string
   stats: CampaignStats
@@ -116,6 +120,18 @@ export default function CampaignsPage() {
           ...campaign,
           status: campaign.isActive ? 'active' : 'paused' as CampaignStatus
         }))
+
+        // 🔍 DEBUGGING: Log conversion type data for each campaign
+        console.log('🔍 [CAMPAIGNS DEBUG] Fetched campaigns with conversion types:')
+        campaignsWithStatus.forEach((campaign: any) => {
+          console.log(`🔍 [${campaign.name}]:`, {
+            registrations: campaign.registrations,
+            ftd: campaign.ftd,
+            approvedRegistrations: campaign.approvedRegistrations,
+            qualifiedDeposits: campaign.qualifiedDeposits
+          })
+        })
+
         setCampaigns(campaignsWithStatus)
 
         // Extract all unique conversion types from campaigns
@@ -632,14 +648,58 @@ export default function CampaignsPage() {
                         <SortIcon field="leads" sortField={sortField} sortDirection={sortDirection} />
                       </button>
                     </th>
-                    <th className="px-2 sm:px-4 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-semibold text-white/80 uppercase tracking-wide w-16 sm:w-24">
-                      <div className="flex items-center space-x-1 sm:space-x-2">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary sm:w-4 sm:h-4">
-                          <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
-                        </svg>
-                        <span>REGS</span>
-                      </div>
-                    </th>
+                    {/* Show conversion type columns only if at least one campaign has them enabled */}
+                    {(() => {
+                      const showRegistrations = sortedCampaigns.some(campaign => campaign.registrations !== null && campaign.registrations > 0)
+                      console.log('🔍 [TABLE DEBUG] Show Registrations column?', showRegistrations,
+                        sortedCampaigns.map(c => ({name: c.name, registrations: c.registrations})))
+                      return showRegistrations
+                    })() && (
+                      <th className="px-2 sm:px-4 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-semibold text-white/80 uppercase tracking-wide w-16 sm:w-24">
+                        <div className="flex items-center space-x-1 sm:space-x-2">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary sm:w-4 sm:h-4">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                          </svg>
+                          <span>REGS</span>
+                        </div>
+                      </th>
+                    )}
+                    {sortedCampaigns.some(campaign => campaign.ftd !== null && campaign.ftd > 0) && (
+                      <th className="px-2 sm:px-4 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-semibold text-white/80 uppercase tracking-wide w-16 sm:w-24">
+                        <div className="flex items-center space-x-1 sm:space-x-2">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary sm:w-4 sm:h-4">
+                            <circle cx="12" cy="2" r="3"/>
+                            <path d="M12 21v-3"/>
+                            <path d="M12 18h.01"/>
+                            <path d="M8 5v5a4 4 0 0 0 8 0V5"/>
+                          </svg>
+                          <span>FTD</span>
+                        </div>
+                      </th>
+                    )}
+                    {sortedCampaigns.some(campaign => campaign.approvedRegistrations !== null && campaign.approvedRegistrations > 0) && (
+                      <th className="px-2 sm:px-4 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-semibold text-white/80 uppercase tracking-wide w-16 sm:w-24">
+                        <div className="flex items-center space-x-1 sm:space-x-2">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary sm:w-4 sm:h-4">
+                            <polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/>
+                          </svg>
+                          <span>AREG</span>
+                        </div>
+                      </th>
+                    )}
+                    {sortedCampaigns.some(campaign => campaign.qualifiedDeposits !== null && campaign.qualifiedDeposits > 0) && (
+                      <th className="px-2 sm:px-4 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-semibold text-white/80 uppercase tracking-wide w-16 sm:w-24">
+                        <div className="flex items-center space-x-1 sm:space-x-2">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary sm:w-4 sm:h-4">
+                            <circle cx="12" cy="2" r="3"/>
+                            <path d="M12 21v-3"/>
+                            <path d="M12 18h.01"/>
+                            <path d="M8 5v5a4 4 0 0 0 8 0V5"/>
+                          </svg>
+                          <span>QFTD</span>
+                        </div>
+                      </th>
+                    )}
                     {/* Dynamic conversion type columns */}
                     {allConversionTypes.map((conversionType) => (
                       <th key={conversionType} className="px-2 sm:px-4 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-semibold text-white/80 uppercase tracking-wide w-16 sm:w-24">
@@ -713,14 +773,64 @@ export default function CampaignsPage() {
                         </div>
                       </td>
                       <td className="px-2 sm:px-4 py-3 sm:py-4">
-                        <div className="text-primary font-semibold text-xs sm:text-sm">{Math.floor(Math.random() * 10000).toLocaleString()}</div>
+                        <div className="text-primary font-semibold text-xs sm:text-sm">{campaign.stats.totalClicks.toLocaleString()}</div>
                       </td>
                       <td className="px-2 sm:px-4 py-3 sm:py-4">
-                        <div className="text-primary font-semibold text-xs sm:text-sm">{Math.floor(Math.random() * 1000).toLocaleString()}</div>
+                        <div className="text-primary font-semibold text-xs sm:text-sm">{campaign.stats.totalLeads.toLocaleString()}</div>
                       </td>
-                      <td className="px-2 sm:px-4 py-3 sm:py-4">
-                        <div className="text-primary font-semibold text-xs sm:text-sm">{Math.floor(Math.random() * 500).toLocaleString()}</div>
-                      </td>
+                      {/* Only show conversion type data for campaigns that have them enabled */}
+                      {sortedCampaigns.some(c => c.registrations !== null && c.registrations > 0) && (
+                        <td className="px-2 sm:px-4 py-3 sm:py-4">
+                          {campaign.registrations !== null && campaign.registrations > 0 ? (
+                            <div className="text-primary font-semibold text-xs sm:text-sm">
+                              {campaign.registrations}
+                            </div>
+                          ) : (
+                            <div className="text-gray-500 font-normal text-xs sm:text-sm">
+                              Null
+                            </div>
+                          )}
+                        </td>
+                      )}
+                      {sortedCampaigns.some(c => c.ftd !== null && c.ftd > 0) && (
+                        <td className="px-2 sm:px-4 py-3 sm:py-4">
+                          {campaign.ftd !== null && campaign.ftd > 0 ? (
+                            <div className="text-green-400 font-semibold text-xs sm:text-sm">
+                              {campaign.ftd}
+                            </div>
+                          ) : (
+                            <div className="text-gray-500 font-normal text-xs sm:text-sm">
+                              Null
+                            </div>
+                          )}
+                        </td>
+                      )}
+                      {sortedCampaigns.some(c => c.approvedRegistrations !== null && c.approvedRegistrations > 0) && (
+                        <td className="px-2 sm:px-4 py-3 sm:py-4">
+                          {campaign.approvedRegistrations !== null && campaign.approvedRegistrations > 0 ? (
+                            <div className="text-white font-semibold text-xs sm:text-sm">
+                              {campaign.approvedRegistrations}
+                            </div>
+                          ) : (
+                            <div className="text-gray-500 font-normal text-xs sm:text-sm">
+                              Null
+                            </div>
+                          )}
+                        </td>
+                      )}
+                      {sortedCampaigns.some(c => c.qualifiedDeposits !== null && c.qualifiedDeposits > 0) && (
+                        <td className="px-2 sm:px-4 py-3 sm:py-4">
+                          {campaign.qualifiedDeposits !== null && campaign.qualifiedDeposits > 0 ? (
+                            <div className="text-green-400 font-semibold text-xs sm:text-sm">
+                              {campaign.qualifiedDeposits}
+                            </div>
+                          ) : (
+                            <div className="text-gray-500 font-normal text-xs sm:text-sm">
+                              Null
+                            </div>
+                          )}
+                        </td>
+                      )}
                       {/* Dynamic conversion type data columns */}
                       {allConversionTypes.map((conversionType) => {
                         // Find conversion data for this type in campaign
@@ -863,32 +973,63 @@ export default function CampaignsPage() {
                   </div>
                 </div>
 
-                {/* Metrics Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 lg:gap-4 py-3 sm:py-4">
+                {/* Metrics Grid - Dynamic layout based on enabled conversion types */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-auto gap-2 sm:gap-3 lg:gap-2 py-3 sm:py-4" style={{
+                  gridTemplateColumns: `repeat(${2 +
+                    (campaign.registrations !== null && campaign.registrations > 0 ? 1 : 0) +
+                    (campaign.ftd !== null && campaign.ftd > 0 ? 1 : 0) +
+                    (campaign.approvedRegistrations !== null && campaign.approvedRegistrations > 0 ? 1 : 0) +
+                    (campaign.qualifiedDeposits !== null && campaign.qualifiedDeposits > 0 ? 1 : 0)}, minmax(0, 1fr))`
+                }}>
                   <div className="flex flex-col items-center py-1.5 sm:py-2">
                     <div className="bg-primary text-black font-black mb-2 sm:mb-3 px-2 sm:px-3 py-1.5 sm:py-2 rounded-md lg:rounded-lg flex items-center justify-center text-xs sm:text-sm w-full">
-                      {Math.floor(Math.random() * 10000).toLocaleString()}
+                      {campaign.stats.totalClicks.toLocaleString()}
                     </div>
                     <div className="text-[10px] sm:text-xs font-normal text-white/40 uppercase tracking-wide text-center">Clicks</div>
                   </div>
                   <div className="flex flex-col items-center py-1.5 sm:py-2">
                     <div className="bg-primary text-black font-black mb-2 sm:mb-3 px-2 sm:px-3 py-1.5 sm:py-2 rounded-md lg:rounded-lg flex items-center justify-center text-xs sm:text-sm w-full">
-                      {Math.floor(Math.random() * 1000).toLocaleString()}
+                      {campaign.stats.totalLeads.toLocaleString()}
                     </div>
                     <div className="text-[10px] sm:text-xs font-normal text-white/40 uppercase tracking-wide text-center">Leads</div>
                   </div>
-                  <div className="flex flex-col items-center py-1.5 sm:py-2">
-                    <div className="bg-primary text-black font-black mb-2 sm:mb-3 px-2 sm:px-3 py-1.5 sm:py-2 rounded-md lg:rounded-lg flex items-center justify-center text-xs sm:text-sm w-full">
-                      {Math.floor(Math.random() * 500).toLocaleString()}
+                  {/* Only show conversion types that are enabled for this campaign */}
+                  {(() => {
+                    const showRegs = campaign.registrations !== null && campaign.registrations > 0
+                    console.log(`🔍 [COMPACT DEBUG] ${campaign.name} - Show Registrations?`, showRegs, 'Value:', campaign.registrations)
+                    return showRegs
+                  })() && (
+                    <div className="flex flex-col items-center py-1.5 sm:py-2">
+                      <div className="bg-primary text-black font-black mb-2 sm:mb-3 px-2 sm:px-3 py-1.5 sm:py-2 rounded-md lg:rounded-lg flex items-center justify-center text-xs sm:text-sm w-full">
+                        {campaign.registrations}
+                      </div>
+                      <div className="text-[10px] sm:text-xs font-normal text-white/40 uppercase tracking-wide text-center">Regs</div>
                     </div>
-                    <div className="text-[10px] sm:text-xs font-normal text-white/40 uppercase tracking-wide text-center">Regs</div>
-                  </div>
-                  <div className="flex flex-col items-center py-1.5 sm:py-2">
-                    <div className="bg-primary text-black font-black mb-2 sm:mb-3 px-2 sm:px-3 py-1.5 sm:py-2 rounded-md lg:rounded-lg flex items-center justify-center text-xs sm:text-sm w-full">
-                      {Math.floor(Math.random() * 100).toLocaleString()}
+                  )}
+                  {campaign.ftd !== null && campaign.ftd > 0 && (
+                    <div className="flex flex-col items-center py-1.5 sm:py-2">
+                      <div className="bg-primary text-black font-black mb-2 sm:mb-3 px-2 sm:px-3 py-1.5 sm:py-2 rounded-md lg:rounded-lg flex items-center justify-center text-xs sm:text-sm w-full">
+                        {campaign.ftd}
+                      </div>
+                      <div className="text-[10px] sm:text-xs font-normal text-white/40 uppercase tracking-wide text-center">FTD</div>
                     </div>
-                    <div className="text-[10px] sm:text-xs font-normal text-white/40 uppercase tracking-wide text-center">FTD</div>
-                  </div>
+                  )}
+                  {campaign.approvedRegistrations !== null && campaign.approvedRegistrations > 0 && (
+                    <div className="flex flex-col items-center py-1.5 sm:py-2">
+                      <div className="bg-white text-black font-black mb-2 sm:mb-3 px-2 sm:px-3 py-1.5 sm:py-2 rounded-md lg:rounded-lg flex items-center justify-center text-xs sm:text-sm w-full">
+                        {campaign.approvedRegistrations}
+                      </div>
+                      <div className="text-[10px] sm:text-xs font-normal text-white/40 uppercase tracking-wide text-center">AREG</div>
+                    </div>
+                  )}
+                  {campaign.qualifiedDeposits !== null && campaign.qualifiedDeposits > 0 && (
+                    <div className="flex flex-col items-center py-1.5 sm:py-2">
+                      <div className="bg-green-500 text-black font-black mb-2 sm:mb-3 px-2 sm:px-3 py-1.5 sm:py-2 rounded-md lg:rounded-lg flex items-center justify-center text-xs sm:text-sm w-full">
+                        {campaign.qualifiedDeposits}
+                      </div>
+                      <div className="text-[10px] sm:text-xs font-normal text-white/40 uppercase tracking-wide text-center">QFTD</div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Actions */}

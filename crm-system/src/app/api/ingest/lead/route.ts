@@ -272,24 +272,36 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ [LEAD API] User updated successfully:', updatedUser.id)
 
-    // Update campaign stats if campaign is provided
+    // Update campaign stats if campaign is provided (case-insensitive matching)
     if (validatedData.campaign) {
-      console.log('📈 [LEAD API] Updating campaign statistics for:', validatedData.campaign)
-      const campaignResult = await prisma.campaign.upsert({
-        where: { slug: validatedData.campaign },
-        update: {
-          totalLeads: { increment: 1 },
-          totalRevenue: validatedData.value ? { increment: validatedData.value } : undefined,
-        },
-        create: {
-          name: validatedData.campaign,
-          slug: validatedData.campaign,
-          clientId: validatedData.clientId,
-          totalLeads: 1,
-          totalRevenue: validatedData.value || 0,
+      console.log('📈 [LEAD API] Looking up campaign for:', validatedData.campaign)
+      const existingCampaign = await prisma.campaign.findFirst({
+        where: {
+          OR: [
+            { slug: { equals: validatedData.campaign, mode: 'insensitive' } },
+            { name: { equals: validatedData.campaign, mode: 'insensitive' } }
+          ]
         }
       })
-      console.log('✅ [LEAD API] Campaign updated:', campaignResult.id)
+
+      if (existingCampaign) {
+        const updateData: any = {
+          totalLeads: { increment: 1 },
+          totalClicks: { increment: 1 } // Lead submission implies a click occurred
+        }
+
+        if (validatedData.value && validatedData.value > 0) {
+          updateData.totalRevenue = { increment: validatedData.value }
+        }
+
+        await prisma.campaign.update({
+          where: { id: existingCampaign.id },
+          data: updateData
+        })
+        console.log(`✅ [LEAD API] Campaign updated: ${existingCampaign.name} (clicks +1, leads +1, matched: ${validatedData.campaign})`)
+      } else {
+        console.log(`⚠️ [LEAD API] Campaign not found: ${validatedData.campaign}`)
+      }
     }
 
     const processingTime = Date.now() - startTime

@@ -24,13 +24,37 @@ export async function GET(request: NextRequest) {
     if (includeStats) {
       // Get campaigns with detailed analytics
       const campaigns = await prisma.campaign.findMany({
-        orderBy: { createdAt: 'desc' }
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          description: true,
+          clientId: true,
+          brandId: true,
+          logoUrl: true,
+          conversionTypes: true,
+          isActive: true,
+          totalClicks: true,
+          totalLeads: true,
+          totalEvents: true,
+          totalRevenue: true,
+          fraudRate: true,
+          duplicateRate: true,
+          conversionRate: true,
+          registrations: true,
+          ftd: true,
+          approvedRegistrations: true,
+          qualifiedDeposits: true,
+          createdAt: true,
+          updatedAt: true
+        }
       })
 
       // Calculate stats for each campaign
       const campaignsWithStats = await Promise.all(
         campaigns.map(async (campaign) => {
-          const [clickStats, leadStats, eventStats] = await Promise.all([
+          const [clickStats, leadStats, eventStats, registrationStats, ftdStats] = await Promise.all([
             // Clicks
             prisma.click.aggregate({
               where: { campaign: campaign.slug },
@@ -48,6 +72,25 @@ export async function GET(request: NextRequest) {
               where: { campaign: campaign.slug },
               _count: true,
               _sum: { value: true }
+            }),
+            // Registrations (registration, signup, register events)
+            prisma.event.aggregate({
+              where: {
+                campaign: campaign.slug,
+                eventType: { in: ['registration', 'signup', 'register'] }
+              },
+              _count: true
+            }),
+            // FTD (First Time Deposit events)
+            prisma.event.aggregate({
+              where: {
+                campaign: campaign.slug,
+                OR: [
+                  { eventType: { in: ['deposit', 'ftd', 'first_deposit'] } },
+                  { eventName: { in: ['deposit', 'ftd', 'first_deposit'] } }
+                ]
+              },
+              _count: true
             })
           ])
 
@@ -82,6 +125,8 @@ export async function GET(request: NextRequest) {
           const totalClicks = clickStats._count || 0
           const totalLeads = leadStats._count || 0
           const totalEvents = eventStats._count || 0
+          const registrations = registrationStats._count || 0
+          const ftd = ftdStats._count || 0
 
           const conversionRate = totalClicks > 0 ? (totalLeads / totalClicks) * 100 : 0
           const duplicateRate = totalLeads > 0 ? (duplicateLeads / totalLeads) * 100 : 0
@@ -93,6 +138,10 @@ export async function GET(request: NextRequest) {
               totalClicks,
               totalLeads,
               totalEvents,
+              registrations,
+              ftd,
+              approvedRegistrations: campaign.approvedRegistrations || 0,
+              qualifiedDeposits: campaign.qualifiedDeposits || 0,
               uniqueCustomers,
               duplicateLeads,
               fraudClicks,
@@ -115,7 +164,24 @@ export async function GET(request: NextRequest) {
     } else {
       // Get basic campaign list
       const campaigns = await prisma.campaign.findMany({
-        orderBy: { createdAt: 'desc' }
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          description: true,
+          clientId: true,
+          brandId: true,
+          logoUrl: true,
+          conversionTypes: true,
+          isActive: true,
+          registrations: true,
+          ftd: true,
+          approvedRegistrations: true,
+          qualifiedDeposits: true,
+          createdAt: true,
+          updatedAt: true
+        }
       })
 
       return NextResponse.json({

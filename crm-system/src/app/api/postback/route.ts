@@ -20,12 +20,28 @@ export async function POST(request: NextRequest) {
   const startTime = Date.now()
 
   try {
-    console.log('📥 [POSTBACK API] Parsing request body...')
-    const body = await request.json()
-    console.log('📄 [POSTBACK API] Raw postback data:', JSON.stringify(body, null, 2))
+    console.log('📥 [POSTBACK API] Parsing request data...')
+
+    // Parse URL parameters
+    const { searchParams } = new URL(request.url)
+    const urlParams = Object.fromEntries(searchParams.entries())
+    console.log('🔗 [POSTBACK API] URL parameters:', JSON.stringify(urlParams, null, 2))
+
+    // Parse JSON body (if any)
+    let bodyData = {}
+    try {
+      bodyData = await request.json()
+      console.log('📄 [POSTBACK API] JSON body data:', JSON.stringify(bodyData, null, 2))
+    } catch (error) {
+      console.log('📄 [POSTBACK API] No JSON body or invalid JSON, using URL params only')
+    }
+
+    // Merge URL params and body data (URL params take precedence for duplicates)
+    const combinedData = { ...bodyData, ...urlParams }
+    console.log('📄 [POSTBACK API] Combined postback data:', JSON.stringify(combinedData, null, 2))
 
     console.log('✅ [POSTBACK API] Validating data with schema...')
-    const validatedData = postbackSchema.parse(body)
+    const validatedData = postbackSchema.parse(combinedData)
     console.log('✅ [POSTBACK API] Validation successful:', JSON.stringify(validatedData, null, 2))
 
     // Find customer by clickId
@@ -65,12 +81,12 @@ export async function POST(request: NextRequest) {
     const eventData: any = {
       customerId: customer.id,
       eventType: validatedData.type || 'Conversion',
-      eventName: `${validatedData.type || 'Conversion'}_${validatedData.status || 'approved'}`,
+      eventName: `${validatedData.type || 'Conversion'} ${validatedData.status ? validatedData.status.charAt(0).toUpperCase() + validatedData.status.slice(1) : 'Approved'}`,
       category: 'conversion',
       properties: {
         status: validatedData.status || 'approved',
         postbackTimestamp: validatedData.timestamp || new Date().toISOString(),
-        originalPostback: body,
+        originalPostback: combinedData,
         customData: validatedData.custom_data || {},
         inheritedFromLead: latestLead ? {
           campaign: latestLead.campaign,
@@ -126,28 +142,76 @@ export async function POST(request: NextRequest) {
     // Update campaign stats if campaign is provided or inherited
     const finalCampaign = validatedData.campaign || latestLead?.campaign
     if (finalCampaign) {
-      console.log('📈 [POSTBACK API] Updating campaign statistics for:', finalCampaign)
-      const campaignUpdateData: any = {}
-
-      if (finalStatus === 'approved') {
-        campaignUpdateData.totalEvents = { increment: 1 }
-        if (validatedData.value && validatedData.value > 0) {
-          campaignUpdateData.totalRevenue = { increment: validatedData.value }
+      console.log('📈 [POSTBACK API] Looking up campaign for:', finalCampaign)
+      const existingCampaign = await prisma.campaign.findFirst({
+        where: {
+          OR: [
+            { slug: { equals: finalCampaign, mode: 'insensitive' } },
+            { name: { equals: finalCampaign, mode: 'insensitive' } }
+          ]
         }
-      }
+      })
 
-      if (Object.keys(campaignUpdateData).length > 0) {
-        const campaignResult = await prisma.campaign.upsert({
-          where: { slug: finalCampaign },
-          update: campaignUpdateData,
-          create: {
-            name: finalCampaign,
-            slug: finalCampaign,
-            totalEvents: finalStatus === 'approved' ? 1 : 0,
-            totalRevenue: (finalStatus === 'approved' && validatedData.value) ? validatedData.value : 0,
+      if (existingCampaign) {
+        const updateCampaignData: any = {}
+
+        if (finalStatus === 'approved') {
+          updateCampaignData.totalEvents = { increment: 1 }
+          if (validatedData.value && validatedData.value > 0) {
+            updateCampaignData.totalRevenue = { increment: validatedData.value }
           }
-        })
-        console.log('✅ [POSTBACK API] Campaign updated:', campaignResult.id)
+
+          // Increment specific conversion type columns based on conversion type (case-insensitive)
+          const conversionTypeLower = (validatedData.type || 'conversion').toLowerCase()
+
+          // Map conversion types to campaign stat fields (only if configured - not null)
+          if (conversionTypeLower.includes('reg') || conversionTypeLower.includes('registration') || conversionTypeLower.includes('signup')) {
+            if (existingCampaign.registrations !== null) {
+              updateCampaignData.registrations = { increment: 1 }
+              console.log(`🎯 [POSTBACK API] Incrementing registrations for campaign: ${existingCampaign.name}`)
+            } else {
+              console.log(`⚠️ [POSTBACK API] Registrations not configured for campaign: ${existingCampaign.name}`)
+            }
+          }
+
+          if (conversionTypeLower.includes('ftd') || conversionTypeLower.includes('deposit') || conversionTypeLower.includes('first_deposit')) {
+            if (existingCampaign.ftd !== null) {
+              updateCampaignData.ftd = { increment: 1 }
+              console.log(`💰 [POSTBACK API] Incrementing FTD for campaign: ${existingCampaign.name}`)
+            } else {
+              console.log(`⚠️ [POSTBACK API] FTD not configured for campaign: ${existingCampaign.name}`)
+            }
+          }
+
+          // Handle other common conversion types
+          if (conversionTypeLower.includes('areg') || conversionTypeLower.includes('approved_registration')) {
+            if (existingCampaign.approvedRegistrations !== null) {
+              updateCampaignData.approvedRegistrations = { increment: 1 }
+              console.log(`✅ [POSTBACK API] Incrementing approved registrations for campaign: ${existingCampaign.name}`)
+            } else {
+              console.log(`⚠️ [POSTBACK API] Approved registrations not configured for campaign: ${existingCampaign.name}`)
+            }
+          }
+
+          if (conversionTypeLower.includes('qftd') || conversionTypeLower.includes('qualified_deposit')) {
+            if (existingCampaign.qualifiedDeposits !== null) {
+              updateCampaignData.qualifiedDeposits = { increment: 1 }
+              console.log(`💎 [POSTBACK API] Incrementing qualified deposits for campaign: ${existingCampaign.name}`)
+            } else {
+              console.log(`⚠️ [POSTBACK API] Qualified deposits not configured for campaign: ${existingCampaign.name}`)
+            }
+          }
+        }
+
+        if (Object.keys(updateCampaignData).length > 0) {
+          await prisma.campaign.update({
+            where: { id: existingCampaign.id },
+            data: updateCampaignData
+          })
+          console.log(`📈 [POSTBACK API] Updated campaign stats for: ${existingCampaign.name} (${validatedData.type}, matched: ${finalCampaign})`)
+        }
+      } else {
+        console.log(`⚠️ [POSTBACK API] Campaign not found: ${finalCampaign}`)
       }
     }
 
