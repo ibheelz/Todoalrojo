@@ -60,6 +60,8 @@ export default function LinksPage() {
   const [editingLink, setEditingLink] = useState<ShortLink | null>(null)
   const [page, setPage] = useState(1)
   const [viewMode, setViewMode] = useState<'compact' | 'table'>('compact')
+  const [highlightMap, setHighlightMap] = useState<Record<string, number>>({})
+  const [toasts, setToasts] = useState<Array<{ id: string; text: string }>>([])
   const [formData, setFormData] = useState({
     originalUrl: '',
     title: '',
@@ -90,6 +92,11 @@ export default function LinksPage() {
         if (!evt || !evt.type) return
         if (['click', 'lead', 'ftd', 'resetInfluencer', 'resetCampaign'].includes(evt.type)) {
           fetchLinks()
+          // Toasts
+          if (evt.type === 'click') addToast('New click detected')
+          if (evt.type === 'lead') addToast('New lead recorded')
+          if (evt.type === 'ftd') addToast('New FTD conversion')
+          if (evt.type === 'resetInfluencer' || evt.type === 'resetCampaign') addToast('Stats were reset')
         }
       } catch {}
     }
@@ -180,6 +187,8 @@ export default function LinksPage() {
 
   const fetchLinks = async () => {
     try {
+      const beforeById: Record<string, { clicks: number; unique: number }> = {}
+      for (const l of links) beforeById[l.id] = { clicks: l.totalClicks, unique: l.uniqueClicks }
       const params = new URLSearchParams({
         page: page.toString(),
         limit: '10',
@@ -196,8 +205,29 @@ export default function LinksPage() {
       const data = await response.json()
 
       if (data.success) {
+        const changedIds: string[] = []
+        for (const l of data.links as ShortLink[]) {
+          const prev = beforeById[l.id]
+          if (prev && (l.totalClicks > prev.clicks || l.uniqueClicks > prev.unique)) changedIds.push(l.id)
+        }
+
         setLinks(data.links)
         setSummary(data.summary)
+        if (changedIds.length) {
+          setHighlightMap((prev) => {
+            const next = { ...prev }
+            const now = Date.now()
+            changedIds.forEach((id) => (next[id] = now))
+            return next
+          })
+          setTimeout(() => {
+            setHighlightMap((prev) => {
+              const next: Record<string, number> = { ...prev }
+              changedIds.forEach((id) => delete next[id])
+              return next
+            })
+          }, 2500)
+        }
         console.log('✅ Links loaded successfully:', {
           totalLinks: data.links.length,
           summary: data.summary,
@@ -335,6 +365,17 @@ export default function LinksPage() {
     alert('URL copied to clipboard!')
   }
 
+  // Toasts container
+  const Toasts = () => (
+    <div className="fixed bottom-4 right-4 space-y-2 z-50">
+      {toasts.map((t) => (
+        <div key={t.id} className="px-3 py-2 rounded-lg bg-white text-black text-sm shadow-lg border border-black/10">
+          {t.text}
+        </div>
+      ))}
+    </div>
+  )
+
   if (loading) {
     return (
       <div className="space-y-8">
@@ -367,6 +408,7 @@ export default function LinksPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="space-y-2 xxs:space-y-1 xs:space-y-3 sm:space-y-6 p-1 xxs:p-1 xs:p-2 sm:p-4 lg:p-6">
+        <Toasts />
         {/* Header */}
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
