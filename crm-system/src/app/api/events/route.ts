@@ -1,9 +1,13 @@
 import { NextRequest } from 'next/server'
 import { eventBus } from '@/lib/event-bus'
 
+export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 export async function GET(_req: NextRequest) {
+  let onStats: ((evt: any) => void) | null = null
+  let heartbeat: ReturnType<typeof setInterval> | null = null
+
   const stream = new ReadableStream({
     start(controller) {
       const encoder = new TextEncoder()
@@ -14,29 +18,24 @@ export async function GET(_req: NextRequest) {
         controller.enqueue(encoder.encode(`data: ${data}\n\n`))
       }
 
-      // Send an initial heartbeat
+      // Initial ping
       controller.enqueue(encoder.encode(`event: ping\n`))
-      controller.enqueue(encoder.encode(`data: "ok"\n\n`))
+      controller.enqueue(encoder.encode(`data: \"ok\"\n\n`))
 
-      const onStats = (evt: any) => send(evt)
+      // Periodic heartbeat to keep the connection alive
+      heartbeat = setInterval(() => {
+        try {
+          controller.enqueue(encoder.encode(`event: ping\n`))
+          controller.enqueue(encoder.encode(`data: \"ok\"\n\n`))
+        } catch {}
+      }, 15000)
+
+      onStats = (evt: any) => send(evt)
       eventBus.on('stats', onStats)
-
-      const heartbeat = setInterval(() => {
-        controller.enqueue(encoder.encode(`event: ping\n`))
-        controller.enqueue(encoder.encode(`data: "hb"\n\n`))
-      }, 25000)
-
-      // Cleanup
-      const close = () => {
-        clearInterval(heartbeat)
-        eventBus.off('stats', onStats)
-        controller.close()
-      }
-
-      // @ts-ignore - not all runtimes expose it
-      // Close when client disconnects
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(globalThis as any).addEventListener?.('close', close)
+    },
+    cancel() {
+      if (onStats) eventBus.off('stats', onStats)
+      if (heartbeat) clearInterval(heartbeat)
     },
   })
 
@@ -48,4 +47,3 @@ export async function GET(_req: NextRequest) {
     },
   })
 }
-

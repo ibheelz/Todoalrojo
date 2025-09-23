@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { incrementCampaignCounters, incrementInfluencerCountersByClickId } from '@/lib/attribution'
+import { emitStats } from '@/lib/event-bus'
 
 export const dynamic = 'force-dynamic'
 
@@ -267,6 +268,8 @@ export async function POST(request: NextRequest) {
     await incrementInfluencerCountersByClickId(validatedData.clickId, { leads: 1 })
 
     console.log('🎉 [LEAD-FORM] Lead form submission processed successfully')
+    // Emit SSE so dashboards update instantly
+    emitStats({ type: 'lead', payload: { campaign: validatedData.campaign, clickId: validatedData.clickId } })
 
     return NextResponse.json({
       success: true,

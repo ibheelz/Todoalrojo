@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { generateShortUrl, extractDomainFromUrl } from '@/lib/shorturl'
 
+export const dynamic = 'force-dynamic'
+
 const createLinkSchema = z.object({
   originalUrl: z.string().url('Invalid URL format'),
   title: z.string().optional(),

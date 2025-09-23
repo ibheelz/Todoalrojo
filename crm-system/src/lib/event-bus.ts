@@ -1,9 +1,17 @@
 import { EventEmitter } from 'events'
 
-// Simple singleton event bus for server-side modules
+// Ensure a single, durable EventEmitter across hot reloads and serverless invocations
+// by stashing it on globalThis. This is critical for SSE to receive emits
+// from API routes in the same process/lambda.
 class EventBus extends EventEmitter {}
 
-export const eventBus = new EventBus()
+declare global {
+  // eslint-disable-next-line no-var
+  var __eventBus: EventBus | undefined
+}
+
+export const eventBus: EventBus = globalThis.__eventBus ?? (globalThis.__eventBus = new EventBus())
+eventBus.setMaxListeners(0)
 
 // Helpful typed emitters
 export type StatsEvent =
@@ -18,4 +26,3 @@ export type StatsEvent =
 export function emitStats(event: StatsEvent) {
   eventBus.emit('stats', event)
 }
-

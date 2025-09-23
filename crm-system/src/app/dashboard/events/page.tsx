@@ -48,6 +48,24 @@ export default function ConversionsPage() {
     fetchConversions()
   }, [dateFilter, customDateRange, selectedEventType, selectedCampaign])
 
+  // Live updates via SSE: refresh on new leads/ftd
+  useEffect(() => {
+    const es = new EventSource('/api/events')
+    const onStats = (e: MessageEvent) => {
+      try {
+        const evt = JSON.parse((e as MessageEvent).data)
+        console.log('[CONVERSIONS PAGE] SSE event', evt)
+        if (!evt || !evt.type) return
+        if (['lead', 'ftd'].includes(evt.type)) {
+          fetchConversions()
+        }
+      } catch {}
+    }
+    // @ts-ignore - EventSource typings for custom events
+    es.addEventListener('stats', onStats)
+    return () => es.close()
+  }, [dateFilter, customDateRange, selectedEventType, selectedCampaign])
+
   const fetchConversions = async () => {
     try {
       setLoading(true)
@@ -71,7 +89,7 @@ export default function ConversionsPage() {
         params.append('toDate', customDateRange.to)
       }
 
-      const response = await fetch(`/api/conversions?${params.toString()}`)
+      const response = await fetch(`/api/conversions?${params.toString()}`, { cache: 'no-store' })
       const data = await response.json()
 
       if (data.success) {

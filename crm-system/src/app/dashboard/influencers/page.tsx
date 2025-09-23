@@ -109,6 +109,8 @@ export default function InfluencersPage() {
   const [managingInfluencer, setManagingInfluencer] = useState<Influencer | null>(null)
   const [conversionTypesConfig, setConversionTypesConfig] = useState<{ [key: string]: InfluencerConversionConfig }>({})
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const [rowHighlight, setRowHighlight] = useState<Record<string, number>>({})
+  const [toasts, setToasts] = useState<Array<{ id: string; text: string }>>([])
 
   // Auto-set compact mode for smaller devices
   useEffect(() => {
@@ -172,6 +174,10 @@ export default function InfluencersPage() {
         if (['click', 'lead', 'ftd', 'influencerDelta', 'campaignDelta', 'resetInfluencer'].includes(evt.type)) {
           console.log('[INFLUENCERS PAGE] SSE triggering fetchData')
           fetchData()
+          if (evt.type === 'click') addToast('New click detected')
+          if (evt.type === 'lead') addToast('New lead recorded')
+          if (evt.type === 'ftd') addToast('New FTD conversion')
+          if (evt.type === 'resetInfluencer' || evt.type === 'campaignDelta') addToast('Stats updated')
         }
       } catch {}
     }
@@ -179,6 +185,12 @@ export default function InfluencersPage() {
     es.addEventListener('stats', onStats)
     return () => es.close()
   }, [dateFilter, customDateRange])
+
+  const addToast = (text: string) => {
+    const id = Math.random().toString(36).slice(2)
+    setToasts((prev) => [...prev, { id, text }])
+    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 3000)
+  }
 
   const fetchData = async () => {
     try {
@@ -194,8 +206,8 @@ export default function InfluencersPage() {
       }
 
       const [influencersResponse, campaignsResponse] = await Promise.all([
-        fetch(`/api/influencers?${params.toString()}`),
-        fetch('/api/campaigns')
+        fetch(`/api/influencers?${params.toString()}`, { cache: 'no-store' }),
+        fetch('/api/campaigns', { cache: 'no-store' })
       ])
 
       if (influencersResponse.ok) {
@@ -608,6 +620,14 @@ export default function InfluencersPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Live Toasts */}
+      <div className="fixed bottom-4 right-4 space-y-2 z-50">
+        {toasts.map((t) => (
+          <div key={t.id} className="px-3 py-2 rounded-lg bg-white text-black text-sm shadow-lg border border-black/10">
+            {t.text}
+          </div>
+        ))}
+      </div>
       {/* Live Toasts */}
       <div className="fixed bottom-4 right-4 space-y-2 z-50">
         {toasts.map((t) => (

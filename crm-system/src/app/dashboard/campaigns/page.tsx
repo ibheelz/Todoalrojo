@@ -184,7 +184,7 @@ export default function CampaignsPage() {
   const fetchInfluencers = async () => {
     try {
       console.log('📊 [CAMPAIGNS] Fetching influencers...')
-      const response = await fetch('/api/influencers?activeOnly=true')
+      const response = await fetch('/api/influencers?activeOnly=true', { cache: 'no-store' })
       const data = await response.json()
       if (data.success) {
         setInfluencers(data.influencers)
@@ -259,7 +259,7 @@ export default function CampaignsPage() {
         params.append('toDate', customDateRange.to)
       }
 
-      const response = await fetch(`/api/campaigns?${params.toString()}`)
+      const response = await fetch(`/api/campaigns?${params.toString()}`, { cache: 'no-store' })
       const data = await response.json()
 
       if (data.success) {

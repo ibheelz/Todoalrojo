@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { AlertModal } from '@/components/ui/alert-modal'
 
 interface ShortLink {
   id: string
@@ -62,6 +63,13 @@ export default function LinksPage() {
   const [viewMode, setViewMode] = useState<'compact' | 'table'>('compact')
   const [highlightMap, setHighlightMap] = useState<Record<string, number>>({})
   const [toasts, setToasts] = useState<Array<{ id: string; text: string }>>([])
+  const [alertState, setAlertState] = useState<{
+    open: boolean
+    title?: string
+    message: string
+    variant?: 'info' | 'success' | 'error' | 'warning'
+    onConfirm?: () => void
+  }>({ open: false, message: '' })
   const [formData, setFormData] = useState({
     originalUrl: '',
     title: '',
@@ -75,6 +83,13 @@ export default function LinksPage() {
     allowBots: false,
     trackClicks: true
   })
+
+  // Simple toast helper used by SSE and actions
+  const addToast = (text: string) => {
+    const id = Math.random().toString(36).slice(2)
+    setToasts((prev) => [...prev, { id, text }])
+    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 3000)
+  }
 
   useEffect(() => {
     fetchLinks()
@@ -149,7 +164,7 @@ export default function LinksPage() {
   const fetchCampaigns = async () => {
     try {
       console.log('📊 Fetching campaigns for links page...', { timestamp: new Date().toISOString() })
-      const response = await fetch('/api/campaigns')
+      const response = await fetch('/api/campaigns', { cache: 'no-store' })
       const data = await response.json()
 
       if (data.success) {
@@ -170,7 +185,7 @@ export default function LinksPage() {
   const fetchInfluencers = async () => {
     try {
       console.log('👤 Fetching influencers for links page...', { timestamp: new Date().toISOString() })
-      const response = await fetch('/api/influencers?activeOnly=true')
+      const response = await fetch('/api/influencers?activeOnly=true', { cache: 'no-store' })
       const data = await response.json()
 
       if (data.success) {
@@ -201,7 +216,7 @@ export default function LinksPage() {
         timestamp: new Date().toISOString()
       })
 
-      const response = await fetch(`/api/links?${params}`)
+      const response = await fetch(`/api/links?${params}`, { cache: 'no-store' })
       const data = await response.json()
 
       if (data.success) {

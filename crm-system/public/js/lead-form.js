@@ -80,7 +80,8 @@ const THEME_CONFIG = {
   enabled: true,
   basePath: '/themes',
   defaultKey: 'default',
-  urlParams: ['campaign', 'promo', 'theme'],
+  // Only allow explicit theme selection via ?theme=...
+  urlParams: ['theme'],
 };
 
 /***********************************

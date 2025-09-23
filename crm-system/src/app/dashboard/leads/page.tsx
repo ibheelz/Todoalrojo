@@ -144,6 +144,24 @@ export default function LeadsPage() {
     fetchLeads()
   }, [])
 
+  // Live updates via SSE: refresh on new leads
+  useEffect(() => {
+    const es = new EventSource('/api/events')
+    const onStats = (e: MessageEvent) => {
+      try {
+        const evt = JSON.parse((e as MessageEvent).data)
+        console.log('[LEADS PAGE] SSE event', evt)
+        if (!evt || !evt.type) return
+        if (['lead'].includes(evt.type)) {
+          fetchLeads(pagination.page || 1)
+        }
+      } catch {}
+    }
+    // @ts-ignore - EventSource typings for custom events
+    es.addEventListener('stats', onStats)
+    return () => es.close()
+  }, [pagination.page])
+
   // Update filtered leads when date filter or custom range changes
   useEffect(() => {
     // Trigger re-filtering when dateFilter or customDateRange changes
@@ -161,7 +179,7 @@ export default function LeadsPage() {
 
       if (search) params.append('search', search)
 
-      const response = await fetch(`/api/leads?${params}`)
+      const response = await fetch(`/api/leads?${params}`, { cache: 'no-store' })
       const data: LeadsResponse = await response.json()
 
       if (data.success) {

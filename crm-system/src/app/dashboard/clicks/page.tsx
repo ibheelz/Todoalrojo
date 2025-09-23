@@ -84,6 +84,24 @@ export default function ClicksPage() {
     }
   }, [customDateRange])
 
+  // Live updates via SSE: refresh on new clicks
+  useEffect(() => {
+    const es = new EventSource('/api/events')
+    const onStats = (e: MessageEvent) => {
+      try {
+        const evt = JSON.parse((e as MessageEvent).data)
+        console.log('[CLICKS PAGE] SSE event', evt)
+        if (!evt || !evt.type) return
+        if (['click', 'campaignDelta', 'influencerDelta'].includes(evt.type)) {
+          fetchClicks()
+        }
+      } catch {}
+    }
+    // @ts-ignore - EventSource typings for custom events
+    es.addEventListener('stats', onStats)
+    return () => es.close()
+  }, [dateFilter, selectedCampaign, selectedSource, searchQuery, customDateRange])
+
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -127,7 +145,7 @@ export default function ClicksPage() {
         params.append('toDate', customDateRange.to)
       }
 
-      const response = await fetch(`/api/clicks?${params.toString()}`)
+      const response = await fetch(`/api/clicks?${params.toString()}`, { cache: 'no-store' })
       const data = await response.json()
 
       if (data.success) {
