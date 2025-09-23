@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Avatar } from '@/components/ui/avatar'
 import { Select } from '@/components/ui/select'
+import { InfluencerModal } from '@/components/ui/influencer-modal'
 
 interface Campaign {
   id: string
@@ -31,6 +32,20 @@ interface Lead {
 
 type InfluencerStatus = 'active' | 'paused' | 'inactive'
 
+interface ConversionType {
+  id: string
+  name: string
+  description: string
+}
+
+interface InfluencerConversionConfig {
+  leads: boolean
+  clicks: boolean
+  registrations: boolean
+  ftd: boolean
+  customTypes: { [key: string]: boolean }
+}
+
 interface Influencer {
   id: string
   name: string
@@ -50,6 +65,8 @@ interface Influencer {
   totalFtd: number
   createdAt: string
   leads: Lead[]
+  conversionTypes?: ConversionType[]
+  conversionConfig?: InfluencerConversionConfig
 }
 
 const SortIcon = ({ field, sortField, sortDirection }: { field: string, sortField: string, sortDirection: 'asc' | 'desc' }) => {
@@ -84,6 +101,11 @@ export default function InfluencersPage() {
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null)
   const [sortField, setSortField] = useState<string>('')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
+  const [showInfluencerModal, setShowInfluencerModal] = useState(false)
+  const [editingInfluencer, setEditingInfluencer] = useState<Influencer | null>(null)
+  const [managingInfluencer, setManagingInfluencer] = useState<Influencer | null>(null)
+  const [showConversionTypesModal, setShowConversionTypesModal] = useState(false)
+  const [conversionTypesConfig, setConversionTypesConfig] = useState<{ [key: string]: InfluencerConversionConfig }>({})
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   // Auto-set compact mode for smaller devices
@@ -288,15 +310,131 @@ export default function InfluencersPage() {
     setShowAssignModal(true)
   }
 
+  const handleCreateInfluencer = async (influencerData: any) => {
+    try {
+      // Transform string values to numbers where needed
+      const transformedData = {
+        ...influencerData,
+        followers: parseInt(influencerData.followers) || 0,
+        engagementRate: parseFloat(influencerData.engagementRate) || 0,
+        commissionRate: influencerData.commissionRate ? parseFloat(influencerData.commissionRate) : undefined
+      }
+
+      console.log('📊 [INFLUENCERS PAGE] Sending data:', transformedData)
+
+      const response = await fetch('/api/influencers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(transformedData)
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        // Add new influencer to local state
+        const newInfluencer: Influencer = {
+          id: result.influencer.id,
+          name: result.influencer.name,
+          email: result.influencer.email,
+          phone: result.influencer.phone,
+          socialHandle: result.influencer.socialHandle,
+          platform: result.influencer.platform,
+          followers: result.influencer.followers,
+          engagementRate: result.influencer.engagementRate,
+          category: result.influencer.category,
+          location: result.influencer.location,
+          status: result.influencer.status,
+          assignedCampaigns: result.influencer.assignedCampaigns,
+          totalLeads: result.influencer.totalLeads,
+          totalClicks: result.influencer.totalClicks,
+          totalRegs: result.influencer.totalRegs,
+          totalFtd: result.influencer.totalFtd,
+          createdAt: result.influencer.createdAt,
+          leads: result.influencer.leads || []
+        }
+
+        setInfluencers(prev => [newInfluencer, ...prev])
+        setShowInfluencerModal(false)
+      } else {
+        console.error('Failed to create influencer:', result.error)
+        // You could show a toast notification here
+      }
+
+    } catch (error) {
+      console.error('Error creating influencer:', error)
+      // You could show a toast notification here
+    }
+  }
+
+  const handleEditInfluencer = (influencer: Influencer) => {
+    setEditingInfluencer(influencer)
+    setShowInfluencerModal(true)
+  }
+
+  const handleManageInfluencer = (influencer: Influencer) => {
+    setEditingInfluencer(influencer)
+    setShowInfluencerModal(true)
+  }
+
+  // Initialize conversion types config for each influencer
+  useEffect(() => {
+    const config: { [key: string]: InfluencerConversionConfig } = {}
+    influencers.forEach(influencer => {
+      config[influencer.id] = influencer.conversionConfig || {
+        leads: true,
+        clicks: true,
+        registrations: true,
+        ftd: true,
+        customTypes: {}
+      }
+      // Add custom conversion types to config
+      if (influencer.conversionTypes) {
+        influencer.conversionTypes.forEach(type => {
+          config[influencer.id].customTypes[type.id] = true
+        })
+      }
+    })
+    setConversionTypesConfig(config)
+  }, [influencers])
+
+  const updateConversionConfig = (influencerId: string, config: InfluencerConversionConfig) => {
+    setConversionTypesConfig(prev => ({
+      ...prev,
+      [influencerId]: config
+    }))
+  }
+
+  const getVisibleStats = (influencer: Influencer) => {
+    const config = conversionTypesConfig[influencer.id]
+    if (!config) return []
+
+    const stats = []
+    if (config.leads) stats.push({ label: 'Leads', value: influencer.totalLeads, key: 'leads' })
+    if (config.clicks) stats.push({ label: 'Clicks', value: influencer.totalClicks, key: 'clicks' })
+    if (config.registrations) stats.push({ label: 'Regs', value: influencer.totalRegs, key: 'regs' })
+    if (config.ftd) stats.push({ label: 'FTD', value: influencer.totalFtd, key: 'ftd' })
+
+    // Add custom conversion types
+    if (influencer.conversionTypes) {
+      influencer.conversionTypes.forEach(type => {
+        if (config.customTypes[type.id]) {
+          stats.push({ label: type.name, value: 0, key: type.id })
+        }
+      })
+    }
+
+    return stats
+  }
+
   const confirmAssignment = () => {
-    if (selectedInfluencer && selectedCampaign) {
+    if (selectedInfluencer && selectedCampaigns.length > 0) {
       setInfluencers(prev => prev.map(inf =>
         inf.id === selectedInfluencer
-          ? { ...inf, assignedCampaigns: [...inf.assignedCampaigns, selectedCampaign] }
+          ? { ...inf, assignedCampaigns: [...inf.assignedCampaigns, ...selectedCampaigns] }
           : inf
       ))
       setShowAssignModal(false)
-      setSelectedCampaign('')
+      setSelectedCampaigns([])
       setSelectedInfluencer(null)
     }
   }
@@ -361,7 +499,7 @@ export default function InfluencersPage() {
               <p className="text-white/60 text-sm sm:text-base mt-1">Manage your influencer partnerships</p>
             </div>
             <div className="hidden lg:flex items-center justify-end">
-              <button className="flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-300 whitespace-nowrap"
+              <button onClick={() => setShowInfluencerModal(true)} className="flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-300 whitespace-nowrap"
                 style={{
                   background: 'linear-gradient(135deg, rgba(253, 198, 0, 0.9), rgba(253, 198, 0, 0.7))',
                   backdropFilter: 'blur(10px)',
@@ -396,7 +534,7 @@ export default function InfluencersPage() {
           </div>
 
           {/* Add Influencer Button */}
-          <button className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-300"
+          <button onClick={() => setShowInfluencerModal(true)} className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-300"
             style={{
               background: 'linear-gradient(135deg, rgba(253, 198, 0, 0.9), rgba(253, 198, 0, 0.7))',
               backdropFilter: 'blur(10px)',
@@ -540,31 +678,17 @@ export default function InfluencersPage() {
                 </div>
 
                 {/* Metrics Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 lg:gap-4 py-3 sm:py-4">
-                  <div className="flex flex-col items-center py-1.5 sm:py-2">
-                    <div className="bg-primary text-black font-black mb-2 sm:mb-3 px-2 sm:px-3 py-1.5 sm:py-2 rounded-md lg:rounded-lg flex items-center justify-center text-xs sm:text-sm w-full">
-                      {influencer.totalClicks.toLocaleString()}
+                <div className={`grid gap-2 sm:gap-3 lg:gap-4 py-3 sm:py-4`} style={{
+                  gridTemplateColumns: `repeat(${Math.min(getVisibleStats(influencer).length, 4)}, 1fr)`
+                }}>
+                  {getVisibleStats(influencer).map((stat) => (
+                    <div key={stat.key} className="flex flex-col items-center py-1.5 sm:py-2">
+                      <div className="bg-primary text-black font-black mb-2 sm:mb-3 px-2 sm:px-3 py-1.5 sm:py-2 rounded-md lg:rounded-lg flex items-center justify-center text-xs sm:text-sm w-full">
+                        {stat.value.toLocaleString()}
+                      </div>
+                      <div className="text-[10px] sm:text-xs font-normal text-white/40 uppercase tracking-wide text-center">{stat.label}</div>
                     </div>
-                    <div className="text-[10px] sm:text-xs font-normal text-white/40 uppercase tracking-wide text-center">Clicks</div>
-                  </div>
-                  <div className="flex flex-col items-center py-1.5 sm:py-2">
-                    <div className="bg-primary text-black font-black mb-2 sm:mb-3 px-2 sm:px-3 py-1.5 sm:py-2 rounded-md lg:rounded-lg flex items-center justify-center text-xs sm:text-sm w-full">
-                      {influencer.totalLeads.toLocaleString()}
-                    </div>
-                    <div className="text-[10px] sm:text-xs font-normal text-white/40 uppercase tracking-wide text-center">Leads</div>
-                  </div>
-                  <div className="flex flex-col items-center py-1.5 sm:py-2">
-                    <div className="bg-primary text-black font-black mb-2 sm:mb-3 px-2 sm:px-3 py-1.5 sm:py-2 rounded-md lg:rounded-lg flex items-center justify-center text-xs sm:text-sm w-full">
-                      {influencer.totalRegs.toLocaleString()}
-                    </div>
-                    <div className="text-[10px] sm:text-xs font-normal text-white/40 uppercase tracking-wide text-center">Regs</div>
-                  </div>
-                  <div className="flex flex-col items-center py-1.5 sm:py-2">
-                    <div className="bg-primary text-black font-black mb-2 sm:mb-3 px-2 sm:px-3 py-1.5 sm:py-2 rounded-md lg:rounded-lg flex items-center justify-center text-xs sm:text-sm w-full">
-                      {influencer.totalFtd.toLocaleString()}
-                    </div>
-                    <div className="text-[10px] sm:text-xs font-normal text-white/40 uppercase tracking-wide text-center">FTD</div>
-                  </div>
+                  ))}
                 </div>
 
                 {/* Actions */}
@@ -623,6 +747,7 @@ export default function InfluencersPage() {
 
                   {/* Manage Button */}
                   <button
+                    onClick={() => handleManageInfluencer(influencer)}
                     className="w-full px-2 sm:px-3 lg:px-4 py-1 sm:py-1.5 text-[10px] sm:text-xs font-bold text-black bg-white hover:bg-white/90 rounded-md lg:rounded-lg transition-colors flex items-center justify-center"
                   >
                     <span className="sm:hidden">EDIT</span>
@@ -838,6 +963,7 @@ export default function InfluencersPage() {
 
                           {/* Manage Button */}
                           <button
+                            onClick={() => handleManageInfluencer(influencer)}
                             className="w-12 sm:w-20 px-1 sm:px-4 py-1 sm:py-1.5 text-[9px] sm:text-xs font-bold rounded-lg bg-white text-black hover:bg-white/90 transition-colors flex items-center justify-center"
                           >
                             <span className="hidden sm:inline">MANAGE</span>
@@ -868,17 +994,19 @@ export default function InfluencersPage() {
                     key={campaign.id}
                     className="flex items-center space-x-3 p-3 rounded-xl hover:bg-white/5 transition-all duration-300 cursor-pointer"
                     style={{
-                      background: selectedCampaign === campaign.id ? 'rgba(251, 191, 36, 0.1)' : 'rgba(255, 255, 255, 0.03)',
-                      border: selectedCampaign === campaign.id ? '1px solid rgba(251, 191, 36, 0.3)' : '1px solid rgba(255, 255, 255, 0.1)'
+                      background: selectedCampaigns.includes(campaign.id) ? 'rgba(251, 191, 36, 0.1)' : 'rgba(255, 255, 255, 0.03)',
+                      border: selectedCampaigns.includes(campaign.id) ? '1px solid rgba(251, 191, 36, 0.3)' : '1px solid rgba(255, 255, 255, 0.1)'
                     }}
                   >
                     <input
                       type="checkbox"
-                      checked={selectedCampaign === campaign.id}
+                      checked={selectedCampaigns.includes(campaign.id)}
                       onChange={(e) => {
-                        // Single selection behavior - uncheck others
-                        const newValue = e.target.checked ? campaign.id : ''
-                        setSelectedCampaign(newValue)
+                        if (e.target.checked) {
+                          setSelectedCampaigns(prev => [...prev, campaign.id])
+                        } else {
+                          setSelectedCampaigns(prev => prev.filter(id => id !== campaign.id))
+                        }
                       }}
                       className="w-4 h-4 text-yellow-400 bg-transparent border-white/30 rounded focus:ring-yellow-400 focus:ring-2"
                     />
@@ -888,7 +1016,7 @@ export default function InfluencersPage() {
                         {campaign.startDate} - {campaign.endDate || 'Ongoing'}
                       </div>
                     </div>
-                    {selectedCampaign === campaign.id && (
+                    {selectedCampaigns.includes(campaign.id) && (
                       <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
                     )}
                   </label>
@@ -904,7 +1032,7 @@ export default function InfluencersPage() {
                 </button>
                 <button
                   onClick={confirmAssignment}
-                  disabled={!selectedCampaign}
+                  disabled={selectedCampaigns.length === 0}
                   className="flex-1 px-3 py-2 text-xs bg-primary hover:bg-primary/90 text-black disabled:opacity-50 rounded"
                 >
                   Assign
@@ -932,6 +1060,7 @@ export default function InfluencersPage() {
             </p>
             {!search && (
               <button
+                onClick={() => setShowInfluencerModal(true)}
                 className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-xl transition-all duration-300 whitespace-nowrap mx-auto"
                 style={{
                   background: 'linear-gradient(135deg, rgba(253, 198, 0, 0.9), rgba(253, 198, 0, 0.7))',
@@ -950,6 +1079,152 @@ export default function InfluencersPage() {
               </button>
             )}
           </div>
+        )}
+
+        {/* Influencer Modal */}
+        <InfluencerModal
+          isOpen={showInfluencerModal}
+          onClose={() => {
+            setShowInfluencerModal(false)
+            setEditingInfluencer(null)
+          }}
+          onSubmit={handleCreateInfluencer}
+          editMode={editingInfluencer}
+        />
+
+        {/* Conversion Types Management Modal */}
+        {showConversionTypesModal && managingInfluencer && (
+          <>
+            {/* Backdrop */}
+            <div
+              className="fixed inset-0 bg-black/40 z-[24]"
+              style={{
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+              }}
+              onClick={() => setShowConversionTypesModal(false)}
+            />
+
+            {/* Modal */}
+            <div className="fixed top-0 bottom-0 right-0 z-[25] flex items-center justify-center p-4 left-16 lg:left-80">
+              <div
+                className="w-full max-w-lg max-h-[90vh] overflow-hidden rounded-3xl"
+                style={{
+                  background: 'rgba(0, 0, 0, 0.25)',
+                  backdropFilter: 'blur(20px)',
+                  WebkitBackdropFilter: 'blur(20px)',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)'
+                }}
+              >
+                {/* Header */}
+                <div className="px-6 py-4 border-b border-white/10" style={{ background: '#0f0f0f' }}>
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-bold text-yellow-400">Manage Conversion Types</h2>
+                    <button
+                      onClick={() => setShowConversionTypesModal(false)}
+                      className="w-8 h-8 bg-yellow-400 hover:bg-yellow-300 rounded-lg flex items-center justify-center transition-all duration-300"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-black">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                      </svg>
+                    </button>
+                  </div>
+                  <p className="text-white/60 text-sm mt-1">Configure which stats to display for {managingInfluencer.name}</p>
+                </div>
+
+                {/* Content */}
+                <div className="p-6 max-h-[calc(90vh-120px)] overflow-y-auto">
+                  <div className="space-y-4">
+                    {/* Standard Conversion Types */}
+                    <div>
+                      <h3 className="text-lg font-semibold text-white mb-3">Standard Metrics</h3>
+                      <div className="space-y-3">
+                        {[
+                          { key: 'leads', label: 'Leads', description: 'Total number of leads generated' },
+                          { key: 'clicks', label: 'Clicks', description: 'Total number of clicks tracked' },
+                          { key: 'registrations', label: 'Registrations', description: 'User registrations from campaigns' },
+                          { key: 'ftd', label: 'FTD', description: 'First Time Deposits' }
+                        ].map((metric) => (
+                          <label key={metric.key} className="flex items-center justify-between p-3 rounded-lg cursor-pointer hover:bg-white/5 transition-colors" style={{
+                            background: 'rgba(255, 255, 255, 0.03)',
+                            border: '1px solid rgba(255, 255, 255, 0.1)'
+                          }}>
+                            <div className="flex-1">
+                              <div className="text-white font-medium">{metric.label}</div>
+                              <div className="text-white/60 text-sm">{metric.description}</div>
+                            </div>
+                            <input
+                              type="checkbox"
+                              checked={conversionTypesConfig[managingInfluencer.id]?.[metric.key as keyof InfluencerConversionConfig] || false}
+                              onChange={(e) => {
+                                const config = conversionTypesConfig[managingInfluencer.id] || {
+                                  leads: true, clicks: true, registrations: true, ftd: true, customTypes: {}
+                                }
+                                updateConversionConfig(managingInfluencer.id, {
+                                  ...config,
+                                  [metric.key]: e.target.checked
+                                })
+                              }}
+                              className="w-5 h-5 rounded text-yellow-400 bg-white/10 border-white/30 focus:ring-yellow-400 focus:ring-2"
+                            />
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Custom Conversion Types */}
+                    {managingInfluencer.conversionTypes && managingInfluencer.conversionTypes.length > 0 && (
+                      <div>
+                        <h3 className="text-lg font-semibold text-white mb-3">Custom Conversion Types</h3>
+                        <div className="space-y-3">
+                          {managingInfluencer.conversionTypes.map((type) => (
+                            <label key={type.id} className="flex items-center justify-between p-3 rounded-lg cursor-pointer hover:bg-white/5 transition-colors" style={{
+                              background: 'rgba(255, 255, 255, 0.03)',
+                              border: '1px solid rgba(255, 255, 255, 0.1)'
+                            }}>
+                              <div className="flex-1">
+                                <div className="text-white font-medium">{type.name}</div>
+                                {type.description && <div className="text-white/60 text-sm">{type.description}</div>}
+                              </div>
+                              <input
+                                type="checkbox"
+                                checked={conversionTypesConfig[managingInfluencer.id]?.customTypes[type.id] || false}
+                                onChange={(e) => {
+                                  const config = conversionTypesConfig[managingInfluencer.id] || {
+                                    leads: true, clicks: true, registrations: true, ftd: true, customTypes: {}
+                                  }
+                                  updateConversionConfig(managingInfluencer.id, {
+                                    ...config,
+                                    customTypes: {
+                                      ...config.customTypes,
+                                      [type.id]: e.target.checked
+                                    }
+                                  })
+                                }}
+                                className="w-5 h-5 rounded text-yellow-400 bg-white/10 border-white/30 focus:ring-yellow-400 focus:ring-2"
+                              />
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Footer */}
+                <div className="px-6 py-4 border-t border-white/10" style={{ background: '#0f0f0f' }}>
+                  <button
+                    onClick={() => setShowConversionTypesModal(false)}
+                    className="w-full px-4 py-2 rounded-xl bg-primary text-black font-semibold hover:bg-primary/90 transition-all duration-300"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </div>
+            </div>
+          </>
         )}
       </div>
     </div>
