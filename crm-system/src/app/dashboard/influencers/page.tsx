@@ -95,6 +95,8 @@ export default function InfluencersPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [dateFilter, setDateFilter] = useState<'today' | 'yesterday' | 'last7days' | 'last30days' | 'custom' | 'all'>('today')
+  const [customDateRange, setCustomDateRange] = useState<{ from?: string; to?: string }>({})
   const [selectedInfluencer, setSelectedInfluencer] = useState<string | null>(null)
   const [showAssignModal, setShowAssignModal] = useState(false)
   const [selectedCampaigns, setSelectedCampaigns] = useState([])
@@ -145,8 +147,15 @@ export default function InfluencersPage() {
       setLoading(true)
 
       // Fetch influencers and campaigns in parallel
+      const params = new URLSearchParams()
+      params.append('dateFilter', dateFilter)
+      if (dateFilter === 'custom' && customDateRange.from && customDateRange.to) {
+        params.append('fromDate', customDateRange.from)
+        params.append('toDate', customDateRange.to)
+      }
+
       const [influencersResponse, campaignsResponse] = await Promise.all([
-        fetch('/api/influencers'),
+        fetch(`/api/influencers?${params.toString()}`),
         fetch('/api/campaigns')
       ])
 
@@ -640,6 +649,44 @@ export default function InfluencersPage() {
 
           {/* Right-aligned controls */}
           <div className="flex items-center gap-4">
+            {/* Date Filter */}
+            <div className="flex items-center gap-2 bg-white/10 border border-white/20 rounded-xl p-2">
+              <select
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value as any)}
+                className="bg-transparent text-white text-sm outline-none"
+              >
+                <option className="bg-background" value="today">Today</option>
+                <option className="bg-background" value="yesterday">Yesterday</option>
+                <option className="bg-background" value="last7days">Last 7 days</option>
+                <option className="bg-background" value="last30days">Last 30 days</option>
+                <option className="bg-background" value="custom">Custom</option>
+                <option className="bg-background" value="all">All Time</option>
+              </select>
+              {dateFilter === 'custom' && (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="date"
+                    value={customDateRange.from || ''}
+                    onChange={(e) => setCustomDateRange(prev => ({ ...prev, from: e.target.value }))}
+                    className="bg-transparent text-white text-sm outline-none"
+                  />
+                  <span className="text-white/60">to</span>
+                  <input
+                    type="date"
+                    value={customDateRange.to || ''}
+                    onChange={(e) => setCustomDateRange(prev => ({ ...prev, to: e.target.value }))}
+                    className="bg-transparent text-white text-sm outline-none"
+                  />
+                  <button
+                    onClick={() => fetchData()}
+                    className="px-3 py-1.5 rounded-lg bg-primary text-black text-xs"
+                  >
+                    Apply
+                  </button>
+                </div>
+              )}
+            </div>
             {/* Total Influencers Count */}
             <div className="flex items-center justify-center gap-2 px-4 rounded-xl bg-white h-[52px] min-w-[140px] flex-shrink-0">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-black flex-shrink-0">

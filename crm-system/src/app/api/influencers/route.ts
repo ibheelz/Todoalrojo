@@ -6,6 +6,44 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const activeOnly = searchParams.get('activeOnly') === 'true'
+    const dateFilter = searchParams.get('dateFilter') || 'today'
+    const fromDate = searchParams.get('fromDate')
+    const toDate = searchParams.get('toDate')
+
+    // Build date range for metrics
+    let createdAtWhere: any = {}
+    if (dateFilter && dateFilter !== 'all') {
+      const today = new Date()
+      const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+      switch (dateFilter) {
+        case 'today':
+          createdAtWhere = { gte: startOfToday }
+          break
+        case 'yesterday':
+          const startOfYesterday = new Date(startOfToday)
+          startOfYesterday.setDate(startOfYesterday.getDate() - 1)
+          createdAtWhere = { gte: startOfYesterday, lt: startOfToday }
+          break
+        case 'last7days':
+          const sevenDaysAgo = new Date(startOfToday)
+          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+          createdAtWhere = { gte: sevenDaysAgo }
+          break
+        case 'last30days':
+          const thirtyDaysAgo = new Date(startOfToday)
+          thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+          createdAtWhere = { gte: thirtyDaysAgo }
+          break
+        case 'custom':
+          if (fromDate && toDate) {
+            const from = new Date(fromDate)
+            const to = new Date(toDate)
+            to.setHours(23, 59, 59, 999)
+            createdAtWhere = { gte: from, lte: to }
+          }
+          break
+      }
+    }
 
     // Fetch influencers from database with campaign relationships
     const influencers = await prisma.influencer.findMany({
@@ -39,47 +77,85 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // Transform data to match frontend expectations
-    const transformedInfluencers = influencers.map(influencer => ({
-      id: influencer.id,
-      name: influencer.name,
-      profileImage: (influencer as any).profileImage || null,
-      email: influencer.email,
-      phone: influencer.phone,
-      socialHandle: influencer.socialHandle,
-      platform: influencer.platform,
-      followers: influencer.followers,
-      engagementRate: influencer.engagementRate ? Number(influencer.engagementRate) : 0,
-      category: influencer.category,
-      location: influencer.location,
-      status: influencer.status,
-      assignedCampaigns: influencer.campaignInfluencers.map(ci => ci.campaign.id),
-      totalLeads: influencer.totalLeads,
-      totalClicks: influencer.totalClicks,
-      totalRegs: influencer.totalRegs,
-      totalFtd: influencer.totalFtd,
-      createdAt: influencer.createdAt.toISOString().split('T')[0],
-      commissionRate: influencer.commissionRate ? Number(influencer.commissionRate) : null,
-      paymentMethod: influencer.paymentMethod,
-      notes: influencer.notes,
-      conversionTypes: influencer.conversionTypes ? JSON.parse(influencer.conversionTypes) : [],
-      conversionConfig: influencer.conversionConfig ? JSON.parse(influencer.conversionConfig) : {
-        leads: true,
-        clicks: true,
-        registrations: true,
-        ftd: true
-      },
-      campaigns: influencer.campaignInfluencers.map(ci => ({
-        id: ci.campaign.id,
-        name: ci.campaign.name,
-        slug: ci.campaign.slug,
-        assignedAt: ci.assignedAt
-      })),
-      links: influencer.linkInfluencers.map(li => ({
-        id: li.link.id,
-        title: li.link.title,
-        shortCode: li.link.shortCode,
-        assignedAt: li.assignedAt
+    // Compute filtered stats per influencer using link relationships
+    const transformedInfluencers = await Promise.all(influencers.map(async influencer => {
+      // Get clickIds for this influencer's links (within date window)
+      const linkClickWhere: any = {
+        link: { linkInfluencers: { some: { influencerId: influencer.id } } }
+      }
+      if (createdAtWhere && Object.keys(createdAtWhere).length > 0) {
+        linkClickWhere.createdAt = createdAtWhere
+      }
+
+      const [clicksCount, linkClicks] = await Promise.all([
+        prisma.linkClick.count({ where: linkClickWhere }),
+        prisma.linkClick.findMany({ where: linkClickWhere, select: { clickId: true }, take: 5000 })
+      ])
+      const clickIds = linkClicks.map(lc => lc.clickId).filter(Boolean)
+
+      // Aggregate leads and events via clickId list (best-effort if many)
+      let leadsCount = 0, regsCount = 0, ftdCount = 0
+      if (clickIds.length > 0) {
+        const leadWhere: any = { clickId: { in: clickIds } }
+        const eventWhereBase: any = { clickId: { in: clickIds } }
+        if (createdAtWhere && Object.keys(createdAtWhere).length > 0) {
+          leadWhere.createdAt = createdAtWhere
+        }
+        if (createdAtWhere && Object.keys(createdAtWhere).length > 0) {
+          eventWhereBase.createdAt = createdAtWhere
+        }
+
+        const [leadCnt, regsCnt, ftdCnt] = await Promise.all([
+          prisma.lead.count({ where: leadWhere }),
+          prisma.event.count({ where: { ...eventWhereBase, eventType: { in: ['REGISTRATION', 'REGISTER', 'SIGNUP'] } } }),
+          prisma.event.count({ where: { ...eventWhereBase, eventType: 'FTD' } })
+        ])
+        leadsCount = leadCnt
+        regsCount = regsCnt
+        ftdCount = ftdCnt
+      }
+
+      // Transform row
+      return ({
+        id: influencer.id,
+        name: influencer.name,
+        profileImage: (influencer as any).profileImage || null,
+        email: influencer.email,
+        phone: influencer.phone,
+        socialHandle: influencer.socialHandle,
+        platform: influencer.platform,
+        followers: influencer.followers,
+        engagementRate: influencer.engagementRate ? Number(influencer.engagementRate) : 0,
+        category: influencer.category,
+        location: influencer.location,
+        status: influencer.status,
+        assignedCampaigns: influencer.campaignInfluencers.map(ci => ci.campaign.id),
+      totalLeads: leadsCount || influencer.totalLeads,
+      totalClicks: clicksCount || influencer.totalClicks,
+      totalRegs: regsCount || influencer.totalRegs,
+      totalFtd: ftdCount || influencer.totalFtd,
+        createdAt: influencer.createdAt.toISOString().split('T')[0],
+        commissionRate: influencer.commissionRate ? Number(influencer.commissionRate) : null,
+        paymentMethod: influencer.paymentMethod,
+        notes: influencer.notes,
+        conversionTypes: influencer.conversionTypes ? JSON.parse(influencer.conversionTypes) : [],
+        conversionConfig: influencer.conversionConfig ? JSON.parse(influencer.conversionConfig) : {
+          leads: true,
+          clicks: true,
+          registrations: true,
+          ftd: true
+        },
+        campaigns: influencer.campaignInfluencers.map(ci => ({
+          id: ci.campaign.id,
+          name: ci.campaign.name,
+          slug: ci.campaign.slug,
+          assignedAt: ci.assignedAt
+        })),
+        links: influencer.linkInfluencers.map(li => ({
+          id: li.link.id,
+          title: li.link.title,
+          shortCode: li.link.shortCode,
+          assignedAt: li.assignedAt
       }))
     }))
 
