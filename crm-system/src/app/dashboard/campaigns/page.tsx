@@ -86,7 +86,6 @@ export default function CampaignsPage() {
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [managingCampaign, setManagingCampaign] = useState<Campaign | null>(null)
-  const [allConversionTypes, setAllConversionTypes] = useState<string[]>([])
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -133,19 +132,6 @@ export default function CampaignsPage() {
         })
 
         setCampaigns(campaignsWithStatus)
-
-        // Extract all unique conversion types from campaigns
-        const conversionTypes = new Set<string>()
-        campaignsWithStatus.forEach((campaign: any) => {
-          if (campaign.conversionTypes && Array.isArray(campaign.conversionTypes) && campaign.conversionTypes.length > 0) {
-            campaign.conversionTypes.forEach((type: any) => {
-              if (type && (type.name || type.id || type)) {
-                conversionTypes.add(type.name || type.id || type)
-              }
-            })
-          }
-        })
-        setAllConversionTypes(Array.from(conversionTypes))
       } else {
         setError('Failed to load campaigns')
       }
@@ -653,6 +639,12 @@ export default function CampaignsPage() {
                       const showRegistrations = sortedCampaigns.some(campaign => campaign.registrations !== null && campaign.registrations > 0)
                       console.log('🔍 [TABLE DEBUG] Show Registrations column?', showRegistrations,
                         sortedCampaigns.map(c => ({name: c.name, registrations: c.registrations})))
+                      console.log('🔍 [TABLE DEBUG] Total columns for conversion types:',
+                        (showRegistrations ? 1 : 0) +
+                        (sortedCampaigns.some(c => c.ftd !== null && c.ftd > 0) ? 1 : 0) +
+                        (sortedCampaigns.some(c => c.approvedRegistrations !== null && c.approvedRegistrations > 0) ? 1 : 0) +
+                        (sortedCampaigns.some(c => c.qualifiedDeposits !== null && c.qualifiedDeposits > 0) ? 1 : 0)
+                      )
                       return showRegistrations
                     })() && (
                       <th className="px-2 sm:px-4 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-semibold text-white/80 uppercase tracking-wide w-16 sm:w-24">
@@ -700,17 +692,6 @@ export default function CampaignsPage() {
                         </div>
                       </th>
                     )}
-                    {/* Dynamic conversion type columns */}
-                    {allConversionTypes.map((conversionType) => (
-                      <th key={conversionType} className="px-2 sm:px-4 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-semibold text-white/80 uppercase tracking-wide w-16 sm:w-24">
-                        <div className="flex items-center space-x-1 sm:space-x-2">
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary sm:w-4 sm:h-4">
-                            <polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/>
-                          </svg>
-                          <span className="truncate">{conversionType}</span>
-                        </div>
-                      </th>
-                    ))}
                     <th className="px-2 sm:px-4 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-semibold text-white/80 uppercase tracking-wide w-20 sm:w-28">
                       <button
                         onClick={() => handleSort('created')}
@@ -831,20 +812,6 @@ export default function CampaignsPage() {
                           )}
                         </td>
                       )}
-                      {/* Dynamic conversion type data columns */}
-                      {allConversionTypes.map((conversionType) => {
-                        // Find conversion data for this type in campaign
-                        const conversionData = campaign.conversionTypes && Array.isArray(campaign.conversionTypes)
-                          ? campaign.conversionTypes.find((ct: any) => (ct.name || ct.id || ct) === conversionType)
-                          : null
-                        const count = conversionData?.count || campaign.stats?.[`${conversionType.toLowerCase()}Count`] || 0
-
-                        return (
-                          <td key={conversionType} className="px-2 sm:px-4 py-3 sm:py-4">
-                            <div className="text-white font-medium text-xs sm:text-sm">{typeof count === 'number' && count.toLocaleString ? count.toLocaleString() : count}</div>
-                          </td>
-                        )
-                      })}
                       <td className="px-2 sm:px-4 py-3 sm:py-4">
                         <div className="flex flex-col">
                           <div className="text-white font-medium text-xs sm:text-sm">
