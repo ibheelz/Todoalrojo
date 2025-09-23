@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { generateShortUrl, extractDomainFromUrl } from '@/lib/shorturl'
 
 const createLinkSchema = z.object({
   originalUrl: z.string().url('Invalid URL format'),
@@ -70,7 +71,7 @@ export async function POST(request: NextRequest) {
         medium: validatedData.medium,
         content: validatedData.content,
         term: validatedData.term,
-        customDomain: validatedData.customDomain || 'localhost:3005',
+        customDomain: validatedData.customDomain || extractDomainFromUrl(generateShortUrl('')),
         password: validatedData.password,
         expiresAt: validatedData.expiresAt,
         isPublic: validatedData.isPublic,
@@ -79,7 +80,7 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    const shortUrl = `http://${shortLink.customDomain}/s/${shortLink.shortCode}`
+    const shortUrl = generateShortUrl(shortLink.shortCode)
 
     return NextResponse.json({
       success: true,
@@ -181,7 +182,7 @@ export async function GET(request: NextRequest) {
     // Enhance links with short URLs
     const enhancedLinks = links.map(link => ({
       ...link,
-      shortUrl: `http://${link.customDomain}/s/${link.shortCode}`,
+      shortUrl: generateShortUrl(link.shortCode),
       clickCount: link._count.clicks
     }))
 

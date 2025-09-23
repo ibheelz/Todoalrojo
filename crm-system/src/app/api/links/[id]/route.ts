@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { generateShortUrl } from '@/lib/shorturl'
 
 const updateLinkSchema = z.object({
   title: z.string().optional(),
@@ -93,7 +94,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     const enhancedLink = {
       ...link,
-      shortUrl: `http://${link.customDomain}/s/${link.shortCode}`,
+      shortUrl: generateShortUrl(link.shortCode),
       analytics: {
         dailyClicks: clickAnalytics,
         topCountries: geoData.map(g => ({ country: g.country, clicks: g._count })),
@@ -136,7 +137,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     const enhancedLink = {
       ...updatedLink,
-      shortUrl: `http://${updatedLink.customDomain}/s/${updatedLink.shortCode}`,
+      shortUrl: generateShortUrl(updatedLink.shortCode),
       clickCount: updatedLink._count.clicks
     }
 

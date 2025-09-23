@@ -290,7 +290,7 @@ model ShortLink {
   medium          String?
   content         String?
   term            String?
-  customDomain    String?     @default("localhost:3005")
+  customDomain    String?     @default("short.ly")
   password        String?
   expiresAt       DateTime?
   isActive        Boolean     @default(true)
