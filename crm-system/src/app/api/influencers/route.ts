@@ -129,12 +129,17 @@ export async function PUT(request: NextRequest) {
     // Validate input data
     const validatedData = createInfluencerSchema.parse(body)
 
+    // Normalize fields that may break constraints
+    const normalizedEmail = validatedData.email && validatedData.email.trim() !== ''
+      ? validatedData.email
+      : null
+
     // Update influencer core fields
     const updatedInfluencer = await prisma.influencer.update({
       where: { id },
       data: {
         name: validatedData.name,
-        email: validatedData.email,
+        email: normalizedEmail,
         phone: validatedData.phone,
         socialHandle: validatedData.socialHandle,
         platform: validatedData.platform,
