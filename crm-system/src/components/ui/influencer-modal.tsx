@@ -543,6 +543,40 @@ export default function InfluencerModal({ isOpen, onClose, onSubmit, onDelete, e
               </div>
             </div>
 
+            {/* Campaign Assignment */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-yellow-400">
+                  <path d="M3 7h18M3 12h18M3 17h18"/>
+                </svg>
+                Assign Campaigns
+              </h3>
+              <p className="text-sm text-white/60">Select active campaigns to link this influencer. Clicks, leads and FTDs from their links will roll up to these campaigns.</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {campaigns.map((c) => (
+                  <label key={c.id} className="flex items-center gap-3 px-3 py-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="accent-yellow-400"
+                      checked={assignedCampaignIds.includes(c.id)}
+                      onChange={(e) => {
+                        setAssignedCampaignIds((prev) =>
+                          e.target.checked ? [...prev, c.id] : prev.filter((id) => id !== c.id)
+                        )
+                      }}
+                    />
+                    <div className="flex flex-col">
+                      <span className="text-white text-sm font-medium">{c.name}</span>
+                      <span className="text-white/50 text-xs">{c.slug}</span>
+                    </div>
+                  </label>
+                ))}
+                {campaigns.length === 0 && (
+                  <div className="text-white/60 text-sm">No active campaigns found.</div>
+                )}
+              </div>
+            </div>
+
             {/* Social Media */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-white mb-4">Social Media</h3>
@@ -1008,36 +1042,3 @@ export default function InfluencerModal({ isOpen, onClose, onSubmit, onDelete, e
 }
 
 export { InfluencerModal }
-            {/* Campaign Assignment */}
-            <div className="space-y-3">
-              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-yellow-400">
-                  <path d="M3 7h18M3 12h18M3 17h18"/>
-                </svg>
-                Assign Campaigns
-              </h3>
-              <p className="text-sm text-white/60">Select active campaigns to link this influencer. Clicks, leads and FTDs from their links will roll up to these campaigns.</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {campaigns.map((c) => (
-                  <label key={c.id} className="flex items-center gap-3 px-3 py-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      className="accent-yellow-400"
-                      checked={assignedCampaignIds.includes(c.id)}
-                      onChange={(e) => {
-                        setAssignedCampaignIds((prev) =>
-                          e.target.checked ? [...prev, c.id] : prev.filter((id) => id !== c.id)
-                        )
-                      }}
-                    />
-                    <div className="flex flex-col">
-                      <span className="text-white text-sm font-medium">{c.name}</span>
-                      <span className="text-white/50 text-xs">{c.slug}</span>
-                    </div>
-                  </label>
-                ))}
-                {campaigns.length === 0 && (
-                  <div className="text-white/60 text-sm">No active campaigns found.</div>
-                )}
-              </div>
-            </div>
