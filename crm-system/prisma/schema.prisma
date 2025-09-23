@@ -35,6 +35,7 @@ model Customer {
   isBlacklisted   Boolean         @default(false)
   assignedTeam    String[]
   clicks          Click[]
+  linkClicks      LinkClick[]
   mergedCustomers CustomerMerge[] @relation("MergedCustomer")
   events          Event[]
   identifiers     Identifier[]
@@ -276,6 +277,81 @@ model AdminUser {
 
   @@index([email])
   @@map("admin_users")
+}
+
+model ShortLink {
+  id              String      @id @default(cuid())
+  shortCode       String      @unique
+  originalUrl     String
+  title           String?
+  description     String?
+  campaign        String?
+  source          String?
+  medium          String?
+  content         String?
+  term            String?
+  customDomain    String?     @default("localhost:3005")
+  password        String?
+  expiresAt       DateTime?
+  isActive        Boolean     @default(true)
+  isPublic        Boolean     @default(true)
+  allowBots       Boolean     @default(false)
+  trackClicks     Boolean     @default(true)
+  userId          String?
+  clientId        String?
+  totalClicks     Int         @default(0)
+  uniqueClicks    Int         @default(0)
+  lastClickAt     DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  clicks          LinkClick[]
+
+  @@index([shortCode])
+  @@index([userId])
+  @@index([clientId])
+  @@index([campaign])
+  @@index([isActive])
+  @@index([createdAt])
+  @@map("short_links")
+}
+
+model LinkClick {
+  id           String     @id @default(cuid())
+  linkId       String
+  shortCode    String
+  customerId   String?
+  sessionId    String?
+  clickId      String?    @unique
+  ip           String
+  userAgent    String?
+  referrer     String?
+  country      String?
+  region       String?
+  city         String?
+  device       String?
+  browser      String?
+  os           String?
+  isMobile     Boolean    @default(false)
+  isTablet     Boolean    @default(false)
+  isDesktop    Boolean    @default(false)
+  isBot        Boolean    @default(false)
+  isVPN        Boolean    @default(false)
+  isFraud      Boolean    @default(false)
+  isUnique     Boolean    @default(true)
+  redirectTime Int?
+  createdAt    DateTime   @default(now())
+  clickTime    DateTime   @default(now())
+  link         ShortLink  @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  customer     Customer?  @relation(fields: [customerId], references: [id])
+
+  @@index([linkId])
+  @@index([shortCode])
+  @@index([customerId])
+  @@index([ip])
+  @@index([createdAt])
+  @@index([isBot])
+  @@index([isFraud])
+  @@map("link_clicks")
 }
 
 model AuditLog {
