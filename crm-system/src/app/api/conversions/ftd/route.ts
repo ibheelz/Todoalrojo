@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
+import { incrementCampaignCounters, incrementInfluencerCountersByClickId } from '@/lib/attribution'
 
 export const dynamic = 'force-dynamic'
 
@@ -176,6 +177,17 @@ export async function POST(request: NextRequest) {
         console.error('❌ [FTD] Failed to send RedTrack notification:', error)
       }
     }
+
+    // Update campaign and influencer aggregates
+    await incrementCampaignCounters({
+      campaign: validatedData.campaign || clickRecord?.campaign || undefined,
+      events: 1,
+      ftd: 1,
+      revenue: validatedData.value
+    })
+
+    // Map clickId -> link -> influencer and increment FTD count
+    await incrementInfluencerCountersByClickId(validatedData.clickId, { ftd: 1 })
 
     console.log('🎉 [FTD] FTD conversion processed successfully')
 

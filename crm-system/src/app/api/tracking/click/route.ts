@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
+import { incrementCampaignCounters, incrementInfluencerCountersByClickId } from '@/lib/attribution'
 
 export const dynamic = 'force-dynamic'
 
@@ -247,6 +248,11 @@ export async function POST(request: NextRequest) {
         eventTime: validatedData.timestamp ? new Date(validatedData.timestamp) : new Date()
       }
     })
+
+    // Update campaign counters
+    await incrementCampaignCounters({ campaign: validatedData.campaign, clicks: 1, events: 1 })
+    // If this clickId later gets used by a short link redirect (unlikely here), the influencer increment will come via that path.
+    await incrementInfluencerCountersByClickId(clickId, { clicks: 1 })
 
     console.log('🎉 [CLICK-TRACKING] Click tracking processed successfully')
 

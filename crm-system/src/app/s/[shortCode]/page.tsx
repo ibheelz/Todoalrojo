@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { headers } from 'next/headers'
+import { incrementCampaignCounters, incrementInfluencerCountersByLinkId } from '@/lib/attribution'
 
 interface Props {
   params: { shortCode: string }
@@ -123,7 +124,7 @@ export default async function ShortLinkRedirect({ params, searchParams }: Props)
         const isUnique = !recentClick
 
         // Create click record in LinkClick table for link-specific analytics
-        await prisma.linkClick.create({
+        const linkClick = await prisma.linkClick.create({
           data: {
             linkId: shortLink.id,
             shortCode: shortLink.shortCode,
@@ -181,6 +182,10 @@ export default async function ShortLinkRedirect({ params, searchParams }: Props)
             lastClickAt: new Date()
           }
         })
+
+        // Update campaign and influencer counters for consistency across pages
+        await incrementCampaignCounters({ campaign: shortLink.campaign || undefined, clicks: 1 })
+        await incrementInfluencerCountersByLinkId(shortLink.id, { clicks: 1 })
 
         // Try to find or create customer if possible
         if (ip && !deviceInfo.isBot) {

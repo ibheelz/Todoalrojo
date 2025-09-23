@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
+import { incrementCampaignCounters, incrementInfluencerCountersByClickId } from '@/lib/attribution'
 
 export const dynamic = 'force-dynamic'
 
@@ -260,6 +261,10 @@ export async function POST(request: NextRequest) {
         isConverted: true,
       }
     })
+
+    // Update campaign aggregates and influencer mapping for consistency
+    await incrementCampaignCounters({ campaign: validatedData.campaign, leads: 1, clicks: 1 })
+    await incrementInfluencerCountersByClickId(validatedData.clickId, { leads: 1 })
 
     console.log('🎉 [LEAD-FORM] Lead form submission processed successfully')
 

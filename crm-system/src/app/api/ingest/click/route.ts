@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
+import { incrementInfluencerCountersByClickId } from '@/lib/attribution'
 import { UserService } from '@/lib/user-service'
 
 const clickSchema = z.object({
@@ -153,6 +154,9 @@ export async function POST(request: NextRequest) {
         console.log(`⚠️ [CLICK API] Campaign not found: ${validatedData.campaign}`)
       }
     }
+
+    // Attribute click to influencer via link mapping
+    await incrementInfluencerCountersByClickId(validatedData.clickId, { clicks: 1 })
 
     return NextResponse.json({
       success: true,

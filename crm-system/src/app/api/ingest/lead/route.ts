@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { UserService } from '@/lib/user-service'
+import { incrementCampaignCounters, incrementInfluencerCountersByClickId } from '@/lib/attribution'
 
 const leadSchema = z.object({
   // Required fields
@@ -272,37 +273,16 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ [LEAD API] User updated successfully:', updatedUser.id)
 
-    // Update campaign stats if campaign is provided (case-insensitive matching)
-    if (validatedData.campaign) {
-      console.log('📈 [LEAD API] Looking up campaign for:', validatedData.campaign)
-      const existingCampaign = await prisma.campaign.findFirst({
-        where: {
-          OR: [
-            { slug: { equals: validatedData.campaign, mode: 'insensitive' } },
-            { name: { equals: validatedData.campaign, mode: 'insensitive' } }
-          ]
-        }
-      })
+    // Update campaign aggregated counters consistently
+    await incrementCampaignCounters({
+      campaign: validatedData.campaign,
+      leads: 1,
+      clicks: 1,
+      revenue: validatedData.value || 0
+    })
 
-      if (existingCampaign) {
-        const updateData: any = {
-          totalLeads: { increment: 1 },
-          totalClicks: { increment: 1 } // Lead submission implies a click occurred
-        }
-
-        if (validatedData.value && validatedData.value > 0) {
-          updateData.totalRevenue = { increment: validatedData.value }
-        }
-
-        await prisma.campaign.update({
-          where: { id: existingCampaign.id },
-          data: updateData
-        })
-        console.log(`✅ [LEAD API] Campaign updated: ${existingCampaign.name} (clicks +1, leads +1, matched: ${validatedData.campaign})`)
-      } else {
-        console.log(`⚠️ [LEAD API] Campaign not found: ${validatedData.campaign}`)
-      }
-    }
+    // Attribute to influencer via the short link (if clickId came from a tracked short link)
+    await incrementInfluencerCountersByClickId(validatedData.clickId, { leads: 1 })
 
     const processingTime = Date.now() - startTime
     console.log(`🎉 [LEAD API] Lead processing completed successfully in ${processingTime}ms`)
