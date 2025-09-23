@@ -1564,35 +1564,41 @@ export default function CustomersPage() {
 
       {/* Empty State */}
       {!loading && filteredCustomers.length === 0 && (
-        <div className="text-center py-16">
-          <div className="rounded-xl p-8" style={{
-            background: 'rgba(255, 255, 255, 0.08)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.15)',
-          }}>
-            <div className="text-6xl mb-4">👥</div>
-            <h3 className="text-xl font-semibold text-white mb-2">No Customers Found</h3>
-            <p className="text-muted-foreground mb-6">
-              {searchQuery ?
-                `No customers match your search "${searchQuery}".` :
-                "There are no customers in your database yet."
-              }
-            </p>
-            {!searchQuery && (
-              <button
-                onClick={() => setIsAddModalOpen(true)}
-                className="px-6 py-3 rounded-xl font-medium transition-all duration-200 text-black"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(253, 198, 0, 0.9), rgba(253, 198, 0, 0.7))',
-                  border: '1px solid rgba(253, 198, 0, 0.3)',
-                  boxShadow: '0 4px 16px rgba(253, 198, 0, 0.3)'
-                }}
-              >
-                Add Your First Customer
-              </button>
-            )}
+        <div className="text-center py-16 px-4">
+          <div className="w-24 h-24 mx-auto mb-6 text-primary">
+            <svg className="w-24 h-24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
           </div>
+          <h3 className="text-2xl font-bold text-white mb-3">
+            {searchQuery ? 'No customers match your search' : 'No customers found'}
+          </h3>
+          <p className="text-white/60 mb-6 max-w-md mx-auto leading-relaxed">
+            {searchQuery
+              ? 'Try adjusting your search terms or clear the filter to see all customers'
+              : 'Add your first customer to start building your identity graph and tracking user journeys.'
+            }
+          </p>
+          {!searchQuery && (
+            <button
+              onClick={() => setIsAddModalOpen(true)}
+              className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-xl transition-all duration-300 whitespace-nowrap mx-auto"
+              style={{
+                background: 'linear-gradient(135deg, rgba(253, 198, 0, 0.9), rgba(253, 198, 0, 0.7))',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                border: '1px solid rgba(253, 198, 0, 0.3)',
+                boxShadow: '0 8px 32px rgba(253, 198, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+                color: '#0a0a0a'
+              }}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>Add Customer</span>
+            </button>
+          )}
         </div>
       )}
 

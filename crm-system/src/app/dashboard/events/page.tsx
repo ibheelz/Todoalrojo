@@ -478,14 +478,41 @@ export default function ConversionsPage() {
           </div>
 
           {filteredConversions.length === 0 ? (
-            <div className="p-12 text-center">
-              <div className="w-20 h-20 bg-primary rounded-3xl flex items-center justify-center mx-auto mb-6">
-                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <div className="text-center py-16 px-4">
+              <div className="w-24 h-24 mx-auto mb-6 text-primary">
+                <svg className="w-24 h-24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 4.354a4 4 0 110 5.292M15 21H3l1-6h11l1 6zM6 15h12M13 15l8-4-8-4z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-white mb-2">No conversions found</h3>
-              <p className="text-white/60 mb-6">No conversions match your current filters.</p>
+              <h3 className="text-2xl font-bold text-white mb-3">
+                {searchQuery ? 'No events match your search' : 'No events found'}
+              </h3>
+              <p className="text-white/60 mb-6 max-w-md mx-auto leading-relaxed">
+                {searchQuery
+                  ? 'Try adjusting your search terms or clear the filter to see all events'
+                  : 'No events recorded yet. Track user actions to understand conversion patterns.'
+                }
+              </p>
+              {!searchQuery && (
+                <button
+                  onClick={() => window.location.href = '/dashboard/campaigns'}
+                  className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-xl transition-all duration-300 whitespace-nowrap mx-auto"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(253, 198, 0, 0.9), rgba(253, 198, 0, 0.7))',
+                    backdropFilter: 'blur(10px)',
+                    WebkitBackdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(253, 198, 0, 0.3)',
+                    boxShadow: '0 8px 32px rgba(253, 198, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+                    color: '#0a0a0a'
+                  }}
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  <span>Start Tracking</span>
+                </button>
+              )}
             </div>
           ) : (
             <div className="overflow-x-auto">

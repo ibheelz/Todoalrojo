@@ -645,15 +645,41 @@ export default function ClicksPage() {
 
         {/* Empty State */}
         {clicks.length === 0 && !loading && (
-          <div className="text-center py-12">
-            <div className="text-white/40 text-lg mb-2">No clicks found</div>
-            <p className="text-white/60">Try adjusting your filters to see more results.</p>
-            <button
-              onClick={clearFilters}
-              className="mt-4 px-4 py-2 bg-primary text-black rounded-lg font-medium hover:bg-primary/90 transition-all"
-            >
-              Clear Filters
-            </button>
+          <div className="text-center py-16 px-4">
+            <div className="w-24 h-24 mx-auto mb-6 text-primary">
+              <svg className="w-24 h-24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+              </svg>
+            </div>
+            <h3 className="text-2xl font-bold text-white mb-3">
+              {searchQuery ? 'No clicks match your search' : 'No clicks found'}
+            </h3>
+            <p className="text-white/60 mb-6 max-w-md mx-auto leading-relaxed">
+              {searchQuery
+                ? 'Try adjusting your search terms or clear the filter to see all clicks'
+                : 'No clicks tracked yet. Start campaigns to begin monitoring user engagement.'
+              }
+            </p>
+            {!searchQuery && (
+              <button
+                onClick={() => window.location.href = '/dashboard/campaigns'}
+                className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-xl transition-all duration-300 whitespace-nowrap mx-auto"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(253, 198, 0, 0.9), rgba(253, 198, 0, 0.7))',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(253, 198, 0, 0.3)',
+                  boxShadow: '0 8px 32px rgba(253, 198, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+                  color: '#0a0a0a'
+                }}
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span>Start Campaign</span>
+              </button>
+            )}
           </div>
         )}
       </div>

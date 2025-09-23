@@ -753,30 +753,32 @@ export default function CampaignsPage() {
             <h3 className="text-2xl font-bold text-white mb-3">
               {searchQuery ? 'No campaigns match your search' : 'No campaigns found'}
             </h3>
-            <p className="text-white/60 mb-8 max-w-md mx-auto leading-relaxed">
+            <p className="text-white/60 mb-6 max-w-md mx-auto leading-relaxed">
               {searchQuery
                 ? 'Try adjusting your search terms or clear the filter to see all campaigns'
-                : 'Create your first campaign to start tracking your marketing performance and manage conversions'
+                : 'Create your first campaign to start tracking your marketing performance and manage conversions.'
               }
             </p>
-            <button
-              onClick={() => setIsCreateModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-300 whitespace-nowrap"
-              style={{
-                background: 'linear-gradient(135deg, rgba(253, 198, 0, 0.9), rgba(253, 198, 0, 0.7))',
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)',
-                border: '1px solid rgba(253, 198, 0, 0.3)',
-                boxShadow: '0 8px 32px rgba(253, 198, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
-                color: '#0a0a0a'
-              }}
-            >
+            {!searchQuery && (
+              <button
+                onClick={() => setIsCreateModalOpen(true)}
+                className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-xl transition-all duration-300 whitespace-nowrap mx-auto"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(253, 198, 0, 0.9), rgba(253, 198, 0, 0.7))',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(253, 198, 0, 0.3)',
+                  boxShadow: '0 8px 32px rgba(253, 198, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+                  color: '#0a0a0a'
+                }}
+              >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-black">
                 <line x1="12" y1="5" x2="12" y2="19"/>
                 <line x1="5" y1="12" x2="19" y2="12"/>
               </svg>
               <span>Create Campaign</span>
             </button>
+            )}
           </div>
         ) : viewMode === 'table' ? (
           /* Super Responsive Table View */

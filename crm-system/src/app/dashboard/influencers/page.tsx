@@ -915,8 +915,40 @@ export default function InfluencersPage() {
         )}
 
         {sortedInfluencers.length === 0 && !loading && (
-          <div className="text-center py-8">
-            <div className="text-sm text-muted-foreground">No influencers found</div>
+          <div className="text-center py-16 px-4">
+            <div className="w-24 h-24 mx-auto mb-6 text-primary">
+              <svg className="w-24 h-24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
+            <h3 className="text-2xl font-bold text-white mb-3">
+              {search ? 'No influencers match your search' : 'No influencers found'}
+            </h3>
+            <p className="text-white/60 mb-6 max-w-md mx-auto leading-relaxed">
+              {search
+                ? 'Try adjusting your search terms or clear the filter to see all influencers'
+                : 'Add your first influencer to start managing partnerships and tracking performance.'
+              }
+            </p>
+            {!search && (
+              <button
+                className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-xl transition-all duration-300 whitespace-nowrap mx-auto"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(253, 198, 0, 0.9), rgba(253, 198, 0, 0.7))',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(253, 198, 0, 0.3)',
+                  boxShadow: '0 8px 32px rgba(253, 198, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+                  color: '#0a0a0a'
+                }}
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span>Add Influencer</span>
+              </button>
+            )}
           </div>
         )}
       </div>

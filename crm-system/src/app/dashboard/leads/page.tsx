@@ -639,26 +639,43 @@ export default function LeadsPage() {
 
         {/* Leads Display */}
         {filteredLeads.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="w-24 h-24 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                <circle cx="8.5" cy="7" r="4"/>
-                <line x1="20" y1="8" x2="20" y2="14"/>
-                <line x1="23" y1="11" x2="17" y2="11"/>
+          <div className="text-center py-16 px-4">
+            <div className="w-24 h-24 mx-auto mb-6 text-primary">
+              <svg className="w-24 h-24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
             </div>
             <h3 className="text-2xl font-bold text-white mb-3">
               {search ? 'No leads match your search' : leads.length === 0 ? 'No leads found' : 'No leads match your date filter'}
             </h3>
-            <p className="text-white/60 mb-8 max-w-md mx-auto leading-relaxed">
+            <p className="text-white/60 mb-6 max-w-md mx-auto leading-relaxed">
               {search
-                ? 'Try adjusting your search terms or clear the search to see all leads'
+                ? 'Try adjusting your search terms or clear the filter to see all leads'
                 : leads.length === 0
-                ? 'Lead submissions will appear here once they start coming in from your campaigns'
+                ? 'No leads captured yet. Set up campaigns to start generating qualified leads.'
                 : 'Try selecting a different date range to see more leads'
               }
             </p>
+            {!search && leads.length === 0 && (
+              <button
+                onClick={() => window.location.href = '/dashboard/campaigns'}
+                className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-xl transition-all duration-300 whitespace-nowrap mx-auto"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(253, 198, 0, 0.9), rgba(253, 198, 0, 0.7))',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(253, 198, 0, 0.3)',
+                  boxShadow: '0 8px 32px rgba(253, 198, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+                  color: '#0a0a0a'
+                }}
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span>Set Up Campaign</span>
+              </button>
+            )}
           </div>
         ) : viewMode === 'table' ? (
           /* Table View */

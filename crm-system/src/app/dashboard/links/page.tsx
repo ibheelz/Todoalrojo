@@ -534,28 +534,41 @@ export default function LinksPage() {
 
         {/* Links Display */}
         {links.length === 0 ? (
-          <div className="premium-card text-center py-12">
-            <div className="w-20 h-20 bg-primary rounded-3xl flex items-center justify-center mx-auto mb-6">
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="text-center py-16 px-4">
+            <div className="w-24 h-24 mx-auto mb-6 text-primary">
+              <svg className="w-24 h-24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
               </svg>
             </div>
-            <h3 className="text-lg font-medium text-white mb-2">No links found</h3>
-            <p className="text-white/60 mb-6">Create your first short link to get started.</p>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-2 px-6 py-3 text-sm font-medium rounded-xl transition-all duration-300 mx-auto"
-              style={{
-                background: 'linear-gradient(135deg, rgba(253, 198, 0, 0.9), rgba(253, 198, 0, 0.7))',
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)',
-                border: '1px solid rgba(253, 198, 0, 0.3)',
-                boxShadow: '0 8px 32px rgba(253, 198, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
-                color: '#0a0a0a'
-              }}
-            >
-              Create Your First Link
-            </button>
+            <h3 className="text-2xl font-bold text-white mb-3">
+              {searchTerm ? 'No links match your search' : 'No links found'}
+            </h3>
+            <p className="text-white/60 mb-6 max-w-md mx-auto leading-relaxed">
+              {searchTerm
+                ? 'Try adjusting your search terms or clear the filter to see all links'
+                : 'Create your first short link to start tracking clicks and managing campaigns.'
+              }
+            </p>
+            {!searchTerm && (
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-xl transition-all duration-300 whitespace-nowrap mx-auto"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(253, 198, 0, 0.9), rgba(253, 198, 0, 0.7))',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(253, 198, 0, 0.3)',
+                  boxShadow: '0 8px 32px rgba(253, 198, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+                  color: '#0a0a0a'
+                }}
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span>Create Link</span>
+              </button>
+            )}
           </div>
         ) : viewMode === 'table' ? (
           /* Table View */
