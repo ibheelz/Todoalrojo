@@ -80,6 +80,24 @@ export default function LinksPage() {
     fetchInfluencers()
   }, [page, searchTerm, selectedCampaign])
 
+  // Live updates via SSE: refresh on clicks/leads/ftd/resets
+  useEffect(() => {
+    const es = new EventSource('/api/events')
+    const onStats = (e: MessageEvent) => {
+      try {
+        const evt = JSON.parse((e as MessageEvent).data)
+        // console.debug('[LINKS PAGE] SSE event', evt)
+        if (!evt || !evt.type) return
+        if (['click', 'lead', 'ftd', 'resetInfluencer', 'resetCampaign'].includes(evt.type)) {
+          fetchLinks()
+        }
+      } catch {}
+    }
+    // @ts-ignore - EventSource typings
+    es.addEventListener('stats', onStats)
+    return () => es.close()
+  }, [page, searchTerm, selectedCampaign])
+
   // Auto-set compact mode for smaller devices
   useEffect(() => {
     const handleResize = () => {
