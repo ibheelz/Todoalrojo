@@ -115,132 +115,67 @@ export default function InfluencersPage() {
   }, [dropdownOpen])
 
   useEffect(() => {
-    // Mock data for now - replace with actual API call
-    setTimeout(() => {
-      setCampaigns([
-        {
-          id: 'camp1',
-          name: 'Summer Sale 2025',
-          status: 'active',
-          startDate: '2025-01-01',
-          endDate: '2025-03-31'
-        },
-        {
-          id: 'camp2',
-          name: 'Product Launch',
-          status: 'active',
-          startDate: '2024-12-15',
-          endDate: null
-        },
-        {
-          id: 'camp3',
-          name: 'Holiday Campaign',
-          status: 'completed',
-          startDate: '2024-11-01',
-          endDate: '2024-12-31'
-        }
+    fetchData()
+  }, [])
+
+  const fetchData = async () => {
+    try {
+      setLoading(true)
+
+      // Fetch influencers and campaigns in parallel
+      const [influencersResponse, campaignsResponse] = await Promise.all([
+        fetch('/api/influencers'),
+        fetch('/api/campaigns')
       ])
 
-      setInfluencers([
-        {
-          id: '1',
-          name: 'Alex Johnson',
-          email: 'alex@example.com',
-          phone: '+1234567890',
-          socialHandle: '@alexjohnson',
-          platform: 'Instagram',
-          followers: 150000,
-          engagementRate: 4.2,
-          category: 'Lifestyle',
-          location: 'Los Angeles, CA',
-          status: 'active',
-          assignedCampaigns: ['camp1', 'camp2'],
-          totalLeads: 45,
-          totalClicks: 1250,
-          totalRegs: 32,
-          totalFtd: 8,
-          createdAt: '2024-12-01',
-          leads: [
-            {
-              id: 'lead1',
-              email: 'john@example.com',
-              firstName: 'John',
-              lastName: 'Doe',
-              source: 'instagram',
-              campaign: 'Summer Sale 2025',
-              value: 299,
-              createdAt: '2025-01-15',
-              qualityScore: 85
-            },
-            {
-              id: 'lead2',
-              email: 'jane@example.com',
-              firstName: 'Jane',
-              lastName: 'Smith',
-              source: 'instagram',
-              campaign: 'Product Launch',
-              value: 599,
-              createdAt: '2025-01-14',
-              qualityScore: 92
-            }
-          ]
-        },
-        {
-          id: '2',
-          name: 'Sarah Williams',
-          email: 'sarah@example.com',
-          phone: '+1987654321',
-          socialHandle: '@sarahwilliams',
-          platform: 'TikTok',
-          followers: 300000,
-          engagementRate: 6.8,
-          category: 'Fashion',
-          location: 'New York, NY',
-          status: 'active',
-          assignedCampaigns: ['camp1'],
-          totalLeads: 78,
-          totalClicks: 2100,
-          totalRegs: 55,
-          totalFtd: 15,
-          createdAt: '2024-11-15',
-          leads: [
-            {
-              id: 'lead3',
-              email: 'mike@example.com',
-              firstName: 'Mike',
-              lastName: 'Johnson',
-              source: 'tiktok',
-              campaign: 'Summer Sale 2025',
-              value: 450,
-              createdAt: '2025-01-13',
-              qualityScore: 88
-            }
-          ]
-        },
-        {
-          id: '3',
-          name: 'Emma Chen',
-          email: 'emma@example.com',
-          phone: '+1555666777',
-          socialHandle: '@emmachen',
-          platform: 'YouTube',
-          followers: 85000,
-          engagementRate: 5.4,
-          category: 'Tech',
-          location: 'San Francisco, CA',
-          status: 'paused',
-          assignedCampaigns: [],
-          totalLeads: 0,
-          totalClicks: 0,
-          totalRegs: 0,
-          totalFtd: 0,
-          createdAt: '2025-01-10',
-          leads: []
+      if (influencersResponse.ok) {
+        const influencersData = await influencersResponse.json()
+        if (influencersData.success) {
+          // Transform data to match the interface
+          const transformedInfluencers = influencersData.influencers.map((inf: any) => ({
+            id: inf.id,
+            name: inf.name,
+            email: inf.email,
+            phone: inf.phone,
+            socialHandle: inf.socialHandle,
+            platform: inf.platform || 'Unknown',
+            followers: inf.followers || 0,
+            engagementRate: inf.engagementRate || 0,
+            category: inf.category || 'Uncategorized',
+            location: inf.location,
+            status: inf.status as InfluencerStatus,
+            assignedCampaigns: inf.campaigns?.map((c: any) => c.id) || [],
+            totalLeads: inf.totalLeads || 0,
+            totalClicks: inf.totalClicks || 0,
+            totalRegs: inf.totalRegs || 0,
+            totalFtd: inf.totalFtd || 0,
+            createdAt: inf.createdAt,
+            leads: inf.leads || []
+          }))
+          setInfluencers(transformedInfluencers)
         }
-      ])
+      }
+
+      if (campaignsResponse.ok) {
+        const campaignsData = await campaignsResponse.json()
+        if (campaignsData.success) {
+          const transformedCampaigns = campaignsData.campaigns.map((camp: any) => ({
+            id: camp.id,
+            name: camp.name,
+            status: camp.isActive ? 'active' : 'paused' as any,
+            startDate: camp.createdAt,
+            endDate: null
+          }))
+          setCampaigns(transformedCampaigns)
+        }
+      }
+
+    } catch (error) {
+      console.error('Error fetching data:', error)
+    } finally {
       setLoading(false)
-    }, 1000)
-  }, [])
+    }
+  }
 
   const updateInfluencerStatus = async (influencerId: string, newStatus: InfluencerStatus) => {
     try {

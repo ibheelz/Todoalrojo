@@ -84,7 +84,6 @@ interface Customer {
   region?: string
   city?: string
   createdAt: Date
-  isRealData?: boolean // Flag to identify real vs sample data
   // Additional fields for comprehensive data
   clicks?: { id: string; campaign: string; source: string; medium: string; ip: string; createdAt: string }[]
   leads?: { id: string; campaign: string; source: string; medium: string; value: number; createdAt: string }[]
@@ -158,13 +157,12 @@ export default function CustomersPage() {
       })
 
       if (data.success) {
-        addDebugInfo(`✅ Fetched ${data.customers.length} real customers from API with related data`)
+        addDebugInfo(`✅ Fetched ${data.customers.length} customers from API with related data`)
 
-        // Process real customers with related data
-        const realCustomers = data.customers.map((customer: any) => {
+        // Process customers with related data
+        const processedCustomers = data.customers.map((customer: any) => {
           const processedCustomer = {
             ...customer,
-            isRealData: true, // Flag to identify real data
             lastSeen: customer.lastSeen ? new Date(customer.lastSeen) : null,
             createdAt: new Date(customer.createdAt)
           }
@@ -184,376 +182,29 @@ export default function CustomersPage() {
           return processedCustomer
         })
 
-        // Add sample data as backup/demo data
-        const sampleCustomers = getSampleCustomers()
-
-        // Combine real customers first, then sample customers
-        const combinedCustomers = [...realCustomers, ...sampleCustomers]
-
-        setCustomers(combinedCustomers)
+        setCustomers(processedCustomers)
         setLastRefresh(new Date())
-        addDebugInfo(`📊 Total customers displayed: ${combinedCustomers.length} (${realCustomers.length} real + ${sampleCustomers.length} sample)`)
+        addDebugInfo(`📊 Total customers displayed: ${processedCustomers.length}`)
 
         // Additional debugging for related data
-        const totalClicks = realCustomers.reduce((sum, c) => sum + (c._count?.clicks || 0), 0)
-        const totalLeads = realCustomers.reduce((sum, c) => sum + (c._count?.leads || 0), 0)
-        const totalEvents = realCustomers.reduce((sum, c) => sum + (c._count?.events || 0), 0)
+        const totalClicks = processedCustomers.reduce((sum, c) => sum + (c._count?.clicks || 0), 0)
+        const totalLeads = processedCustomers.reduce((sum, c) => sum + (c._count?.leads || 0), 0)
+        const totalEvents = processedCustomers.reduce((sum, c) => sum + (c._count?.events || 0), 0)
         addDebugInfo(`📋 Related data totals - Clicks: ${totalClicks}, Leads: ${totalLeads}, Events: ${totalEvents}`)
       } else {
         console.error('❌ Failed to fetch customers:', data.error)
-        addDebugInfo('❌ Failed to fetch real customers, using sample data only')
-        setCustomers(getSampleCustomers())
+        addDebugInfo('❌ Failed to fetch customers from API')
+        setCustomers([])
       }
     } catch (error) {
       console.error('❌ Error fetching customers:', error)
       addDebugInfo(`❌ Error fetching customers: ${error}`)
-      // Fallback to sample data
-      setCustomers(getSampleCustomers())
+      setCustomers([])
     } finally {
       setLoading(false)
     }
   }
 
-  // Function to get sample data
-  const getSampleCustomers = (): Customer[] => {
-        // Generate diverse last seen times
-        const generateLastSeen = (index: number) => {
-          const timeRanges = [
-            5 * 60 * 1000, // 5 minutes ago
-            30 * 60 * 1000, // 30 minutes ago
-            2 * 60 * 60 * 1000, // 2 hours ago
-            6 * 60 * 60 * 1000, // 6 hours ago
-            24 * 60 * 60 * 1000, // 1 day ago
-            3 * 24 * 60 * 60 * 1000, // 3 days ago
-            7 * 24 * 60 * 60 * 1000, // 1 week ago
-            14 * 24 * 60 * 60 * 1000, // 2 weeks ago
-          ]
-          return new Date(Date.now() - timeRanges[index % timeRanges.length])
-        }
-
-        return [
-          {
-            id: '1',
-            firstName: 'John',
-            lastName: 'Doe',
-            masterEmail: 'john.doe@example.com',
-            masterPhone: '+1234567890',
-            company: 'TechCorp Inc',
-            lastSeen: generateLastSeen(0),
-            source: 'LinkedIn',
-            country: 'US',
-            city: 'San Francisco',
-            createdAt: new Date('2024-01-15'),
-            clicks: [{ clickId: 'click_001', campaign: 'summer-2024', ip: '192.168.1.100', userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', landingPage: 'https://example.com/landing' }],
-            leads: [{ campaign: 'summer-2024', ip: '192.168.1.100', userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', landingPage: 'https://example.com/landing', ageVerified: true, promotionalConsent: true }],
-            identifiers: [{ type: 'EMAIL', isVerified: true }, { type: 'PHONE', isVerified: true }]
-          },
-          {
-            id: '2',
-            firstName: 'Sarah',
-            lastName: 'Johnson',
-            masterEmail: 'sarah.j@innovate.com',
-            masterPhone: '+1234567891',
-            company: 'InnovateMedia',
-            lastSeen: generateLastSeen(1),
-            source: 'Referral',
-            country: 'CA',
-            city: 'Toronto',
-            createdAt: new Date('2024-01-20'),
-            clicks: [{ clickId: 'click_002', campaign: 'black-friday-2024', ip: '192.168.1.101', userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X)', landingPage: 'https://example.com/promo' }],
-            leads: [{ campaign: 'black-friday-2024', ip: '192.168.1.101', userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X)', landingPage: 'https://example.com/promo', ageVerified: false, promotionalConsent: false }],
-            identifiers: [{ type: 'EMAIL', isVerified: false }, { type: 'PHONE', isVerified: true }]
-          },
-          {
-            id: '3',
-            firstName: 'Mike',
-            lastName: 'Chen',
-            masterEmail: 'mike.chen@startup.io',
-            masterPhone: '+1234567892',
-            company: 'StartupX',
-            lastSeen: generateLastSeen(2),
-            source: 'Google Ads',
-            country: 'US',
-            city: 'New York',
-            createdAt: new Date('2024-01-25'),
-            clicks: [{ clickId: 'click_003', campaign: 'winter-sale', ip: '192.168.1.102', userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)', landingPage: 'https://example.com/sale' }],
-            leads: [{ campaign: 'winter-sale', ip: '192.168.1.102', userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)', landingPage: 'https://example.com/sale', ageVerified: true, promotionalConsent: true }],
-            identifiers: [{ type: 'EMAIL', isVerified: true }, { type: 'PHONE', isVerified: false }]
-          },
-          {
-            id: '4',
-            firstName: 'Emma',
-            lastName: 'Wilson',
-            masterEmail: 'emma.wilson@design.co',
-            masterPhone: '+44207123456',
-            company: 'DesignStudio',
-            lastSeen: generateLastSeen(3),
-            source: 'Facebook',
-            country: 'GB',
-            city: 'London',
-            createdAt: new Date('2024-02-01'),
-            clicks: [{ clickId: 'click_004', campaign: 'design-promo', ip: '10.0.0.1', userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101', landingPage: 'https://example.com/design' }],
-            leads: [{ campaign: 'design-promo', ip: '10.0.0.1', userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101', landingPage: 'https://example.com/design', ageVerified: true, promotionalConsent: false }],
-            identifiers: [{ type: 'EMAIL', isVerified: true }, { type: 'PHONE', isVerified: true }]
-          },
-          {
-            id: '5',
-            firstName: 'Alex',
-            lastName: 'Rodriguez',
-            masterEmail: 'alex.r@consulting.com',
-            masterPhone: '+34912345678',
-            company: 'Rodriguez Consulting',
-            lastSeen: generateLastSeen(4),
-            source: 'Direct',
-            country: 'ES',
-            city: 'Madrid',
-            createdAt: new Date('2024-02-05'),
-            clicks: [{ clickId: 'click_005', campaign: 'spring-launch', ip: '172.16.0.1', userAgent: 'Mozilla/5.0 (iPad; CPU OS 14_7_1 like Mac OS X)', landingPage: 'https://example.com/launch' }],
-            leads: [{ campaign: 'spring-launch', ip: '172.16.0.1', userAgent: 'Mozilla/5.0 (iPad; CPU OS 14_7_1 like Mac OS X)', landingPage: 'https://example.com/launch', ageVerified: false, promotionalConsent: true }],
-            identifiers: [{ type: 'EMAIL', isVerified: false }, { type: 'PHONE', isVerified: true }]
-          },
-          {
-            id: '6',
-            firstName: 'Lisa',
-            lastName: 'Zhang',
-            masterEmail: 'lisa.zhang@techsolutions.com',
-            masterPhone: '+8613888888888',
-            company: 'TechSolutions',
-            lastSeen: generateLastSeen(5),
-            source: 'LinkedIn',
-            country: 'CN',
-            city: 'Shanghai',
-            createdAt: new Date('2024-02-10'),
-            clicks: [{ clickId: 'click_006', campaign: 'asia-expansion', ip: '192.168.2.100', userAgent: 'Mozilla/5.0 (Android 12; Mobile; rv:107.0)', landingPage: 'https://example.com/asia' }],
-            leads: [{ campaign: 'asia-expansion', ip: '192.168.2.100', userAgent: 'Mozilla/5.0 (Android 12; Mobile; rv:107.0)', landingPage: 'https://example.com/asia', ageVerified: true, promotionalConsent: true }],
-            identifiers: [{ type: 'EMAIL', isVerified: true }, { type: 'PHONE', isVerified: true }]
-          },
-          {
-            id: '7',
-            firstName: 'David',
-            lastName: 'Brown',
-            masterEmail: 'david.brown@marketing.au',
-            masterPhone: '+61298765432',
-            company: 'Marketing Pro',
-            lastSeen: generateLastSeen(6),
-            source: 'Google Ads',
-            country: 'AU',
-            city: 'Sydney',
-            createdAt: new Date('2024-02-15'),
-            clicks: [{ clickId: 'click_007', campaign: 'aussie-deals', ip: '203.0.113.1', userAgent: 'Mozilla/5.0 (Windows NT 11.0; Win64; x64)', landingPage: 'https://example.com/australia' }],
-            leads: [{ campaign: 'aussie-deals', ip: '203.0.113.1', userAgent: 'Mozilla/5.0 (Windows NT 11.0; Win64; x64)', landingPage: 'https://example.com/australia', ageVerified: true, promotionalConsent: false }],
-            identifiers: [{ type: 'EMAIL', isVerified: true }, { type: 'PHONE', isVerified: false }]
-          },
-          {
-            id: '8',
-            firstName: 'Sophie',
-            lastName: 'Martin',
-            masterEmail: 'sophie.martin@creativeagency.fr',
-            masterPhone: '+33142345678',
-            company: 'Creative Agency',
-            lastSeen: generateLastSeen(7),
-            source: 'Instagram',
-            country: 'FR',
-            city: 'Paris',
-            createdAt: new Date('2024-02-20'),
-            clicks: [{ clickId: 'click_008', campaign: 'french-style', ip: '198.51.100.1', userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X)', landingPage: 'https://example.com/france' }],
-            leads: [{ campaign: 'french-style', ip: '198.51.100.1', userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X)', landingPage: 'https://example.com/france', ageVerified: false, promotionalConsent: true }],
-            identifiers: [{ type: 'EMAIL', isVerified: false }, { type: 'PHONE', isVerified: true }]
-          },
-          {
-            id: '9',
-            firstName: 'James',
-            lastName: 'Taylor',
-            masterEmail: 'james.taylor@fintech.com',
-            masterPhone: '+1555123456',
-            company: 'FinTech Solutions',
-            lastSeen: generateLastSeen(8),
-            source: 'Twitter',
-            country: 'US',
-            city: 'Austin',
-            createdAt: new Date('2024-02-25'),
-            clicks: [{ clickId: 'click_009', campaign: 'fintech-revolution', ip: '192.168.3.100', userAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36', landingPage: 'https://example.com/fintech' }],
-            leads: [{ campaign: 'fintech-revolution', ip: '192.168.3.100', userAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36', landingPage: 'https://example.com/fintech', ageVerified: true, promotionalConsent: true }],
-            identifiers: [{ type: 'EMAIL', isVerified: true }, { type: 'PHONE', isVerified: true }]
-          },
-          {
-            id: '10',
-            firstName: 'Maria',
-            lastName: 'Garcia',
-            masterEmail: 'maria.garcia@ecommerce.mx',
-            masterPhone: '+525512345678',
-            company: 'E-Commerce Plus',
-            lastSeen: generateLastSeen(9),
-            source: 'YouTube',
-            country: 'MX',
-            city: 'Mexico City',
-            createdAt: new Date('2024-03-01'),
-            clicks: [{ clickId: 'click_010', campaign: 'mexico-market', ip: '10.1.1.1', userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:110.0)', landingPage: 'https://example.com/mexico' }],
-            leads: [{ campaign: 'mexico-market', ip: '10.1.1.1', userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:110.0)', landingPage: 'https://example.com/mexico', ageVerified: false, promotionalConsent: false }],
-            identifiers: [{ type: 'EMAIL', isVerified: false }, { type: 'PHONE', isVerified: false }]
-          },
-          {
-            id: '11',
-            firstName: 'Robert',
-            lastName: 'Kim',
-            masterEmail: 'robert.kim@tech.kr',
-            masterPhone: '+821012345678',
-            company: 'Korean Tech',
-            lastSeen: generateLastSeen(10),
-            source: 'LinkedIn',
-            country: 'KR',
-            city: 'Seoul',
-            createdAt: new Date('2024-03-05'),
-            clicks: [{ clickId: 'click_011', campaign: 'korea-tech', ip: '192.168.4.100', userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15', landingPage: 'https://example.com/korea' }],
-            leads: [{ campaign: 'korea-tech', ip: '192.168.4.100', userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15', landingPage: 'https://example.com/korea', ageVerified: true, promotionalConsent: true }],
-            identifiers: [{ type: 'EMAIL', isVerified: true }, { type: 'PHONE', isVerified: true }]
-          },
-          {
-            id: '12',
-            firstName: 'Anna',
-            lastName: 'Petrov',
-            masterEmail: 'anna.petrov@digital.ru',
-            masterPhone: '+79161234567',
-            company: 'Digital Russia',
-            lastSeen: generateLastSeen(11),
-            source: 'Referral',
-            country: 'RU',
-            city: 'Moscow',
-            createdAt: new Date('2024-03-10'),
-            clicks: [{ clickId: 'click_012', campaign: 'russia-digital', ip: '172.17.0.1', userAgent: 'Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0)', landingPage: 'https://example.com/russia' }],
-            leads: [{ campaign: 'russia-digital', ip: '172.17.0.1', userAgent: 'Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0)', landingPage: 'https://example.com/russia', ageVerified: true, promotionalConsent: false }],
-            identifiers: [{ type: 'EMAIL', isVerified: true }, { type: 'PHONE', isVerified: false }]
-          },
-          {
-            id: '13',
-            firstName: 'Carlos',
-            lastName: 'Silva',
-            masterEmail: 'carlos.silva@startup.br',
-            masterPhone: '+5511987654321',
-            company: 'Brazil Startup',
-            lastSeen: generateLastSeen(12),
-            source: 'Facebook',
-            country: 'BR',
-            city: 'São Paulo',
-            createdAt: new Date('2024-03-15'),
-            clicks: [{ clickId: 'click_013', campaign: 'brazil-growth', ip: '198.51.100.50', userAgent: 'Mozilla/5.0 (Android 13; SM-G998B)', landingPage: 'https://example.com/brazil' }],
-            leads: [{ campaign: 'brazil-growth', ip: '198.51.100.50', userAgent: 'Mozilla/5.0 (Android 13; SM-G998B)', landingPage: 'https://example.com/brazil', ageVerified: false, promotionalConsent: true }],
-            identifiers: [{ type: 'EMAIL', isVerified: false }, { type: 'PHONE', isVerified: true }]
-          },
-          {
-            id: '14',
-            firstName: 'Jennifer',
-            lastName: 'White',
-            masterEmail: 'jennifer.white@healthcare.com',
-            masterPhone: '+1416555789',
-            company: 'Healthcare Innovation',
-            lastSeen: generateLastSeen(13),
-            source: 'Google Ads',
-            country: 'CA',
-            city: 'Vancouver',
-            createdAt: new Date('2024-03-20'),
-            clicks: [{ clickId: 'click_014', campaign: 'health-tech', ip: '10.2.2.2', userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_6 like Mac OS X)', landingPage: 'https://example.com/health' }],
-            leads: [{ campaign: 'health-tech', ip: '10.2.2.2', userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_6 like Mac OS X)', landingPage: 'https://example.com/health', ageVerified: true, promotionalConsent: true }],
-            identifiers: [{ type: 'EMAIL', isVerified: true }, { type: 'PHONE', isVerified: true }]
-          },
-          {
-            id: '15',
-            firstName: 'Ahmed',
-            lastName: 'Hassan',
-            masterEmail: 'ahmed.hassan@middle-east.ae',
-            masterPhone: '+971501234567',
-            company: 'Middle East Tech',
-            lastSeen: generateLastSeen(14),
-            source: 'LinkedIn',
-            country: 'AE',
-            city: 'Dubai',
-            createdAt: new Date('2024-03-25'),
-            clicks: [{ clickId: 'click_015', campaign: 'mena-expansion', ip: '192.168.5.100', userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)', landingPage: 'https://example.com/mena' }],
-            leads: [{ campaign: 'mena-expansion', ip: '192.168.5.100', userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)', landingPage: 'https://example.com/mena', ageVerified: true, promotionalConsent: false }],
-            identifiers: [{ type: 'EMAIL', isVerified: true }, { type: 'PHONE', isVerified: true }]
-          },
-          {
-            id: '16',
-            firstName: 'Linda',
-            lastName: 'Anderson',
-            masterEmail: 'linda.anderson@retail.com',
-            masterPhone: '+1702555123',
-            company: 'Retail Solutions',
-            lastSeen: generateLastSeen(15),
-            source: 'Instagram',
-            country: 'US',
-            city: 'Las Vegas',
-            createdAt: new Date('2024-03-30'),
-            clicks: [{ clickId: 'click_016', campaign: 'retail-revolution', ip: '203.0.113.50', userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Edge/91.0.864.59', landingPage: 'https://example.com/retail' }],
-            leads: [{ campaign: 'retail-revolution', ip: '203.0.113.50', userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Edge/91.0.864.59', landingPage: 'https://example.com/retail', ageVerified: false, promotionalConsent: true }],
-            identifiers: [{ type: 'EMAIL', isVerified: false }, { type: 'PHONE', isVerified: false }]
-          },
-          {
-            id: '17',
-            firstName: 'Thomas',
-            lastName: 'Mueller',
-            masterEmail: 'thomas.mueller@automotive.de',
-            masterPhone: '+4930123456789',
-            company: 'Automotive Tech',
-            lastSeen: generateLastSeen(16),
-            source: 'Direct',
-            country: 'DE',
-            city: 'Berlin',
-            createdAt: new Date('2024-04-01'),
-            clicks: [{ clickId: 'click_017', campaign: 'german-engineering', ip: '10.3.3.3', userAgent: 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0)', landingPage: 'https://example.com/germany' }],
-            leads: [{ campaign: 'german-engineering', ip: '10.3.3.3', userAgent: 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0)', landingPage: 'https://example.com/germany', ageVerified: true, promotionalConsent: true }],
-            identifiers: [{ type: 'EMAIL', isVerified: true }, { type: 'PHONE', isVerified: true }]
-          },
-          {
-            id: '18',
-            firstName: 'Priya',
-            lastName: 'Sharma',
-            masterEmail: 'priya.sharma@software.in',
-            masterPhone: '+919876543210',
-            company: 'India Software',
-            lastSeen: generateLastSeen(17),
-            source: 'YouTube',
-            country: 'IN',
-            city: 'Bangalore',
-            createdAt: new Date('2024-04-05'),
-            clicks: [{ clickId: 'click_018', campaign: 'india-innovation', ip: '192.168.6.100', userAgent: 'Mozilla/5.0 (Android 11; Mobile; LG-M255)', landingPage: 'https://example.com/india' }],
-            leads: [{ campaign: 'india-innovation', ip: '192.168.6.100', userAgent: 'Mozilla/5.0 (Android 11; Mobile; LG-M255)', landingPage: 'https://example.com/india', ageVerified: false, promotionalConsent: false }],
-            identifiers: [{ type: 'EMAIL', isVerified: false }, { type: 'PHONE', isVerified: true }]
-          },
-          {
-            id: '19',
-            firstName: 'Marco',
-            lastName: 'Rossi',
-            masterEmail: 'marco.rossi@fashion.it',
-            masterPhone: '+390612345678',
-            company: 'Italian Fashion',
-            lastSeen: generateLastSeen(18),
-            source: 'Pinterest',
-            country: 'IT',
-            city: 'Milan',
-            createdAt: new Date('2024-04-10'),
-            clicks: [{ clickId: 'click_019', campaign: 'italian-style', ip: '172.18.0.1', userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6)', landingPage: 'https://example.com/italy' }],
-            leads: [{ campaign: 'italian-style', ip: '172.18.0.1', userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6)', landingPage: 'https://example.com/italy', ageVerified: true, promotionalConsent: true }],
-            identifiers: [{ type: 'EMAIL', isVerified: true }, { type: 'PHONE', isVerified: false }]
-          },
-          {
-            id: '20',
-            firstName: 'Yuki',
-            lastName: 'Tanaka',
-            masterEmail: 'yuki.tanaka@gaming.jp',
-            masterPhone: '+81312345678',
-            company: 'Gaming Studio',
-            lastSeen: generateLastSeen(19),
-            source: 'TikTok',
-            country: 'JP',
-            city: 'Tokyo',
-            createdAt: new Date('2024-04-15'),
-            clicks: [{ clickId: 'click_020', campaign: 'japan-gaming', ip: '198.51.100.100', userAgent: 'Mozilla/5.0 (Nintendo Switch; WebApplet)', landingPage: 'https://example.com/japan' }],
-            leads: [{ campaign: 'japan-gaming', ip: '198.51.100.100', userAgent: 'Mozilla/5.0 (Nintendo Switch; WebApplet)', landingPage: 'https://example.com/japan', ageVerified: true, promotionalConsent: false }],
-            identifiers: [{ type: 'EMAIL', isVerified: true }, { type: 'PHONE', isVerified: true }]
-          }
-        ]
-  }
 
   // Delete functions
   const deleteCustomer = async (customerId: string) => {
@@ -583,28 +234,22 @@ export default function CustomersPage() {
   const deleteSelectedCustomers = async () => {
     const customerIds = Array.from(selectedCustomers)
 
-    // Filter out sample customers (those without isRealData flag)
-    const realCustomerIds = customerIds.filter(id => {
-      const customer = customers.find(c => c.id === id)
-      return customer?.isRealData
-    })
-
-    if (realCustomerIds.length === 0) {
-      addDebugInfo('⚠️ Cannot delete sample customers')
+    if (customerIds.length === 0) {
+      addDebugInfo('⚠️ No customers selected for deletion')
       return
     }
 
-    if (!confirm(`Are you sure you want to delete ${realCustomerIds.length} customer(s)?`)) {
+    if (!confirm(`Are you sure you want to delete ${customerIds.length} customer(s)?`)) {
       return
     }
 
     try {
-      for (const customerId of realCustomerIds) {
+      for (const customerId of customerIds) {
         await deleteCustomer(customerId)
       }
 
       setSelectedCustomers(new Set())
-      addDebugInfo(`✅ Deleted ${realCustomerIds.length} customer(s)`)
+      addDebugInfo(`✅ Deleted ${customerIds.length} customer(s)`)
     } catch (error) {
       console.error('Error deleting customers:', error)
       addDebugInfo(`❌ Error deleting customers: ${error}`)
@@ -1546,9 +1191,8 @@ export default function CustomersPage() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
-                          customer.isRealData && handleDeleteCustomer(customer.id)
+                          handleDeleteCustomer(customer.id)
                         }}
-                        disabled={!customer.isRealData}
                         className="p-2 rounded-xl transition-all duration-200 text-red-400 hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed" style={{
                         background: 'rgba(255, 255, 255, 0.05)',
                         border: '1px solid rgba(255, 255, 255, 0.1)'
@@ -1682,9 +1326,8 @@ export default function CustomersPage() {
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
-                        customer.isRealData && handleDeleteCustomer(customer.id)
+                        handleDeleteCustomer(customer.id)
                       }}
-                      disabled={!customer.isRealData}
                       className="p-1.5 rounded-lg transition-all duration-200 text-red-400 hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed" style={{
                       background: 'rgba(255, 255, 255, 0.05)',
                       border: '1px solid rgba(255, 255, 255, 0.1)'
@@ -1903,9 +1546,8 @@ export default function CustomersPage() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation()
-                      customer.isRealData && handleDeleteCustomer(customer.id)
+                      handleDeleteCustomer(customer.id)
                     }}
-                    disabled={!customer.isRealData}
                     className="p-1 sm:p-1.5 rounded-lg transition-all duration-200 text-red-400 hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed" style={{
                     background: 'rgba(255, 255, 255, 0.05)',
                     border: '1px solid rgba(255, 255, 255, 0.1)'
@@ -1920,7 +1562,42 @@ export default function CustomersPage() {
         </div>
       )}
 
+      {/* Empty State */}
+      {!loading && filteredCustomers.length === 0 && (
+        <div className="text-center py-16">
+          <div className="rounded-xl p-8" style={{
+            background: 'rgba(255, 255, 255, 0.08)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
+          }}>
+            <div className="text-6xl mb-4">👥</div>
+            <h3 className="text-xl font-semibold text-white mb-2">No Customers Found</h3>
+            <p className="text-muted-foreground mb-6">
+              {searchQuery ?
+                `No customers match your search "${searchQuery}".` :
+                "There are no customers in your database yet."
+              }
+            </p>
+            {!searchQuery && (
+              <button
+                onClick={() => setIsAddModalOpen(true)}
+                className="px-6 py-3 rounded-xl font-medium transition-all duration-200 text-black"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(253, 198, 0, 0.9), rgba(253, 198, 0, 0.7))',
+                  border: '1px solid rgba(253, 198, 0, 0.3)',
+                  boxShadow: '0 4px 16px rgba(253, 198, 0, 0.3)'
+                }}
+              >
+                Add Your First Customer
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Pagination (shared between both views) */}
+      {!loading && filteredCustomers.length > 0 && (
       <div className="mt-6 sm:mt-8">
         <div className="rounded-xl sm:rounded-2xl p-4 sm:p-6" style={{
           background: 'rgba(255, 255, 255, 0.08)',
@@ -2002,6 +1679,7 @@ export default function CustomersPage() {
           </div>
         </div>
       </div>
+      )}
 
       {/* Add Customer Modal */}
       <CustomerModal
