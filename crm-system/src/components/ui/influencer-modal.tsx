@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
+import { AlertModal } from '@/components/ui/alert-modal'
 
 interface ConversionType {
   id: string
@@ -38,6 +39,7 @@ export default function InfluencerModal({ isOpen, onClose, onSubmit, onDelete, e
   const [nameValidationError, setNameValidationError] = useState<string | null>(null)
   const [existingInfluencers, setExistingInfluencers] = useState<string[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [alertState, setAlertState] = useState<{ open: boolean; title?: string; message: string; variant?: 'info' | 'success' | 'error' }>(() => ({ open: false, message: '' }))
 
   // Campaign assignment
   const [campaigns, setCampaigns] = useState<Array<{ id: string; name: string; slug: string; isActive?: boolean }>>([])
@@ -338,15 +340,15 @@ export default function InfluencerModal({ isOpen, onClose, onSubmit, onDelete, e
       if (json.success) {
         // Notify pages to zero local stats immediately
         window.dispatchEvent(new CustomEvent('influencer:reset', { detail: { id: editMode.id } }))
-        alert('Influencer stats reset successfully')
+        setAlertState({ open: true, title: 'Reset Successful', message: 'Influencer stats reset successfully', variant: 'success' })
         onClose()
       } else {
         console.error('Reset influencer failed:', json.error)
-        alert('Failed to reset influencer: ' + (json.error || 'Unknown error'))
+        setAlertState({ open: true, title: 'Reset Failed', message: 'Failed to reset influencer: ' + (json.error || 'Unknown error'), variant: 'error' })
       }
     } catch (e) {
       console.error('Reset influencer error:', e)
-      alert('Error resetting influencer (see console)')
+      setAlertState({ open: true, title: 'Error', message: 'Error resetting influencer (see console)', variant: 'error' })
     }
   }
 
@@ -1073,6 +1075,7 @@ export default function InfluencerModal({ isOpen, onClose, onSubmit, onDelete, e
           </div>
         </div>
       </div>
+      <AlertModal open={alertState.open} title={alertState.title} message={alertState.message} variant={alertState.variant} onClose={() => setAlertState({ open: false, message: '' })} />
       </div>
     </>
   )

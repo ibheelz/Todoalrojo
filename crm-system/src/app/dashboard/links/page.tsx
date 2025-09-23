@@ -362,7 +362,7 @@ export default function LinksPage() {
 
   const copyToClipboard = (url: string) => {
     navigator.clipboard.writeText(url)
-    alert('URL copied to clipboard!')
+    setAlertState({ open: true, title: 'Copied', message: 'URL copied to clipboard!', variant: 'success' })
   }
 
   // Toasts container
@@ -408,6 +408,16 @@ export default function LinksPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="space-y-2 xxs:space-y-1 xs:space-y-3 sm:space-y-6 p-1 xxs:p-1 xs:p-2 sm:p-4 lg:p-6">
+        <AlertModal
+          open={alertState.open}
+          title={alertState.title}
+          message={alertState.message}
+          variant={alertState.variant}
+          onClose={() => setAlertState({ open: false, message: '' })}
+          {...(alertState.onConfirm
+            ? { confirmText: 'Delete', cancelText: 'Cancel', onConfirm: alertState.onConfirm }
+            : {})}
+        />
         <Toasts />
         {/* Header */}
         <div className="space-y-4">

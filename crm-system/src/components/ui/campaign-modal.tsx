@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useRef, Fragment } from 'react'
+import { AlertModal } from '@/components/ui/alert-modal'
 
 interface ConversionType {
   id: string
@@ -63,6 +64,7 @@ export default function CampaignModal({ isOpen, onClose, onSubmit, onDelete, edi
   const [nameValidationError, setNameValidationError] = useState<string | null>(null)
   const [existingCampaigns, setExistingCampaigns] = useState<string[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [alertState, setAlertState] = useState<{ open: boolean; title?: string; message: string; variant?: 'info' | 'success' | 'error' }>({ open: false, message: '' })
 
   // Fetch existing campaigns for validation and influencers
   React.useEffect(() => {
@@ -322,15 +324,15 @@ export default function CampaignModal({ isOpen, onClose, onSubmit, onDelete, edi
       console.log('[CAMPAIGN MODAL] Reset response body', json)
       if (json.success) {
         window.dispatchEvent(new CustomEvent('campaign:reset', { detail: { id: editMode.id } }))
-        alert('Campaign stats reset successfully')
+        setAlertState({ open: true, title: 'Reset Successful', message: 'Campaign stats reset successfully', variant: 'success' })
         onClose()
       } else {
         console.error('Reset campaign failed:', json.error)
-        alert('Failed to reset campaign: ' + (json.error || 'Unknown error'))
+        setAlertState({ open: true, title: 'Reset Failed', message: 'Failed to reset campaign: ' + (json.error || 'Unknown error'), variant: 'error' })
       }
     } catch (e) {
       console.error('Reset campaign error:', e)
-      alert('Error resetting campaign (see console)')
+      setAlertState({ open: true, title: 'Error', message: 'Error resetting campaign (see console)', variant: 'error' })
     }
   }
 
@@ -840,6 +842,7 @@ export default function CampaignModal({ isOpen, onClose, onSubmit, onDelete, edi
         </div>
       </div>
       </div>
+      <AlertModal open={alertState.open} title={alertState.title} message={alertState.message} variant={alertState.variant} onClose={() => setAlertState({ open: false, message: '' })} />
     </>
   )
 }

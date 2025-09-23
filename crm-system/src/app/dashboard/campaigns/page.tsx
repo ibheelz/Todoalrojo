@@ -79,6 +79,8 @@ export default function CampaignsPage() {
   const [viewMode, setViewMode] = useState<'compact' | 'table'>('compact')
   const [sortField, setSortField] = useState<string>('')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
+  const [rowHighlight, setRowHighlight] = useState<Record<string, number>>({})
+  const [toasts, setToasts] = useState<Array<{ id: string; text: string }>>([])
 
   // Auto-set compact mode for smaller devices
   useEffect(() => {
@@ -155,6 +157,15 @@ export default function CampaignsPage() {
         if (['click', 'lead', 'ftd', 'campaignDelta', 'resetCampaign'].includes(evt.type)) {
           console.log('[CAMPAIGNS PAGE] SSE triggering fetchCampaigns')
           fetchCampaigns()
+          const addToast = (text: string) => {
+            const id = Math.random().toString(36).slice(2)
+            setToasts((prev) => [...prev, { id, text }])
+            setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 3000)
+          }
+          if (evt.type === 'click') addToast('New click detected')
+          if (evt.type === 'lead') addToast('New lead recorded')
+          if (evt.type === 'ftd') addToast('New FTD conversion')
+          if (evt.type === 'resetCampaign') addToast('Campaign stats reset')
         }
       } catch {}
     }
@@ -226,6 +237,16 @@ export default function CampaignsPage() {
 
   const fetchCampaigns = async () => {
     try {
+      const before: Record<string, { clicks: number; leads: number; events: number; regs: number; ftd: number }> = {}
+      campaigns.forEach((c) => {
+        before[c.id] = {
+          clicks: c.stats?.totalClicks || 0,
+          leads: c.stats?.totalLeads || 0,
+          events: c.stats?.totalEvents || 0,
+          regs: c.registrations || 0,
+          ftd: c.ftd || 0,
+        }
+      })
       // Build query parameters for date filtering
       const params = new URLSearchParams({
         includeStats: 'true',
@@ -260,6 +281,29 @@ export default function CampaignsPage() {
         })
 
         setCampaigns(campaignsWithStatus)
+        const changedIds: string[] = []
+        campaignsWithStatus.forEach((c: any) => {
+          const prev = before[c.id]
+          if (!prev) return
+          if ((c.stats?.totalClicks || 0) > prev.clicks || (c.stats?.totalLeads || 0) > prev.leads || (c.stats?.totalEvents || 0) > prev.events || (c.registrations || 0) > prev.regs || (c.ftd || 0) > prev.ftd) {
+            changedIds.push(c.id)
+          }
+        })
+        if (changedIds.length) {
+          setRowHighlight((prev) => {
+            const next = { ...prev }
+            const now = Date.now()
+            changedIds.forEach((id) => (next[id] = now))
+            return next
+          })
+          setTimeout(() => {
+            setRowHighlight((prev) => {
+              const next: Record<string, number> = { ...prev }
+              changedIds.forEach((id) => delete next[id])
+              return next
+            })
+          }, 2500)
+        }
       } else {
         setError('Failed to load campaigns')
       }
@@ -491,6 +535,14 @@ export default function CampaignsPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Live Toasts */}
+      <div className="fixed bottom-4 right-4 space-y-2 z-50">
+        {toasts.map((t) => (
+          <div key={t.id} className="px-3 py-2 rounded-lg bg-white text-black text-sm shadow-lg border border-black/10">
+            {t.text}
+          </div>
+        ))}
+      </div>
       <div className="space-y-2 xxs:space-y-1 xs:space-y-3 sm:space-y-6 p-1 xxs:p-1 xs:p-2 sm:p-4 lg:p-6">
         {/* Header */}
         <div className="space-y-4">
@@ -989,7 +1041,7 @@ export default function CampaignsPage() {
                   {sortedCampaigns.map((campaign, index) => (
                     <tr
                       key={campaign.id}
-                      className="hover:bg-white/5 transition-colors"
+                      className={`transition-colors ${rowHighlight[campaign.id] ? 'bg-green-500/10' : 'hover:bg-white/5'}`}
                     >
                       <td className="px-2 sm:px-3 py-3 sm:py-4">
                         <div className="flex items-center space-x-2 sm:space-x-3">

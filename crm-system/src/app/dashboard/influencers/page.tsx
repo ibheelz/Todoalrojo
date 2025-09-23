@@ -608,6 +608,14 @@ export default function InfluencersPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Live Toasts */}
+      <div className="fixed bottom-4 right-4 space-y-2 z-50">
+        {toasts.map((t) => (
+          <div key={t.id} className="px-3 py-2 rounded-lg bg-white text-black text-sm shadow-lg border border-black/10">
+            {t.text}
+          </div>
+        ))}
+      </div>
       <div className="space-y-2 xxs:space-y-1 xs:space-y-3 sm:space-y-6 p-1 xxs:p-1 xs:p-2 sm:p-4 lg:p-6">
         {/* Header - Super Responsive */}
         <div className="mb-4 sm:mb-6 lg:mb-8">
@@ -1034,7 +1042,7 @@ export default function InfluencersPage() {
                 </thead>
                 <tbody className="divide-y divide-white/10">
                   {sortedInfluencers.map((influencer, index) => (
-                    <tr key={influencer.id} className="hover:bg-white/5 transition-colors">
+                    <tr key={influencer.id} className={`transition-colors ${rowHighlight[influencer.id] ? 'bg-green-500/10' : 'hover:bg-white/5'}`}>
                       <td className="px-2 sm:px-3 py-3 sm:py-4">
                         <div className="flex items-center space-x-2 sm:space-x-3">
                           <div className="flex items-center space-x-1 sm:space-x-2">
@@ -1066,22 +1074,22 @@ export default function InfluencersPage() {
                         </div>
                       </td>
                       <td className="px-2 sm:px-4 py-3 sm:py-4">
-                        <div className="text-primary font-semibold text-xs sm:text-sm">
+                        <div className={`font-semibold text-xs sm:text-sm ${rowHighlight[influencer.id] ? 'text-green-400' : 'text-primary'}`}>
                           {conversionTypesConfig[influencer.id]?.clicks !== false ? influencer.totalClicks.toLocaleString() : '—'}
                         </div>
                       </td>
                       <td className="px-2 sm:px-4 py-3 sm:py-4">
-                        <div className="text-primary font-semibold text-xs sm:text-sm">
+                        <div className={`font-semibold text-xs sm:text-sm ${rowHighlight[influencer.id] ? 'text-green-400' : 'text-primary'}`}>
                           {conversionTypesConfig[influencer.id]?.leads !== false ? influencer.totalLeads.toLocaleString() : '—'}
                         </div>
                       </td>
                       <td className="px-2 sm:px-4 py-3 sm:py-4">
-                        <div className="text-primary font-semibold text-xs sm:text-sm">
+                        <div className={`font-semibold text-xs sm:text-sm ${rowHighlight[influencer.id] ? 'text-green-400' : 'text-primary'}`}>
                           {conversionTypesConfig[influencer.id]?.registrations !== false ? influencer.totalRegs.toLocaleString() : '—'}
                         </div>
                       </td>
                       <td className="px-2 sm:px-4 py-3 sm:py-4">
-                        <div className="text-primary font-semibold text-xs sm:text-sm">
+                        <div className={`font-semibold text-xs sm:text-sm ${rowHighlight[influencer.id] ? 'text-green-400' : 'text-primary'}`}>
                           {conversionTypesConfig[influencer.id]?.ftd !== false ? influencer.totalFtd.toLocaleString() : '—'}
                         </div>
                       </td>
