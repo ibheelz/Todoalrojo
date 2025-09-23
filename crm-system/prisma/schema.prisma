@@ -386,6 +386,7 @@ model Influencer {
   engagementRate      Decimal?             @db.Decimal(5, 2)
   category            String?
   location            String?
+  profileImage        String?
   status              String               @default("active")
   totalLeads          Int                  @default(0)
   totalClicks         Int                  @default(0)

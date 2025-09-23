@@ -147,10 +147,11 @@ export async function PUT(request: NextRequest) {
         engagementRate: validatedData.engagementRate,
         category: validatedData.category,
         location: validatedData.location,
+        profileImage: typeof body.profileImage === 'string' && body.profileImage.trim() ? body.profileImage.trim() : null,
         commissionRate: validatedData.commissionRate,
         paymentMethod: validatedData.paymentMethod,
         notes: validatedData.notes,
-        conversionTypes: body.conversionTypes ? JSON.stringify(body.conversionTypes) : null
+        // remove unsupported fields like conversionTypes/conversionConfig (not in schema)
       },
       include: {
         campaignInfluencers: {
@@ -187,6 +188,7 @@ export async function PUT(request: NextRequest) {
     const transformedInfluencer = refreshed && {
       id: refreshed.id,
       name: refreshed.name,
+      profileImage: (refreshed as any).profileImage || null,
       email: refreshed.email,
       phone: refreshed.phone,
       socialHandle: refreshed.socialHandle,
@@ -266,6 +268,7 @@ export async function POST(request: NextRequest) {
         engagementRate: validatedData.engagementRate,
         category: validatedData.category,
         location: validatedData.location,
+        profileImage: typeof body.profileImage === 'string' && body.profileImage.trim() ? body.profileImage.trim() : null,
         status: 'active',
         totalLeads: 0,
         totalClicks: 0,
@@ -274,13 +277,7 @@ export async function POST(request: NextRequest) {
         commissionRate: validatedData.commissionRate,
         paymentMethod: validatedData.paymentMethod,
         notes: validatedData.notes,
-        conversionTypes: body.conversionTypes ? JSON.stringify(body.conversionTypes) : null,
-        conversionConfig: body.conversionConfig ? JSON.stringify(body.conversionConfig) : JSON.stringify({
-          leads: true,
-          clicks: true,
-          registrations: true,
-          ftd: true
-        })
+        // remove unsupported fields
       },
       include: { campaignInfluencers: { include: { campaign: { select: { id: true, name: true, slug: true } } } } }
     })
@@ -303,6 +300,7 @@ export async function POST(request: NextRequest) {
     const transformedInfluencer = refreshed && {
       id: refreshed.id,
       name: refreshed.name,
+      profileImage: (refreshed as any).profileImage || null,
       email: refreshed.email,
       phone: refreshed.phone,
       socialHandle: refreshed.socialHandle,
