@@ -9,7 +9,7 @@ const createCampaignSchema = z.object({
   clientId: z.string().optional(),
   brandId: z.string().optional(),
   logoUrl: z.string().optional(),
-  influencerId: z.string().optional(),
+  influencerIds: z.array(z.string()).optional(),
   conversionTypes: z.array(z.object({
     id: z.string(),
     name: z.string(),
@@ -75,30 +75,19 @@ export async function GET(request: NextRequest) {
       // Get campaigns with detailed analytics
       const campaigns = await prisma.campaign.findMany({
         orderBy: { createdAt: 'desc' },
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          description: true,
-          clientId: true,
-          brandId: true,
-          logoUrl: true,
-          influencerId: true,
-          conversionTypes: true,
-          isActive: true,
-          totalClicks: true,
-          totalLeads: true,
-          totalEvents: true,
-          totalRevenue: true,
-          fraudRate: true,
-          duplicateRate: true,
-          conversionRate: true,
-          registrations: true,
-          ftd: true,
-          approvedRegistrations: true,
-          qualifiedDeposits: true,
-          createdAt: true,
-          updatedAt: true
+        include: {
+          campaignInfluencers: {
+            include: {
+              influencer: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  platform: true
+                }
+              }
+            }
+          }
         }
       })
 
@@ -198,6 +187,9 @@ export async function GET(request: NextRequest) {
 
           return {
             ...campaign,
+            // Transform influencer data for backward compatibility
+            influencerIds: campaign.campaignInfluencers.map(ci => ci.influencer.id),
+            influencers: campaign.campaignInfluencers.map(ci => ci.influencer),
             stats: {
               totalClicks,
               totalLeads,
@@ -229,29 +221,32 @@ export async function GET(request: NextRequest) {
       // Get basic campaign list
       const campaigns = await prisma.campaign.findMany({
         orderBy: { createdAt: 'desc' },
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          description: true,
-          clientId: true,
-          brandId: true,
-          logoUrl: true,
-          influencerId: true,
-          conversionTypes: true,
-          isActive: true,
-          registrations: true,
-          ftd: true,
-          approvedRegistrations: true,
-          qualifiedDeposits: true,
-          createdAt: true,
-          updatedAt: true
+        include: {
+          campaignInfluencers: {
+            include: {
+              influencer: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  platform: true
+                }
+              }
+            }
+          }
         }
       })
 
+      // Transform campaigns to include influencer data
+      const transformedCampaigns = campaigns.map(campaign => ({
+        ...campaign,
+        influencerIds: campaign.campaignInfluencers.map(ci => ci.influencer.id),
+        influencers: campaign.campaignInfluencers.map(ci => ci.influencer)
+      }))
+
       return NextResponse.json({
         success: true,
-        campaigns
+        campaigns: transformedCampaigns
       })
     }
 
@@ -285,7 +280,7 @@ export async function POST(request: NextRequest) {
     console.log('📊 Creating new campaign:', {
       name: validatedData.name,
       slug: validatedData.slug,
-      influencerId: validatedData.influencerId,
+      influencerIds: validatedData.influencerIds,
       timestamp: new Date().toISOString()
     })
 
@@ -298,15 +293,27 @@ export async function POST(request: NextRequest) {
         clientId: validatedData.clientId,
         brandId: validatedData.brandId,
         logoUrl: validatedData.logoUrl,
-        influencerId: validatedData.influencerId || null,
         conversionTypes: validatedData.conversionTypes || []
       }
     })
 
+    // Create influencer relationships if provided
+    if (validatedData.influencerIds && validatedData.influencerIds.length > 0) {
+      const influencerRelationships = validatedData.influencerIds.map(influencerId => ({
+        campaignId: campaign.id,
+        influencerId: influencerId,
+        assignedBy: 'api-create'
+      }))
+
+      await prisma.campaignInfluencer.createMany({
+        data: influencerRelationships
+      })
+    }
+
     console.log('✅ Campaign created successfully:', {
       id: campaign.id,
       name: campaign.name,
-      influencerId: campaign.influencerId,
+      influencerIds: validatedData.influencerIds,
       timestamp: new Date().toISOString()
     })
 

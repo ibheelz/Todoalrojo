@@ -68,7 +68,7 @@ export default function LinksPage() {
     source: '',
     medium: '',
     customCode: '',
-    influencerId: '',
+    influencerIds: [],
     isPublic: true,
     allowBots: false,
     trackClicks: true
@@ -246,7 +246,7 @@ export default function LinksPage() {
       source: link.source || '',
       medium: link.medium || '',
       customCode: '',
-      influencerId: link.influencerId || '',
+      influencerIds: link.influencerIds || [],
       isPublic: link.isPublic,
       allowBots: false,
       trackClicks: true
@@ -303,7 +303,7 @@ export default function LinksPage() {
       source: '',
       medium: '',
       customCode: '',
-      influencerId: '',
+      influencerIds: [],
       isPublic: true,
       allowBots: false,
       trackClicks: true
@@ -893,8 +893,8 @@ export default function LinksPage() {
                         setFormData({
                           ...formData,
                           campaign: newCampaign,
-                          // Clear influencer if campaign changes to avoid mismatched relationships
-                          influencerId: ''
+                          // Clear influencers if campaign changes to avoid mismatched relationships
+                          influencerIds: []
                         })
                         console.log('📊 Campaign selected for link:', {
                           campaign: newCampaign,
@@ -934,24 +934,47 @@ export default function LinksPage() {
                         </span>
                       )}
                     </label>
-                    <select
-                      value={formData.influencerId}
-                      onChange={(e) => {
-                        setFormData({ ...formData, influencerId: e.target.value })
-                        console.log('👤 Influencer selected for link:', {
-                          influencerId: e.target.value,
-                          campaign: formData.campaign
-                        })
-                      }}
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors backdrop-blur-sm"
-                    >
-                      <option value="" className="bg-background">No influencer</option>
+                    <div className="space-y-3 max-h-48 overflow-y-auto">
+                      {getAvailableInfluencers().length === 0 && (
+                        <p className="text-sm text-white/60 italic">No influencers available</p>
+                      )}
                       {getAvailableInfluencers().map((influencer) => (
-                        <option key={influencer.id} value={influencer.id} className="bg-background">
-                          {influencer.name} ({influencer.socialHandle}) - {influencer.platform}
-                        </option>
+                        <label
+                          key={influencer.id}
+                          className="flex items-center space-x-3 p-3 rounded-xl hover:bg-white/5 transition-all duration-300 cursor-pointer"
+                          style={{
+                            background: formData.influencerIds.includes(influencer.id) ? 'rgba(251, 191, 36, 0.1)' : 'rgba(255, 255, 255, 0.03)',
+                            border: formData.influencerIds.includes(influencer.id) ? '1px solid rgba(251, 191, 36, 0.3)' : '1px solid rgba(255, 255, 255, 0.1)'
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={formData.influencerIds.includes(influencer.id)}
+                            onChange={(e) => {
+                              // Multi-selection behavior
+                              const newInfluencerIds = e.target.checked
+                                ? [...formData.influencerIds, influencer.id]
+                                : formData.influencerIds.filter(id => id !== influencer.id)
+                              setFormData({ ...formData, influencerIds: newInfluencerIds })
+                              console.log('👤 Influencers selected for link:', {
+                                influencerIds: newInfluencerIds,
+                                campaign: formData.campaign
+                              })
+                            }}
+                            className="w-4 h-4 text-yellow-400 bg-transparent border-white/30 rounded focus:ring-yellow-400 focus:ring-2"
+                          />
+                          <div className="flex-1">
+                            <div className="text-white font-medium">{influencer.name}</div>
+                            <div className="text-sm text-white/60">
+                              {influencer.socialHandle} • {influencer.platform}
+                            </div>
+                          </div>
+                          {formData.influencerIds.includes(influencer.id) && (
+                            <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+                          )}
+                        </label>
                       ))}
-                    </select>
+                    </div>
                   </div>
 
                   <div className="md:col-span-2">

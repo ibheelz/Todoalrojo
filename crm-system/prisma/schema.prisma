@@ -224,7 +224,6 @@ model Campaign {
   brandId        String?
   logoUrl        String?
   conversionTypes Json?
-  influencerId   String?
   isActive       Boolean  @default(true)
   totalClicks    Int      @default(0)
   totalLeads     Int      @default(0)
@@ -240,9 +239,11 @@ model Campaign {
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 
+  // Many-to-many relationship with influencers
+  campaignInfluencers   CampaignInfluencer[]
+
   @@index([slug])
   @@index([clientId])
-  @@index([influencerId])
   @@index([isActive])
   @@map("campaigns")
 }
@@ -301,7 +302,6 @@ model ShortLink {
   trackClicks     Boolean     @default(true)
   userId          String?
   clientId        String?
-  influencerId    String?
   totalClicks     Int         @default(0)
   uniqueClicks    Int         @default(0)
   lastClickAt     DateTime?
@@ -309,11 +309,13 @@ model ShortLink {
   updatedAt       DateTime    @updatedAt
   clicks          LinkClick[]
 
+  // Many-to-many relationship with influencers
+  linkInfluencers LinkInfluencer[]
+
   @@index([shortCode])
   @@index([userId])
   @@index([clientId])
   @@index([campaign])
-  @@index([influencerId])
   @@index([isActive])
   @@index([createdAt])
   @@map("short_links")
@@ -375,6 +377,76 @@ model AuditLog {
   @@index([customerId])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+model Influencer {
+  id                  String   @id @default(cuid())
+  name                String
+  email               String?  @unique
+  phone               String?
+  socialHandle        String?
+  platform            String?
+  followers           Int?     @default(0)
+  engagementRate      Decimal? @db.Decimal(5, 2)
+  category            String?
+  location            String?
+  status              String   @default("active")
+  totalLeads          Int      @default(0)
+  totalClicks         Int      @default(0)
+  totalRegs           Int      @default(0)
+  totalFtd            Int      @default(0)
+  commissionRate      Decimal? @db.Decimal(5, 4)
+  paymentMethod       String?
+  paymentDetails      Json?
+  notes               String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  // Many-to-many relationships
+  campaignInfluencers CampaignInfluencer[]
+  linkInfluencers     LinkInfluencer[]
+
+  @@index([email])
+  @@index([platform])
+  @@index([status])
+  @@index([createdAt])
+  @@map("influencers")
+}
+
+model CampaignInfluencer {
+  id           String    @id @default(cuid())
+  campaignId   String
+  influencerId String
+  assignedAt   DateTime  @default(now())
+  assignedBy   String?
+  isActive     Boolean   @default(true)
+  notes        String?
+
+  campaign     Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  influencer   Influencer @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, influencerId])
+  @@index([campaignId])
+  @@index([influencerId])
+  @@map("campaign_influencers")
+}
+
+model LinkInfluencer {
+  id           String     @id @default(cuid())
+  linkId       String
+  influencerId String
+  assignedAt   DateTime   @default(now())
+  assignedBy   String?
+  isActive     Boolean    @default(true)
+  notes        String?
+
+  link         ShortLink  @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  influencer   Influencer @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+
+  @@unique([linkId, influencerId])
+  @@index([linkId])
+  @@index([influencerId])
+  @@map("link_influencers")
 }
 
 enum IdentifierType {

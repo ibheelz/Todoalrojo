@@ -38,7 +38,7 @@ export default function CampaignModal({ isOpen, onClose, onSubmit, onDelete, edi
     slug: editMode?.slug || '',
     clientId: editMode?.clientId || '',
     brandId: editMode?.brandId || '',
-    influencerId: editMode?.influencerId || ''
+    influencerIds: editMode?.influencerIds || []
   })
 
   const [influencers, setInfluencers] = useState<Influencer[]>([])
@@ -105,7 +105,7 @@ export default function CampaignModal({ isOpen, onClose, onSubmit, onDelete, edi
         slug: editMode.slug || '',
         clientId: editMode.clientId || '',
         brandId: editMode.brandId || '',
-        influencerId: editMode.influencerId || ''
+        influencerIds: editMode.influencerIds || []
       })
       // If there's an existing logo URL in editMode, set it as preview
       if (editMode.logoUrl) {
@@ -124,7 +124,7 @@ export default function CampaignModal({ isOpen, onClose, onSubmit, onDelete, edi
         slug: '',
         clientId: '',
         brandId: '',
-        influencerId: ''
+        influencerIds: []
       })
       // Reset logo states for new campaign
       setBrandLogo(null)
@@ -284,17 +284,17 @@ export default function CampaignModal({ isOpen, onClose, onSubmit, onDelete, edi
       })
     }
 
-    console.log('📊 [CAMPAIGN MODAL] Submitting campaign with influencer:', {
+    console.log('📊 [CAMPAIGN MODAL] Submitting campaign with influencers:', {
       name: campaignData.name,
-      influencerId: campaignData.influencerId,
-      influencerName: influencers.find(inf => inf.id === campaignData.influencerId)?.name || 'None',
+      influencerIds: campaignData.influencerIds,
+      influencerNames: campaignData.influencerIds.map(id => influencers.find(inf => inf.id === id)?.name || 'Unknown').join(', ') || 'None',
       editMode: !!editMode
     })
 
     // 🔍 DEBUGGING: Log what we're sending
     console.log('🔍 [MODAL DEBUG] Submitting campaign data:', {
       name: campaignData.name,
-      influencerId: campaignData.influencerId,
+      influencerIds: campaignData.influencerIds,
       conversionConfig: campaignData.conversionConfig,
       editMode: editMode?.name
     })
@@ -460,22 +460,43 @@ export default function CampaignModal({ isOpen, onClose, onSubmit, onDelete, edi
                     </svg>
                     <span>Assigned Influencer (Optional)</span>
                   </label>
-                  <select
-                    value={formData.influencerId}
-                    onChange={(e) => handleInputChange('influencerId', e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl text-white transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary/50"
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.08)',
-                      border: '1px solid rgba(255, 255, 255, 0.15)'
-                    }}
-                  >
-                    <option value="" className="bg-background">No influencer assigned</option>
+                  <div className="space-y-3">
+                    {influencers.length === 0 && (
+                      <p className="text-sm text-white/60 italic">No influencers available</p>
+                    )}
                     {influencers.map((influencer) => (
-                      <option key={influencer.id} value={influencer.id} className="bg-background">
-                        {influencer.name} ({influencer.socialHandle}) - {influencer.platform}
-                      </option>
+                      <label
+                        key={influencer.id}
+                        className="flex items-center space-x-3 p-3 rounded-xl hover:bg-white/5 transition-all duration-300 cursor-pointer"
+                        style={{
+                          background: formData.influencerIds.includes(influencer.id) ? 'rgba(251, 191, 36, 0.1)' : 'rgba(255, 255, 255, 0.03)',
+                          border: formData.influencerIds.includes(influencer.id) ? '1px solid rgba(251, 191, 36, 0.3)' : '1px solid rgba(255, 255, 255, 0.1)'
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={formData.influencerIds.includes(influencer.id)}
+                          onChange={(e) => {
+                            // Multi-selection behavior
+                            const newInfluencerIds = e.target.checked
+                              ? [...formData.influencerIds, influencer.id]
+                              : formData.influencerIds.filter(id => id !== influencer.id)
+                            handleInputChange('influencerIds', newInfluencerIds)
+                          }}
+                          className="w-4 h-4 text-yellow-400 bg-transparent border-white/30 rounded focus:ring-yellow-400 focus:ring-2"
+                        />
+                        <div className="flex-1">
+                          <div className="text-white font-medium">{influencer.name}</div>
+                          <div className="text-sm text-white/60">
+                            {influencer.socialHandle} • {influencer.platform}
+                          </div>
+                        </div>
+                        {formData.influencerIds.includes(influencer.id) && (
+                          <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+                        )}
+                      </label>
                     ))}
-                  </select>
+                  </div>
                   <p className="text-xs text-white/40 mt-1">
                     Assign this campaign to a specific influencer for attribution tracking
                   </p>

@@ -79,7 +79,7 @@ export default function InfluencersPage() {
   const [search, setSearch] = useState('')
   const [selectedInfluencer, setSelectedInfluencer] = useState<string | null>(null)
   const [showAssignModal, setShowAssignModal] = useState(false)
-  const [selectedCampaign, setSelectedCampaign] = useState('')
+  const [selectedCampaigns, setSelectedCampaigns] = useState([])
   const [viewMode, setViewMode] = useState<'compact' | 'table'>('compact')
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null)
   const [sortField, setSortField] = useState<string>('')
@@ -924,18 +924,41 @@ export default function InfluencersPage() {
             <div className="bg-background border border-white/10 rounded-lg p-4 max-w-sm w-full mx-4">
               <h3 className="text-sm font-medium text-foreground mb-3">Assign to Campaign</h3>
 
-              <select
-                value={selectedCampaign}
-                onChange={(e) => setSelectedCampaign(e.target.value)}
-                className="w-full p-2 bg-white/5 border border-white/10 rounded text-foreground text-sm mb-3"
-              >
-                <option value="">Choose campaign...</option>
+              <div className="space-y-3 mb-3 max-h-48 overflow-y-auto">
+                {campaigns.filter(c => c.status === 'active').length === 0 && (
+                  <p className="text-sm text-white/60 italic">No active campaigns available</p>
+                )}
                 {campaigns.filter(c => c.status === 'active').map((campaign) => (
-                  <option key={campaign.id} value={campaign.id} className="bg-background">
-                    {campaign.name}
-                  </option>
+                  <label
+                    key={campaign.id}
+                    className="flex items-center space-x-3 p-3 rounded-xl hover:bg-white/5 transition-all duration-300 cursor-pointer"
+                    style={{
+                      background: selectedCampaign === campaign.id ? 'rgba(251, 191, 36, 0.1)' : 'rgba(255, 255, 255, 0.03)',
+                      border: selectedCampaign === campaign.id ? '1px solid rgba(251, 191, 36, 0.3)' : '1px solid rgba(255, 255, 255, 0.1)'
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedCampaign === campaign.id}
+                      onChange={(e) => {
+                        // Single selection behavior - uncheck others
+                        const newValue = e.target.checked ? campaign.id : ''
+                        setSelectedCampaign(newValue)
+                      }}
+                      className="w-4 h-4 text-yellow-400 bg-transparent border-white/30 rounded focus:ring-yellow-400 focus:ring-2"
+                    />
+                    <div className="flex-1">
+                      <div className="text-white font-medium">{campaign.name}</div>
+                      <div className="text-sm text-white/60">
+                        {campaign.startDate} - {campaign.endDate || 'Ongoing'}
+                      </div>
+                    </div>
+                    {selectedCampaign === campaign.id && (
+                      <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+                    )}
+                  </label>
                 ))}
-              </select>
+              </div>
 
               <div className="flex space-x-2">
                 <button
