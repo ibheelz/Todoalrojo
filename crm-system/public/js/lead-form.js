@@ -243,7 +243,7 @@ function toggleLoading(isLoading) {
     }
     
     .otp-input:focus {
-      transform: scale(1.03);
+      transform: none;
       border-color: #22d3ee;
       box-shadow: 0 0 0 2px rgba(34,211,238,.25);
     }
@@ -2250,7 +2250,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     
     .otp-input:focus {
-      transform: scale(1.03);
+      transform: none;
       border-color: #22d3ee;
       box-shadow: 0 0 0 2px rgba(34,211,238,.25);
     }

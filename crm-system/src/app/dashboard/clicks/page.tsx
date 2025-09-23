@@ -486,7 +486,7 @@ export default function ClicksPage() {
         {viewMode === 'cards' ? (
           <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             {clicks.map((click) => (
-              <div key={click.id} className="premium-card p-4 sm:p-6 hover:scale-105 transition-transform">
+              <div key={click.id} className="premium-card p-4 sm:p-6">
                 <div className="space-y-3">
                   {/* Header with Avatar */}
                   <div className="flex justify-between items-start">

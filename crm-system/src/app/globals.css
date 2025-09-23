@@ -403,7 +403,7 @@
   }
 
   .premium-button:active {
-    transform: scale(0.95);
+    transform: none;
   }
 
   .premium-card:hover {
@@ -411,7 +411,7 @@
   }
 
   .premium-card:active {
-    transform: scale(0.98);
+    transform: none;
   }
 }
 

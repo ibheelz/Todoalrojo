@@ -87,7 +87,7 @@ export default function UsersPage() {
             <Link
               key={user.id}
               href={`/dashboard/users/${user.id}`}
-              className="premium-card p-6 hover:scale-105 transition-all duration-300 group"
+              className="premium-card p-6 transition-all duration-300 group"
               style={{ animationDelay: `${index * 100}ms` }}
             >
               <div className="flex items-start justify-between mb-4">
