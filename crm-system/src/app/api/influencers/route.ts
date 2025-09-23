@@ -129,7 +129,7 @@ export async function PUT(request: NextRequest) {
     // Validate input data
     const validatedData = createInfluencerSchema.parse(body)
 
-    // Update influencer
+    // Update influencer core fields
     const updatedInfluencer = await prisma.influencer.update({
       where: { id },
       data: {
@@ -151,41 +151,57 @@ export async function PUT(request: NextRequest) {
         campaignInfluencers: {
           include: {
             campaign: {
-              select: {
-                id: true,
-                name: true,
-                slug: true
-              }
+              select: { id: true, name: true, slug: true }
             }
           }
         }
       }
     })
 
+    // Update campaign assignments if provided
+    if (Array.isArray(body.assignedCampaignIds)) {
+      const ids: string[] = body.assignedCampaignIds.filter(Boolean)
+      await prisma.campaignInfluencer.deleteMany({ where: { influencerId: id } })
+      if (ids.length) {
+        await prisma.campaignInfluencer.createMany({
+          data: ids.map((campaignId) => ({ campaignId, influencerId: id, assignedBy: 'influencer-modal' })),
+          skipDuplicates: true
+        })
+      }
+    }
+
+    // Reload with campaigns to return fresh mapping
+    const refreshed = await prisma.influencer.findUnique({
+      where: { id },
+      include: {
+        campaignInfluencers: { include: { campaign: { select: { id: true, name: true, slug: true } } } }
+      }
+    })
+
     // Transform data to match frontend expectations
-    const transformedInfluencer = {
-      id: updatedInfluencer.id,
-      name: updatedInfluencer.name,
-      email: updatedInfluencer.email,
-      phone: updatedInfluencer.phone,
-      socialHandle: updatedInfluencer.socialHandle,
-      platform: updatedInfluencer.platform,
-      followers: updatedInfluencer.followers,
-      engagementRate: Number(updatedInfluencer.engagementRate),
-      category: updatedInfluencer.category,
-      location: updatedInfluencer.location,
-      status: updatedInfluencer.status,
-      assignedCampaigns: [],
-      totalLeads: updatedInfluencer.totalLeads,
-      totalClicks: updatedInfluencer.totalClicks,
-      totalRegs: updatedInfluencer.totalRegs,
-      totalFtd: updatedInfluencer.totalFtd,
-      createdAt: updatedInfluencer.createdAt.toISOString(),
-      commissionRate: updatedInfluencer.commissionRate ? Number(updatedInfluencer.commissionRate) : null,
-      paymentMethod: updatedInfluencer.paymentMethod,
-      notes: updatedInfluencer.notes,
-      conversionTypes: updatedInfluencer.conversionTypes ? JSON.parse(updatedInfluencer.conversionTypes) : [],
-      campaigns: [],
+    const transformedInfluencer = refreshed && {
+      id: refreshed.id,
+      name: refreshed.name,
+      email: refreshed.email,
+      phone: refreshed.phone,
+      socialHandle: refreshed.socialHandle,
+      platform: refreshed.platform,
+      followers: refreshed.followers,
+      engagementRate: Number(refreshed.engagementRate),
+      category: refreshed.category,
+      location: refreshed.location,
+      status: refreshed.status,
+      assignedCampaigns: refreshed.campaignInfluencers.map(ci => ci.campaign.id),
+      totalLeads: refreshed.totalLeads,
+      totalClicks: refreshed.totalClicks,
+      totalRegs: refreshed.totalRegs,
+      totalFtd: refreshed.totalFtd,
+      createdAt: refreshed.createdAt.toISOString(),
+      commissionRate: refreshed.commissionRate ? Number(refreshed.commissionRate) : null,
+      paymentMethod: refreshed.paymentMethod,
+      notes: refreshed.notes,
+      conversionTypes: refreshed.conversionTypes ? JSON.parse(refreshed.conversionTypes) : [],
+      campaigns: refreshed.campaignInfluencers.map(ci => ({ id: ci.campaign.id, name: ci.campaign.name, slug: ci.campaign.slug })),
       leads: []
     }
 
@@ -261,51 +277,53 @@ export async function POST(request: NextRequest) {
           ftd: true
         })
       },
-      include: {
-        campaignInfluencers: {
-          include: {
-            campaign: {
-              select: {
-                id: true,
-                name: true,
-                slug: true
-              }
-            }
-          }
-        }
-      }
+      include: { campaignInfluencers: { include: { campaign: { select: { id: true, name: true, slug: true } } } } }
+    })
+
+    // Assign campaigns if provided
+    if (Array.isArray(body.assignedCampaignIds) && body.assignedCampaignIds.length) {
+      const ids: string[] = body.assignedCampaignIds.filter(Boolean)
+      await prisma.campaignInfluencer.createMany({
+        data: ids.map((campaignId) => ({ campaignId, influencerId: newInfluencer.id, assignedBy: 'influencer-modal' })),
+        skipDuplicates: true
+      })
+    }
+
+    const refreshed = await prisma.influencer.findUnique({
+      where: { id: newInfluencer.id },
+      include: { campaignInfluencers: { include: { campaign: { select: { id: true, name: true, slug: true } } } } }
     })
 
     // Transform data to match frontend expectations
-    const transformedInfluencer = {
-      id: newInfluencer.id,
-      name: newInfluencer.name,
-      email: newInfluencer.email,
-      phone: newInfluencer.phone,
-      socialHandle: newInfluencer.socialHandle,
-      platform: newInfluencer.platform,
-      followers: newInfluencer.followers,
-      engagementRate: Number(newInfluencer.engagementRate),
-      category: newInfluencer.category,
-      location: newInfluencer.location,
-      status: newInfluencer.status,
-      assignedCampaigns: [],
-      totalLeads: newInfluencer.totalLeads,
-      totalClicks: newInfluencer.totalClicks,
-      totalRegs: newInfluencer.totalRegs,
-      totalFtd: newInfluencer.totalFtd,
-      createdAt: newInfluencer.createdAt.toISOString(),
-      commissionRate: newInfluencer.commissionRate ? Number(newInfluencer.commissionRate) : null,
-      paymentMethod: newInfluencer.paymentMethod,
-      notes: newInfluencer.notes,
-      conversionTypes: newInfluencer.conversionTypes ? JSON.parse(newInfluencer.conversionTypes) : [],
-      conversionConfig: newInfluencer.conversionConfig ? JSON.parse(newInfluencer.conversionConfig) : {
+    const transformedInfluencer = refreshed && {
+      id: refreshed.id,
+      name: refreshed.name,
+      email: refreshed.email,
+      phone: refreshed.phone,
+      socialHandle: refreshed.socialHandle,
+      platform: refreshed.platform,
+      followers: refreshed.followers,
+      engagementRate: Number(refreshed.engagementRate),
+      category: refreshed.category,
+      location: refreshed.location,
+      status: refreshed.status,
+      assignedCampaigns: refreshed.campaignInfluencers.map(ci => ci.campaign.id),
+      totalLeads: refreshed.totalLeads,
+      totalClicks: refreshed.totalClicks,
+      totalRegs: refreshed.totalRegs,
+      totalFtd: refreshed.totalFtd,
+      createdAt: refreshed.createdAt.toISOString(),
+      commissionRate: refreshed.commissionRate ? Number(refreshed.commissionRate) : null,
+      paymentMethod: refreshed.paymentMethod,
+      notes: refreshed.notes,
+      conversionTypes: refreshed.conversionTypes ? JSON.parse(refreshed.conversionTypes) : [],
+      conversionConfig: refreshed.conversionConfig ? JSON.parse(refreshed.conversionConfig) : {
         leads: true,
         clicks: true,
         registrations: true,
         ftd: true
       },
-      campaigns: [],
+      campaigns: refreshed.campaignInfluencers.map(ci => ({ id: ci.campaign.id, name: ci.campaign.name, slug: ci.campaign.slug })),
       leads: []
     }
 
