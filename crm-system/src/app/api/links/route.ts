@@ -72,22 +72,34 @@ export async function POST(request: NextRequest) {
     // Validate campaign and influencer relationship if both are provided
     if (validatedData.campaign && validatedData.influencerId) {
       const campaign = await prisma.campaign.findFirst({
-        where: {
-          slug: validatedData.campaign,
-          influencerId: validatedData.influencerId
-        }
+        where: { slug: validatedData.campaign },
+        select: { id: true, slug: true }
       })
 
-      if (!campaign) {
-        console.log('⚠️ Warning: Link created with campaign and influencer that are not connected:', {
-          campaign: validatedData.campaign,
-          influencerId: validatedData.influencerId
+      if (campaign) {
+        const relation = await prisma.campaignInfluencer.findFirst({
+          where: {
+            campaignId: campaign.id,
+            influencerId: validatedData.influencerId
+          },
+          select: { id: true }
         })
+
+        if (!relation) {
+          console.log('⚠️ Warning: Link created with campaign and influencer that are not connected:', {
+            campaign: validatedData.campaign,
+            influencerId: validatedData.influencerId
+          })
+        } else {
+          console.log('✅ Campaign-Influencer relationship validated:', {
+            campaignId: campaign.id,
+            campaignSlug: campaign.slug,
+            influencerId: validatedData.influencerId
+          })
+        }
       } else {
-        console.log('✅ Campaign-Influencer relationship validated:', {
-          campaignId: campaign.id,
-          campaignSlug: campaign.slug,
-          influencerId: campaign.influencerId
+        console.log('⚠️ Warning: Campaign not found for provided slug during link creation:', {
+          campaign: validatedData.campaign
         })
       }
     }
@@ -110,15 +122,32 @@ export async function POST(request: NextRequest) {
         isPublic: validatedData.isPublic,
         allowBots: validatedData.allowBots,
         trackClicks: validatedData.trackClicks,
-        influencerId: validatedData.influencerId || null,
       }
     })
+
+    // If an influencerId was provided, attach it via the junction table
+    if (validatedData.influencerId) {
+      try {
+        await prisma.linkInfluencer.create({
+          data: {
+            linkId: shortLink.id,
+            influencerId: validatedData.influencerId,
+            assignedBy: 'system'
+          }
+        })
+      } catch (e) {
+        console.log('⚠️ Warning: Failed to attach influencer to link (non-fatal):', {
+          linkId: shortLink.id,
+          influencerId: validatedData.influencerId,
+          error: (e as any)?.message
+        })
+      }
+    }
 
     console.log('✅ Short link created successfully:', {
       id: shortLink.id,
       shortCode: shortLink.shortCode,
       campaign: shortLink.campaign,
-      influencerId: shortLink.influencerId,
       timestamp: new Date().toISOString()
     })
 

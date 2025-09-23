@@ -135,26 +135,34 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       timestamp: new Date().toISOString()
     })
 
-    // Validate campaign and influencer relationship if both are provided
+    // Validate campaign and influencer relationship via junction if both are provided
     if (validatedData.campaign && validatedData.influencerId) {
       const campaign = await prisma.campaign.findFirst({
-        where: {
-          slug: validatedData.campaign,
-          influencerId: validatedData.influencerId
-        }
+        where: { slug: validatedData.campaign },
+        select: { id: true, slug: true }
       })
 
-      if (!campaign) {
-        console.log('⚠️ Warning: Link updated with campaign and influencer that are not connected:', {
-          campaign: validatedData.campaign,
-          influencerId: validatedData.influencerId
+      if (campaign) {
+        const relation = await prisma.campaignInfluencer.findFirst({
+          where: { campaignId: campaign.id, influencerId: validatedData.influencerId },
+          select: { id: true }
         })
+
+        if (!relation) {
+          console.log('⚠️ Warning: Link updated with campaign and influencer that are not connected:', {
+            campaign: validatedData.campaign,
+            influencerId: validatedData.influencerId
+          })
+        }
       }
     }
 
+    // Exclude influencerId from direct update payload (handled via junction)
+    const { influencerId, ...updateData } = validatedData as any
+
     const updatedLink = await prisma.shortLink.update({
       where: { id: linkId },
-      data: validatedData,
+      data: updateData,
       include: {
         _count: {
           select: {
@@ -164,11 +172,31 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       }
     })
 
+    // If influencerId provided, ensure junction exists
+    if (influencerId) {
+      try {
+        const existing = await prisma.linkInfluencer.findFirst({
+          where: { linkId, influencerId },
+          select: { id: true }
+        })
+        if (!existing) {
+          await prisma.linkInfluencer.create({
+            data: { linkId, influencerId, assignedBy: 'system' }
+          })
+        }
+      } catch (e) {
+        console.log('⚠️ Warning: Failed to attach influencer to link on update (non-fatal):', {
+          linkId,
+          influencerId,
+          error: (e as any)?.message
+        })
+      }
+    }
+
     console.log('✅ Link updated successfully:', {
       id: updatedLink.id,
       shortCode: updatedLink.shortCode,
       campaign: updatedLink.campaign,
-      influencerId: updatedLink.influencerId,
       timestamp: new Date().toISOString()
     })
 
