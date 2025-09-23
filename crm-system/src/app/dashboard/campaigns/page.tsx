@@ -98,59 +98,28 @@ export default function CampaignsPage() {
     fetchCampaigns()
   }, [])
 
-  // Update filtered campaigns when date filter or custom range changes
+  // Refetch campaigns when date filter changes
   useEffect(() => {
-    // Trigger re-filtering when dateFilter or customDateRange changes
-  }, [dateFilter, customDateRange])
-
-  // Combined filtering for both date and search
-  const filteredCampaigns = campaigns.filter(campaign => {
-    // Date filter logic
-    let matchesDateFilter = true
-    if (dateFilter && dateFilter !== 'all') {
-      const campaignDate = new Date(campaign.createdAt)
-      const today = new Date()
-      const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate())
-
-      switch (dateFilter) {
-        case 'today':
-          matchesDateFilter = campaignDate >= startOfToday
-          break
-        case 'yesterday':
-          const startOfYesterday = new Date(startOfToday)
-          startOfYesterday.setDate(startOfYesterday.getDate() - 1)
-          matchesDateFilter = campaignDate >= startOfYesterday && campaignDate < startOfToday
-          break
-        case 'last7days':
-          const sevenDaysAgo = new Date(startOfToday)
-          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-          matchesDateFilter = campaignDate >= sevenDaysAgo
-          break
-        case 'last30days':
-          const thirtyDaysAgo = new Date(startOfToday)
-          thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-          matchesDateFilter = campaignDate >= thirtyDaysAgo
-          break
-        case 'custom':
-          if (customDateRange.from && customDateRange.to) {
-            const fromDate = new Date(customDateRange.from)
-            const toDate = new Date(customDateRange.to)
-            toDate.setHours(23, 59, 59, 999) // Include the entire 'to' date
-            matchesDateFilter = campaignDate >= fromDate && campaignDate <= toDate
-          }
-          break
-        default:
-          matchesDateFilter = true
-      }
+    if (dateFilter !== 'custom') {
+      fetchCampaigns()
     }
+  }, [dateFilter])
 
-    // Search filter logic
+  // Refetch campaigns when custom date range is applied
+  useEffect(() => {
+    if (dateFilter === 'custom' && customDateRange.from && customDateRange.to) {
+      fetchCampaigns()
+    }
+  }, [customDateRange])
+
+  // Filter campaigns by search only (metrics are already filtered by date on server)
+  const filteredCampaigns = campaigns.filter(campaign => {
     const matchesSearch =
       campaign.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       campaign.slug.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (campaign.description && campaign.description.toLowerCase().includes(searchQuery.toLowerCase()))
 
-    return matchesDateFilter && matchesSearch
+    return matchesSearch
   })
 
   // Close dropdown when clicking outside
@@ -171,7 +140,19 @@ export default function CampaignsPage() {
 
   const fetchCampaigns = async () => {
     try {
-      const response = await fetch('/api/campaigns?includeStats=true')
+      // Build query parameters for date filtering
+      const params = new URLSearchParams({
+        includeStats: 'true',
+        dateFilter,
+      })
+
+      // Add custom date range if applicable
+      if (dateFilter === 'custom' && customDateRange.from && customDateRange.to) {
+        params.append('fromDate', customDateRange.from)
+        params.append('toDate', customDateRange.to)
+      }
+
+      const response = await fetch(`/api/campaigns?${params.toString()}`)
       const data = await response.json()
 
       if (data.success) {
@@ -505,7 +486,12 @@ export default function CampaignsPage() {
                     />
                   </div>
                   <button
-                    onClick={() => setShowCustomDatePicker(false)}
+                    onClick={() => {
+                      setShowCustomDatePicker(false)
+                      if (customDateRange.from && customDateRange.to) {
+                        fetchCampaigns()
+                      }
+                    }}
                     className="px-4 py-3 rounded-xl bg-primary text-black text-sm font-medium hover:bg-primary/90 transition-colors"
                   >
                     Apply
@@ -707,7 +693,12 @@ export default function CampaignsPage() {
               </div>
               <div className="flex items-end">
                 <button
-                  onClick={() => setShowCustomDatePicker(false)}
+                  onClick={() => {
+                    setShowCustomDatePicker(false)
+                    if (customDateRange.from && customDateRange.to) {
+                      fetchCampaigns()
+                    }
+                  }}
                   className="px-4 py-3 rounded-xl bg-primary text-black text-sm font-medium hover:bg-primary/90 transition-colors h-[52px]"
                 >
                   Apply

@@ -20,6 +20,55 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const includeStats = searchParams.get('includeStats') === 'true'
+    const dateFilter = searchParams.get('dateFilter') || 'all'
+    const fromDate = searchParams.get('fromDate')
+    const toDate = searchParams.get('toDate')
+
+    // Calculate date range for filtering metrics
+    let dateWhere = {}
+    if (dateFilter && dateFilter !== 'all') {
+      const today = new Date()
+      const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+
+      switch (dateFilter) {
+        case 'today':
+          dateWhere = { createdAt: { gte: startOfToday } }
+          break
+        case 'yesterday':
+          const startOfYesterday = new Date(startOfToday)
+          startOfYesterday.setDate(startOfYesterday.getDate() - 1)
+          dateWhere = {
+            createdAt: {
+              gte: startOfYesterday,
+              lt: startOfToday
+            }
+          }
+          break
+        case 'last7days':
+          const sevenDaysAgo = new Date(startOfToday)
+          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+          dateWhere = { createdAt: { gte: sevenDaysAgo } }
+          break
+        case 'last30days':
+          const thirtyDaysAgo = new Date(startOfToday)
+          thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+          dateWhere = { createdAt: { gte: thirtyDaysAgo } }
+          break
+        case 'custom':
+          if (fromDate && toDate) {
+            const from = new Date(fromDate)
+            const to = new Date(toDate)
+            to.setHours(23, 59, 59, 999) // Include the entire 'to' date
+            dateWhere = {
+              createdAt: {
+                gte: from,
+                lte: to
+              }
+            }
+          }
+          break
+      }
+    }
 
     if (includeStats) {
       // Get campaigns with detailed analytics
@@ -57,19 +106,28 @@ export async function GET(request: NextRequest) {
           const [clickStats, leadStats, eventStats, registrationStats, ftdStats] = await Promise.all([
             // Clicks
             prisma.click.aggregate({
-              where: { campaign: campaign.slug },
+              where: {
+                campaign: campaign.slug,
+                ...dateWhere
+              },
               _count: true
             }),
             // Leads
             prisma.lead.aggregate({
-              where: { campaign: campaign.slug },
+              where: {
+                campaign: campaign.slug,
+                ...dateWhere
+              },
               _count: true,
               _sum: { value: true },
               _avg: { qualityScore: true }
             }),
             // Events
             prisma.event.aggregate({
-              where: { campaign: campaign.slug },
+              where: {
+                campaign: campaign.slug,
+                ...dateWhere
+              },
               _count: true,
               _sum: { value: true }
             }),
@@ -77,7 +135,8 @@ export async function GET(request: NextRequest) {
             prisma.event.aggregate({
               where: {
                 campaign: campaign.slug,
-                eventType: { in: ['registration', 'signup', 'register'] }
+                eventType: { in: ['registration', 'signup', 'register'] },
+                ...dateWhere
               },
               _count: true
             }),
@@ -88,7 +147,8 @@ export async function GET(request: NextRequest) {
                 OR: [
                   { eventType: { in: ['deposit', 'ftd', 'first_deposit'] } },
                   { eventName: { in: ['deposit', 'ftd', 'first_deposit'] } }
-                ]
+                ],
+                ...dateWhere
               },
               _count: true
             })
@@ -98,9 +158,9 @@ export async function GET(request: NextRequest) {
           const uniqueCustomers = await prisma.customer.count({
             where: {
               OR: [
-                { clicks: { some: { campaign: campaign.slug } } },
-                { leads: { some: { campaign: campaign.slug } } },
-                { events: { some: { campaign: campaign.slug } } }
+                { clicks: { some: { campaign: campaign.slug, ...dateWhere } } },
+                { leads: { some: { campaign: campaign.slug, ...dateWhere } } },
+                { events: { some: { campaign: campaign.slug, ...dateWhere } } }
               ]
             }
           })
@@ -109,7 +169,8 @@ export async function GET(request: NextRequest) {
           const duplicateLeads = await prisma.lead.count({
             where: {
               campaign: campaign.slug,
-              isDuplicate: true
+              isDuplicate: true,
+              ...dateWhere
             }
           })
 
@@ -117,7 +178,8 @@ export async function GET(request: NextRequest) {
           const fraudClicks = await prisma.click.count({
             where: {
               campaign: campaign.slug,
-              isFraud: true
+              isFraud: true,
+              ...dateWhere
             }
           })
 
