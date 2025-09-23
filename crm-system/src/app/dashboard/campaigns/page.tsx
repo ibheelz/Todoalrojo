@@ -86,11 +86,58 @@ export default function CampaignsPage() {
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [managingCampaign, setManagingCampaign] = useState<Campaign | null>(null)
+
+  // Date filtering state
+  const [dateFilter, setDateFilter] = useState('today')
+  const [customDateRange, setCustomDateRange] = useState({ from: '', to: '' })
+  const [showCustomDatePicker, setShowCustomDatePicker] = useState(false)
+
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     fetchCampaigns()
   }, [])
+
+  // Update filtered campaigns when date filter or custom range changes
+  useEffect(() => {
+    // Trigger re-filtering when dateFilter or customDateRange changes
+  }, [dateFilter, customDateRange])
+
+  // Filter campaigns based on date (for analytics/stats display)
+  const filteredCampaigns = campaigns.filter(campaign => {
+    if (!dateFilter || dateFilter === 'all') return true
+
+    const campaignDate = new Date(campaign.createdAt)
+    const today = new Date()
+    const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+
+    switch (dateFilter) {
+      case 'today':
+        return campaignDate >= startOfToday
+      case 'yesterday':
+        const startOfYesterday = new Date(startOfToday)
+        startOfYesterday.setDate(startOfYesterday.getDate() - 1)
+        return campaignDate >= startOfYesterday && campaignDate < startOfToday
+      case 'last7days':
+        const sevenDaysAgo = new Date(startOfToday)
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+        return campaignDate >= sevenDaysAgo
+      case 'last30days':
+        const thirtyDaysAgo = new Date(startOfToday)
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+        return campaignDate >= thirtyDaysAgo
+      case 'custom':
+        if (customDateRange.from && customDateRange.to) {
+          const fromDate = new Date(customDateRange.from)
+          const toDate = new Date(customDateRange.to)
+          toDate.setHours(23, 59, 59, 999) // Include the entire 'to' date
+          return campaignDate >= fromDate && campaignDate <= toDate
+        }
+        return true
+      default:
+        return true
+    }
+  })
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -398,7 +445,68 @@ export default function CampaignsPage() {
                   {sortedCampaigns.length} Campaign{sortedCampaigns.length !== 1 ? 's' : ''}
                 </span>
               </div>
+
+              {/* Date Filter */}
+              <div className="relative min-w-0 flex-1 sm:flex-initial sm:min-w-[180px]">
+                <select
+                  value={dateFilter}
+                  onChange={(e) => {
+                    setDateFilter(e.target.value)
+                    if (e.target.value === 'custom') {
+                      setShowCustomDatePicker(true)
+                    } else {
+                      setShowCustomDatePicker(false)
+                    }
+                  }}
+                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 backdrop-blur-sm"
+                  style={{
+                    backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                    backgroundPosition: 'right 12px center',
+                    backgroundRepeat: 'no-repeat',
+                    backgroundSize: '16px'
+                  }}
+                >
+                  <option value="today">Today</option>
+                  <option value="yesterday">Yesterday</option>
+                  <option value="last7days">Last 7 Days</option>
+                  <option value="last30days">Last 30 Days</option>
+                  <option value="all">All Time</option>
+                  <option value="custom">Custom Range</option>
+                </select>
+              </div>
             </div>
+
+            {/* Custom Date Range Picker for Mobile */}
+            {showCustomDatePicker && (
+              <div className="bg-white/10 border border-white/20 rounded-xl p-4 space-y-4">
+                <div className="flex flex-col gap-4">
+                  <div className="flex-1">
+                    <label className="block text-white/80 text-sm mb-2">From Date</label>
+                    <input
+                      type="date"
+                      value={customDateRange.from}
+                      onChange={(e) => setCustomDateRange(prev => ({ ...prev, from: e.target.value }))}
+                      className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-white/80 text-sm mb-2">To Date</label>
+                    <input
+                      type="date"
+                      value={customDateRange.to}
+                      onChange={(e) => setCustomDateRange(prev => ({ ...prev, to: e.target.value }))}
+                      className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    />
+                  </div>
+                  <button
+                    onClick={() => setShowCustomDatePicker(false)}
+                    className="px-4 py-3 rounded-xl bg-primary text-black text-sm font-medium hover:bg-primary/90 transition-colors"
+                  >
+                    Apply
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Create Campaign Button */}
             <div className="flex">
@@ -441,6 +549,35 @@ export default function CampaignsPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="flex-1 bg-transparent text-white placeholder-white/60 outline-none text-sm sm:text-base"
               />
+            </div>
+
+            {/* Date Filter */}
+            <div className="relative flex-shrink-0">
+              <select
+                value={dateFilter}
+                onChange={(e) => {
+                  setDateFilter(e.target.value)
+                  if (e.target.value === 'custom') {
+                    setShowCustomDatePicker(true)
+                  } else {
+                    setShowCustomDatePicker(false)
+                  }
+                }}
+                className="px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 backdrop-blur-sm h-[52px] min-w-[180px]"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                  backgroundPosition: 'right 12px center',
+                  backgroundRepeat: 'no-repeat',
+                  backgroundSize: '16px'
+                }}
+              >
+                <option value="today">Today</option>
+                <option value="yesterday">Yesterday</option>
+                <option value="last7days">Last 7 Days</option>
+                <option value="last30days">Last 30 Days</option>
+                <option value="all">All Time</option>
+                <option value="custom">Custom Range</option>
+              </select>
             </div>
 
             {/* Right-aligned Controls */}
@@ -539,6 +676,40 @@ export default function CampaignsPage() {
             />
           </div>
         </div>
+
+        {/* Custom Date Range Picker */}
+        {showCustomDatePicker && (
+          <div className="bg-white/10 border border-white/20 rounded-xl p-4 space-y-4">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <label className="block text-white/80 text-sm mb-2">From Date</label>
+                <input
+                  type="date"
+                  value={customDateRange.from}
+                  onChange={(e) => setCustomDateRange(prev => ({ ...prev, from: e.target.value }))}
+                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                />
+              </div>
+              <div className="flex-1">
+                <label className="block text-white/80 text-sm mb-2">To Date</label>
+                <input
+                  type="date"
+                  value={customDateRange.to}
+                  onChange={(e) => setCustomDateRange(prev => ({ ...prev, to: e.target.value }))}
+                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                />
+              </div>
+              <div className="flex items-end">
+                <button
+                  onClick={() => setShowCustomDatePicker(false)}
+                  className="px-4 py-3 rounded-xl bg-primary text-black text-sm font-medium hover:bg-primary/90 transition-colors h-[52px]"
+                >
+                  Apply
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Campaign Display */}
         {sortedCampaigns.length === 0 ? (
