@@ -156,7 +156,8 @@ export async function GET(request: NextRequest) {
           title: li.link.title,
           shortCode: li.link.shortCode,
           assignedAt: li.assignedAt
-      }))
+        }))
+      })
     }))
 
     return NextResponse.json({
