@@ -18,6 +18,7 @@ const updateLinkSchema = z.object({
   allowBots: z.boolean().optional(),
   trackClicks: z.boolean().optional(),
   influencerId: z.string().optional(),
+  influencerIds: z.array(z.string()).optional(),
 })
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
@@ -157,8 +158,8 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       }
     }
 
-    // Exclude influencerId from direct update payload (handled via junction)
-    const { influencerId, ...updateData } = validatedData as any
+    // Exclude influencer fields from direct update payload (handled via junction)
+    const { influencerId, influencerIds, ...updateData } = validatedData as any
 
     const updatedLink = await prisma.shortLink.update({
       where: { id: linkId },
@@ -172,22 +173,19 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       }
     })
 
-    // If influencerId provided, ensure junction exists
-    if (influencerId) {
+    // If influencer(s) provided, ensure junction mapping
+    const idsToApply: string[] = influencerIds?.length ? influencerIds : (influencerId ? [influencerId] : [])
+    if (idsToApply.length) {
       try {
-        const existing = await prisma.linkInfluencer.findFirst({
-          where: { linkId, influencerId },
-          select: { id: true }
+        await prisma.linkInfluencer.deleteMany({ where: { linkId } })
+        await prisma.linkInfluencer.createMany({
+          data: idsToApply.map((id: string) => ({ linkId, influencerId: id, assignedBy: 'system' })),
+          skipDuplicates: true
         })
-        if (!existing) {
-          await prisma.linkInfluencer.create({
-            data: { linkId, influencerId, assignedBy: 'system' }
-          })
-        }
       } catch (e) {
         console.log('⚠️ Warning: Failed to attach influencer to link on update (non-fatal):', {
           linkId,
-          influencerId,
+          influencerIds: idsToApply,
           error: (e as any)?.message
         })
       }

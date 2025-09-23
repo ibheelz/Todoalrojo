@@ -20,6 +20,7 @@ const createLinkSchema = z.object({
   allowBots: z.boolean().default(false),
   trackClicks: z.boolean().default(true),
   influencerId: z.string().optional(),
+  influencerIds: z.array(z.string()).optional(),
 })
 
 function generateShortCode(length = 6): string {
@@ -125,20 +126,25 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // If an influencerId was provided, attach it via the junction table
-    if (validatedData.influencerId) {
+    // If influencer relationships were provided, attach via the junction table
+    const influencerIds = (validatedData.influencerIds && validatedData.influencerIds.length > 0)
+      ? validatedData.influencerIds
+      : (validatedData.influencerId ? [validatedData.influencerId] : [])
+
+    if (influencerIds.length > 0) {
       try {
-        await prisma.linkInfluencer.create({
-          data: {
+        await prisma.linkInfluencer.createMany({
+          data: influencerIds.map((infId) => ({
             linkId: shortLink.id,
-            influencerId: validatedData.influencerId,
+            influencerId: infId,
             assignedBy: 'system'
-          }
+          })),
+          skipDuplicates: true
         })
       } catch (e) {
         console.log('⚠️ Warning: Failed to attach influencer to link (non-fatal):', {
           linkId: shortLink.id,
-          influencerId: validatedData.influencerId,
+          influencerIds,
           error: (e as any)?.message
         })
       }
@@ -224,6 +230,9 @@ export async function GET(request: NextRequest) {
     const links = await prisma.shortLink.findMany({
       where: whereConditions,
       include: {
+        linkInfluencers: {
+          select: { influencerId: true }
+        },
         _count: {
           select: {
             clicks: true
@@ -260,11 +269,16 @@ export async function GET(request: NextRequest) {
     })
 
     // Enhance links with short URLs
-    const enhancedLinks = links.map(link => ({
-      ...link,
-      shortUrl: generateShortUrl(link.shortCode),
-      clickCount: link._count.clicks
-    }))
+    const enhancedLinks = links.map(link => {
+      const influencerIds = (link as any).linkInfluencers?.map((li: any) => li.influencerId) || []
+      return {
+        ...link,
+        influencerId: influencerIds[0] || null, // backward compatibility for UI that expects single
+        influencerIds,
+        shortUrl: generateShortUrl(link.shortCode),
+        clickCount: link._count.clicks
+      }
+    })
 
     const summary = {
       totalLinks: summaryStats._count || 0,
