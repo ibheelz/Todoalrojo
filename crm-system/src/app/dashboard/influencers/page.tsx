@@ -49,6 +49,7 @@ interface InfluencerConversionConfig {
 interface Influencer {
   id: string
   name: string
+  profileImage?: string | null
   email: string | null
   phone: string | null
   socialHandle: string | null
@@ -156,6 +157,7 @@ export default function InfluencersPage() {
           const transformedInfluencers = influencersData.influencers.map((inf: any) => ({
             id: inf.id,
             name: inf.name,
+            profileImage: inf.profileImage || null,
             email: inf.email,
             phone: inf.phone,
             socialHandle: inf.socialHandle,
@@ -386,6 +388,7 @@ export default function InfluencersPage() {
           const newInfluencer: Influencer = {
             id: result.influencer.id,
             name: result.influencer.name,
+            profileImage: result.influencer.profileImage || null,
             email: result.influencer.email,
             phone: result.influencer.phone,
             socialHandle: result.influencer.socialHandle,
@@ -727,12 +730,20 @@ export default function InfluencersPage() {
                   borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
                 }}>
                   <div className="flex items-center space-x-3 sm:space-x-4">
-                    <Avatar
-                      firstName={influencer.name.split(' ')[0]}
-                      lastName={influencer.name.split(' ')[1]}
-                      size="md"
-                      className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 flex-shrink-0"
-                    />
+                    {influencer.profileImage ? (
+                      <img
+                        src={influencer.profileImage}
+                        alt={influencer.name}
+                        className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-full object-cover ring-2 ring-white/10 flex-shrink-0"
+                      />
+                    ) : (
+                      <Avatar
+                        firstName={influencer.name.split(' ')[0]}
+                        lastName={influencer.name.split(' ')[1]}
+                        size="md"
+                        className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 flex-shrink-0"
+                      />
+                    )}
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-white text-sm sm:text-base lg:text-lg mb-0 truncate">{influencer.name}</h3>
                       <p className="text-white/60 text-xs font-mono truncate">
@@ -945,12 +956,20 @@ export default function InfluencersPage() {
                       </td>
                       <td className="px-3 sm:px-4 py-3 sm:py-4">
                         <div className="flex items-center space-x-2 sm:space-x-3">
-                          <Avatar
-                            firstName={influencer.name.split(' ')[0]}
-                            lastName={influencer.name.split(' ')[1]}
-                            size="sm"
-                            className="w-6 h-6 sm:w-8 sm:h-8"
-                          />
+                          {influencer.profileImage ? (
+                            <img
+                              src={influencer.profileImage}
+                              alt={influencer.name}
+                              className="w-6 h-6 sm:w-8 sm:h-8 rounded-full object-cover ring-2 ring-white/10"
+                            />
+                          ) : (
+                            <Avatar
+                              firstName={influencer.name.split(' ')[0]}
+                              lastName={influencer.name.split(' ')[1]}
+                              size="sm"
+                              className="w-6 h-6 sm:w-8 sm:h-8"
+                            />
+                          )}
                           <div className="min-w-0 flex-1">
                             <div className="font-medium text-white text-xs sm:text-sm truncate">{influencer.name}</div>
                             <div className="text-white/60 text-[10px] sm:text-xs truncate">{influencer.socialHandle}</div>

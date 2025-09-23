@@ -43,6 +43,7 @@ export async function GET(request: NextRequest) {
     const transformedInfluencers = influencers.map(influencer => ({
       id: influencer.id,
       name: influencer.name,
+      profileImage: (influencer as any).profileImage || null,
       email: influencer.email,
       phone: influencer.phone,
       socialHandle: influencer.socialHandle,
