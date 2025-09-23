@@ -328,17 +328,25 @@ export default function InfluencerModal({ isOpen, onClose, onSubmit, onDelete, e
   const handleResetStats = async () => {
     try {
       if (!editMode?.id) return
-      const res = await fetch(`/api/influencers/${editMode.id}/reset`, { method: 'POST' })
+      console.log('[INFLUENCER MODAL] Reset clicked for', editMode.id)
+      const url = `/api/influencers/${editMode.id}/reset`
+      console.log('[INFLUENCER MODAL] POST', url)
+      const res = await fetch(url, { method: 'POST' })
+      console.log('[INFLUENCER MODAL] Reset response status', res.status)
       const json = await res.json()
+      console.log('[INFLUENCER MODAL] Reset response body', json)
       if (json.success) {
         // Notify pages to zero local stats immediately
         window.dispatchEvent(new CustomEvent('influencer:reset', { detail: { id: editMode.id } }))
+        alert('Influencer stats reset successfully')
         onClose()
       } else {
         console.error('Reset influencer failed:', json.error)
+        alert('Failed to reset influencer: ' + (json.error || 'Unknown error'))
       }
     } catch (e) {
       console.error('Reset influencer error:', e)
+      alert('Error resetting influencer (see console)')
     }
   }
 

@@ -6,6 +6,7 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
   try {
     const id = params.id
     if (!id) return NextResponse.json({ success: false, error: 'Missing influencer id' }, { status: 400 })
+    console.log('[RESET INFLUENCER] Request for id=', id)
 
     const updated = await prisma.influencer.update({
       where: { id },
@@ -18,6 +19,7 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
       }
     })
 
+    console.log('[RESET INFLUENCER] Updated and zeroed counters for id=', updated.id)
     emitStats({ type: 'resetInfluencer', payload: { id: updated.id } })
     return NextResponse.json({ success: true, id: updated.id })
   } catch (error) {

@@ -113,6 +113,7 @@ export default function CampaignsPage() {
   // Listen for campaign reset events and zero local stats
   useEffect(() => {
     const handler = (e: any) => {
+      console.log('[CAMPAIGNS PAGE] campaign:reset event', e?.detail)
       const id = e.detail?.id
       if (!id) return
       setCampaigns(prev => prev.map(c => c.id === id ? {
@@ -149,8 +150,10 @@ export default function CampaignsPage() {
     const onStats = (e: MessageEvent) => {
       try {
         const evt = JSON.parse((e as MessageEvent).data)
+        console.log('[CAMPAIGNS PAGE] SSE event', evt)
         if (!evt || !evt.type) return
         if (['click', 'lead', 'ftd', 'campaignDelta', 'resetCampaign'].includes(evt.type)) {
+          console.log('[CAMPAIGNS PAGE] SSE triggering fetchCampaigns')
           fetchCampaigns()
         }
       } catch {}

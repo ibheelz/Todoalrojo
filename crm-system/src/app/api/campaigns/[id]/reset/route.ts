@@ -6,6 +6,7 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
   try {
     const id = params.id
     if (!id) return NextResponse.json({ success: false, error: 'Missing campaign id' }, { status: 400 })
+    console.log('[RESET CAMPAIGN] Request for id=', id)
 
     const updated = await prisma.campaign.update({
       where: { id },
@@ -21,6 +22,7 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
       }
     })
 
+    console.log('[RESET CAMPAIGN] Updated and zeroed counters for id=', updated.id)
     emitStats({ type: 'resetCampaign', payload: { id: updated.id } })
     return NextResponse.json({ success: true, id: updated.id })
   } catch (error) {

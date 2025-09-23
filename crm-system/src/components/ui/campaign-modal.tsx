@@ -313,16 +313,24 @@ export default function CampaignModal({ isOpen, onClose, onSubmit, onDelete, edi
   const handleResetStats = async () => {
     try {
       if (!editMode?.id) return
-      const res = await fetch(`/api/campaigns/${editMode.id}/reset`, { method: 'POST' })
+      console.log('[CAMPAIGN MODAL] Reset clicked for', editMode.id)
+      const url = `/api/campaigns/${editMode.id}/reset`
+      console.log('[CAMPAIGN MODAL] POST', url)
+      const res = await fetch(url, { method: 'POST' })
+      console.log('[CAMPAIGN MODAL] Reset response status', res.status)
       const json = await res.json()
+      console.log('[CAMPAIGN MODAL] Reset response body', json)
       if (json.success) {
         window.dispatchEvent(new CustomEvent('campaign:reset', { detail: { id: editMode.id } }))
+        alert('Campaign stats reset successfully')
         onClose()
       } else {
         console.error('Reset campaign failed:', json.error)
+        alert('Failed to reset campaign: ' + (json.error || 'Unknown error'))
       }
     } catch (e) {
       console.error('Reset campaign error:', e)
+      alert('Error resetting campaign (see console)')
     }
   }
 

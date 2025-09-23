@@ -145,6 +145,7 @@ export default function InfluencersPage() {
   // Listen for reset events from modal and zero local stats
   useEffect(() => {
     const handler = (e: any) => {
+      console.log('[INFLUENCERS PAGE] influencer:reset event', e?.detail)
       const id = e.detail?.id
       if (!id) return
       setInfluencers(prev => prev.map(inf => inf.id === id ? {
@@ -165,9 +166,11 @@ export default function InfluencersPage() {
     const onStats = (e: MessageEvent) => {
       try {
         const evt = JSON.parse((e as MessageEvent).data)
+        console.log('[INFLUENCERS PAGE] SSE event', evt)
         if (!evt || !evt.type) return
         // For simplicity, refetch on relevant events
         if (['click', 'lead', 'ftd', 'influencerDelta', 'campaignDelta', 'resetInfluencer'].includes(evt.type)) {
+          console.log('[INFLUENCERS PAGE] SSE triggering fetchData')
           fetchData()
         }
       } catch {}
@@ -180,6 +183,7 @@ export default function InfluencersPage() {
   const fetchData = async () => {
     try {
       setLoading(true)
+      console.log('[INFLUENCERS PAGE] fetchData start', { dateFilter, customDateRange })
 
       // Fetch influencers and campaigns in parallel
       const params = new URLSearchParams()
@@ -196,6 +200,7 @@ export default function InfluencersPage() {
 
       if (influencersResponse.ok) {
         const influencersData = await influencersResponse.json()
+        console.log('[INFLUENCERS PAGE] influencers length', influencersData?.influencers?.length)
         if (influencersData.success) {
           // Transform data to match the interface
           const transformedInfluencers = influencersData.influencers.map((inf: any) => ({
@@ -227,6 +232,7 @@ export default function InfluencersPage() {
 
       if (campaignsResponse.ok) {
         const campaignsData = await campaignsResponse.json()
+        console.log('[INFLUENCERS PAGE] campaigns length', campaignsData?.campaigns?.length)
         if (campaignsData.success) {
           const transformedCampaigns = campaignsData.campaigns.map((camp: any) => ({
             id: camp.id,
@@ -240,7 +246,7 @@ export default function InfluencersPage() {
       }
 
     } catch (error) {
-      console.error('Error fetching data:', error)
+      console.error('[INFLUENCERS PAGE] Error fetching data:', error)
     } finally {
       setLoading(false)
     }
