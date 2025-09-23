@@ -103,40 +103,54 @@ export default function CampaignsPage() {
     // Trigger re-filtering when dateFilter or customDateRange changes
   }, [dateFilter, customDateRange])
 
-  // Filter campaigns based on date (for analytics/stats display)
+  // Combined filtering for both date and search
   const filteredCampaigns = campaigns.filter(campaign => {
-    if (!dateFilter || dateFilter === 'all') return true
+    // Date filter logic
+    let matchesDateFilter = true
+    if (dateFilter && dateFilter !== 'all') {
+      const campaignDate = new Date(campaign.createdAt)
+      const today = new Date()
+      const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate())
 
-    const campaignDate = new Date(campaign.createdAt)
-    const today = new Date()
-    const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate())
-
-    switch (dateFilter) {
-      case 'today':
-        return campaignDate >= startOfToday
-      case 'yesterday':
-        const startOfYesterday = new Date(startOfToday)
-        startOfYesterday.setDate(startOfYesterday.getDate() - 1)
-        return campaignDate >= startOfYesterday && campaignDate < startOfToday
-      case 'last7days':
-        const sevenDaysAgo = new Date(startOfToday)
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-        return campaignDate >= sevenDaysAgo
-      case 'last30days':
-        const thirtyDaysAgo = new Date(startOfToday)
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-        return campaignDate >= thirtyDaysAgo
-      case 'custom':
-        if (customDateRange.from && customDateRange.to) {
-          const fromDate = new Date(customDateRange.from)
-          const toDate = new Date(customDateRange.to)
-          toDate.setHours(23, 59, 59, 999) // Include the entire 'to' date
-          return campaignDate >= fromDate && campaignDate <= toDate
-        }
-        return true
-      default:
-        return true
+      switch (dateFilter) {
+        case 'today':
+          matchesDateFilter = campaignDate >= startOfToday
+          break
+        case 'yesterday':
+          const startOfYesterday = new Date(startOfToday)
+          startOfYesterday.setDate(startOfYesterday.getDate() - 1)
+          matchesDateFilter = campaignDate >= startOfYesterday && campaignDate < startOfToday
+          break
+        case 'last7days':
+          const sevenDaysAgo = new Date(startOfToday)
+          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+          matchesDateFilter = campaignDate >= sevenDaysAgo
+          break
+        case 'last30days':
+          const thirtyDaysAgo = new Date(startOfToday)
+          thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+          matchesDateFilter = campaignDate >= thirtyDaysAgo
+          break
+        case 'custom':
+          if (customDateRange.from && customDateRange.to) {
+            const fromDate = new Date(customDateRange.from)
+            const toDate = new Date(customDateRange.to)
+            toDate.setHours(23, 59, 59, 999) // Include the entire 'to' date
+            matchesDateFilter = campaignDate >= fromDate && campaignDate <= toDate
+          }
+          break
+        default:
+          matchesDateFilter = true
+      }
     }
+
+    // Search filter logic
+    const matchesSearch =
+      campaign.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      campaign.slug.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (campaign.description && campaign.description.toLowerCase().includes(searchQuery.toLowerCase()))
+
+    return matchesDateFilter && matchesSearch
   })
 
   // Close dropdown when clicking outside
@@ -302,14 +316,6 @@ export default function CampaignsPage() {
   }
 
 
-  const filteredCampaigns = campaigns.filter((campaign) => {
-    const matchesSearch =
-      campaign.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      campaign.slug.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (campaign.description && campaign.description.toLowerCase().includes(searchQuery.toLowerCase()))
-
-    return matchesSearch
-  })
 
   // Sort campaigns by selected field or default to status
   const sortedCampaigns = filteredCampaigns.sort((a, b) => {
