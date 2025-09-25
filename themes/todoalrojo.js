@@ -192,9 +192,12 @@
         if (phoneInputWrapper) phoneInputWrapper.className = 'flex-1';
       }
 
-      // Default phone country: Chile +56 - same as PIN-UP
+      // Default phone country: Chile +56 (for TodoAlRojo)
       const cc = document.getElementById('countryCode');
-      if (cc && !cc.value) { cc.value = '+56'; cc.dispatchEvent(new Event('change', { bubbles: true })); }
+      if (cc && !cc.value) {
+        cc.value = '+56';
+        cc.dispatchEvent(new Event('change', { bubbles: true }));
+      }
 
       // Submit button - same structure as PIN-UP but with Todo al Rojo gradient
       const submitBtn = document.querySelector('.submit-btn');

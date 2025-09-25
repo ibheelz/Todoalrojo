@@ -1,0 +1,3848 @@
+
+> identity-graph-crm@1.0.0 dev
+> next dev -p 3005
+
+  ▲ Next.js 14.2.32
+  - Local:        http://localhost:3005
+  - Environments: .env
+
+ ✓ Starting...
+ ✓ Ready in 2.3s
+ ✓ Compiled /api/events in 335ms (31 modules)
+ ✓ Compiled /api/campaigns/[id]/reset in 134ms (62 modules)
+[RESET CAMPAIGN] Request for id= cmfwyhfxo0001wio71pcywmzp
+[RESET CAMPAIGN] Updated and zeroed counters for id= cmfwyhfxo0001wio71pcywmzp
+ POST /api/campaigns/cmfwyhfxo0001wio71pcywmzp/reset 200 in 498ms
+ ✓ Compiled /api/influencers/[id]/reset in 53ms (64 modules)
+[RESET INFLUENCER] Request for id= cmfx1hi700002xovmiwx199kq
+[RESET INFLUENCER] Updated and zeroed counters for id= cmfx1hi700002xovmiwx199kq
+ POST /api/influencers/cmfx1hi700002xovmiwx199kq/reset 200 in 443ms
+ ○ Compiling /dashboard/campaigns ...
+ ✓ Compiled /dashboard/campaigns in 2.5s (640 modules)
+ GET /api/events 200 in 65144ms
+ GET /dashboard/campaigns 200 in 2885ms
+ ✓ Compiled in 327ms (309 modules)
+ ○ Compiling /_not-found ...
+ ✓ Compiled /api/auth/[...nextauth] in 2.5s (629 modules)
+ ✓ Compiled (876 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 3383ms
+ GET /api/influencers?activeOnly=true 200 in 1950ms
+ GET /api/influencers?activeOnly=true 200 in 18ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 1981ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 25ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 38ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 17ms
+⚠️ NextAuth Warning: DEBUG_ENABLED
+ GET /api/auth/session 200 in 2245ms
+ GET /api/auth/session 200 in 9ms
+ ✓ Compiled /dashboard/influencers in 354ms (884 modules)
+ GET /api/events 200 in 7763ms
+ GET /api/campaigns 200 in 33ms
+ GET /api/influencers?dateFilter=today 200 in 37ms
+ GET /api/campaigns 200 in 23ms
+ GET /api/influencers?dateFilter=today 200 in 42ms
+ ✓ Compiled /dashboard/leads in 228ms (888 modules)
+ GET /api/events 200 in 5317ms
+ ✓ Compiled /api/leads in 92ms (588 modules)
+📋 Fetching leads with parameters: {
+  page: 1,
+  limit: 50,
+  campaign: undefined,
+  source: undefined,
+  country: undefined,
+  isDuplicate: undefined,
+  qualityScore: undefined,
+  search: undefined,
+  dateFrom: undefined,
+  dateTo: undefined,
+  timestamp: '2025-09-23T21:34:59.959Z'
+}
+🔍 Applying where conditions for leads: { whereConditions: {}, totalConditions: 0 }
+📊 Leads data loaded: {
+  totalLeads: 0,
+  totalCount: 0,
+  recognizedCustomers: 0,
+  duplicateLeads: 0,
+  avgQualityScore: NaN
+}
+✅ Lead filters and stats calculated: {
+  campaignsAvailable: 0,
+  sourcesAvailable: 0,
+  countriesAvailable: 0,
+  campaignStatsCalculated: 0,
+  topCampaign: 'None',
+  timestamp: '2025-09-23T21:34:59.965Z'
+}
+ GET /api/leads?page=1&limit=50 200 in 131ms
+📋 Fetching leads with parameters: {
+  page: 1,
+  limit: 50,
+  campaign: undefined,
+  source: undefined,
+  country: undefined,
+  isDuplicate: undefined,
+  qualityScore: undefined,
+  search: undefined,
+  dateFrom: undefined,
+  dateTo: undefined,
+  timestamp: '2025-09-23T21:34:59.972Z'
+}
+🔍 Applying where conditions for leads: { whereConditions: {}, totalConditions: 0 }
+📊 Leads data loaded: {
+  totalLeads: 0,
+  totalCount: 0,
+  recognizedCustomers: 0,
+  duplicateLeads: 0,
+  avgQualityScore: NaN
+}
+✅ Lead filters and stats calculated: {
+  campaignsAvailable: 0,
+  sourcesAvailable: 0,
+  countriesAvailable: 0,
+  campaignStatsCalculated: 0,
+  topCampaign: 'None',
+  timestamp: '2025-09-23T21:34:59.977Z'
+}
+ GET /api/leads?page=1&limit=50 200 in 10ms
+ ✓ Compiled /dashboard/clicks in 171ms (896 modules)
+ ✓ Compiled /api/clicks in 102ms (594 modules)
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-23T21:35:02.011Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+✅ Clicks data processed successfully: {
+  totalClicks: 5,
+  recognizedCustomers: 0,
+  anonymousClicks: 5,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 2,
+  sourcesFound: 2,
+  timestamp: '2025-09-23T21:35:02.021Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 134ms
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-23T21:35:02.029Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+✅ Clicks data processed successfully: {
+  totalClicks: 5,
+  recognizedCustomers: 0,
+  anonymousClicks: 5,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 2,
+  sourcesFound: 2,
+  timestamp: '2025-09-23T21:35:02.038Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 17ms
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-23T21:35:02.047Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+✅ Clicks data processed successfully: {
+  totalClicks: 5,
+  recognizedCustomers: 0,
+  anonymousClicks: 5,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 2,
+  sourcesFound: 2,
+  timestamp: '2025-09-23T21:35:02.054Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 14ms
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-23T21:35:02.061Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+✅ Clicks data processed successfully: {
+  totalClicks: 5,
+  recognizedCustomers: 0,
+  anonymousClicks: 5,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 2,
+  sourcesFound: 2,
+  timestamp: '2025-09-23T21:35:02.066Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 12ms
+ ✓ Compiled /dashboard/links in 194ms (902 modules)
+ ✓ Compiled /api/links in 99ms (599 modules)
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T21:35:04.418Z'
+}
+ GET /api/campaigns 200 in 216ms
+ GET /api/influencers?activeOnly=true 200 in 219ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 224ms
+ GET /api/campaigns 200 in 15ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T21:35:04.444Z'
+}
+ GET /api/influencers?activeOnly=true 200 in 22ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 32ms
+ ✓ Compiled /s/[shortCode] in 243ms (915 modules)
+ GET /s/kS5H9r 307 in 671ms
+ GET /s/kS5H9r 307 in 58ms
+ GET /s/kS5H9r 307 in 48ms
+ GET /s/kS5H9r 307 in 39ms
+ GET /api/influencers?activeOnly=true 200 in 57ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 59ms
+ GET /api/influencers?activeOnly=true 200 in 42ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 49ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 43ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 25ms
+ GET /api/events 200 in 2379ms
+ GET /api/campaigns 200 in 20ms
+ GET /api/influencers?dateFilter=today 200 in 24ms
+ GET /api/campaigns 200 in 17ms
+ GET /api/influencers?dateFilter=today 200 in 22ms
+ GET /api/events 200 in 2114ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 43ms
+ GET /api/influencers?activeOnly=true 200 in 45ms
+ GET /api/influencers?activeOnly=true 200 in 26ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 33ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 11ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 23ms
+ GET /api/events 200 in 2370ms
+ GET /api/campaigns 200 in 19ms
+ GET /api/influencers?dateFilter=today 200 in 24ms
+ GET /api/campaigns 200 in 11ms
+ GET /api/influencers?dateFilter=today 200 in 13ms
+ GET /api/events 200 in 4366ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T21:35:45.950Z'
+}
+ GET /api/campaigns 200 in 47ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 51ms
+ GET /api/influencers?activeOnly=true 200 in 53ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T21:35:45.975Z'
+}
+ GET /api/campaigns 200 in 20ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 23ms
+ GET /api/influencers?activeOnly=true 200 in 25ms
+ GET /api/influencers?activeOnly=true 200 in 24ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 27ms
+ GET /api/influencers?activeOnly=true 200 in 36ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 36ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 16ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 14ms
+ GET /api/events 200 in 7271ms
+ GET /api/campaigns 200 in 24ms
+ GET /api/campaigns 200 in 8ms
+ GET /api/influencers?dateFilter=today 200 in 36ms
+ GET /api/influencers?dateFilter=today 200 in 17ms
+ GET /api/events 200 in 21468ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T21:36:26.401Z'
+}
+ GET /api/campaigns 200 in 18ms
+ GET /api/campaigns 200 in 11ms
+ GET /api/influencers?activeOnly=true 200 in 36ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 41ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T21:36:26.440Z'
+}
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 14ms
+ GET /api/influencers?activeOnly=true 200 in 22ms
+ ✓ Compiled /api/links/[id] in 180ms (355 modules)
+✏️ Updating link: {
+  linkId: 'cmfx082xn000a9yrwgqww0z4q',
+  updateData: {
+    title: 'Test',
+    description: '',
+    campaign: 'betsson',
+    source: '',
+    medium: '',
+    isPublic: true,
+    allowBots: false,
+    trackClicks: true,
+    influencerIds: [ 'cmfwxtsm80000wio7kdbiv92g' ]
+  },
+  timestamp: '2025-09-23T21:36:35.004Z'
+}
+✅ Link updated successfully: {
+  id: 'cmfx082xn000a9yrwgqww0z4q',
+  shortCode: 'kS5H9r',
+  campaign: 'betsson',
+  timestamp: '2025-09-23T21:36:35.015Z'
+}
+ PUT /api/links/cmfx082xn000a9yrwgqww0z4q 200 in 607ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T21:36:35.032Z'
+}
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 12ms
+ ✓ Compiled /s/[shortCode] in 139ms (369 modules)
+ GET /s/kS5H9r 307 in 254ms
+ GET /s/kS5H9r 307 in 37ms
+ GET /api/influencers?activeOnly=true 200 in 34ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 39ms
+ GET /api/influencers?activeOnly=true 200 in 21ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 19ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 14ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 16ms
+ GET /api/events 200 in 2405ms
+ GET /api/campaigns 200 in 18ms
+ GET /api/influencers?dateFilter=today 200 in 23ms
+ GET /api/campaigns 200 in 13ms
+ GET /api/influencers?dateFilter=today 200 in 24ms
+ GET /api/campaigns 200 in 87ms
+ GET /api/influencers 200 in 94ms
+ ✓ Compiled /api/influencers/[id]/reset in 226ms (371 modules)
+[RESET INFLUENCER] Request for id= cmfwxtsm80000wio7kdbiv92g
+[RESET INFLUENCER] Updated and zeroed counters for id= cmfwxtsm80000wio7kdbiv92g
+ POST /api/influencers/cmfwxtsm80000wio7kdbiv92g/reset 200 in 256ms
+ GET /api/events 200 in 26179ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T21:37:24.030Z'
+}
+ GET /api/campaigns 200 in 26ms
+ GET /api/influencers?activeOnly=true 200 in 30ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 33ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T21:37:24.058Z'
+}
+ GET /api/campaigns 200 in 16ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 17ms
+ GET /api/influencers?activeOnly=true 200 in 18ms
+ GET /s/kS5H9r 307 in 77ms
+ GET /s/kS5H9r 307 in 42ms
+ GET /api/campaigns 200 in 24ms
+ GET /api/influencers?dateFilter=today 200 in 28ms
+ GET /api/campaigns 200 in 19ms
+ GET /api/influencers?dateFilter=today 200 in 21ms
+ GET /api/events 200 in 6177ms
+ GET /api/influencers?activeOnly=true 200 in 22ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 24ms
+ GET /api/influencers?activeOnly=true 200 in 19ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 21ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 11ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 14ms
+ GET /api/events 200 in 2421ms
+ GET /api/campaigns 200 in 18ms
+ GET /api/influencers?dateFilter=today 200 in 20ms
+ GET /api/campaigns 200 in 17ms
+ GET /api/influencers?dateFilter=today 200 in 19ms
+ ✓ Compiled /dashboard/clicks in 264ms (373 modules)
+ GET /api/events 200 in 5161ms
+ ✓ Compiled /api/clicks in 121ms (375 modules)
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-23T21:37:58.696Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+✅ Clicks data processed successfully: {
+  totalClicks: 13,
+  recognizedCustomers: 0,
+  anonymousClicks: 13,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 2,
+  sourcesFound: 2,
+  timestamp: '2025-09-23T21:37:58.705Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 154ms
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-23T21:37:58.713Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+✅ Clicks data processed successfully: {
+  totalClicks: 13,
+  recognizedCustomers: 0,
+  anonymousClicks: 13,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 2,
+  sourcesFound: 2,
+  timestamp: '2025-09-23T21:37:58.721Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 17ms
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-23T21:37:58.740Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+✅ Clicks data processed successfully: {
+  totalClicks: 13,
+  recognizedCustomers: 0,
+  anonymousClicks: 13,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 2,
+  sourcesFound: 2,
+  timestamp: '2025-09-23T21:37:58.748Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 21ms
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-23T21:37:58.756Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+✅ Clicks data processed successfully: {
+  totalClicks: 13,
+  recognizedCustomers: 0,
+  anonymousClicks: 13,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 2,
+  sourcesFound: 2,
+  timestamp: '2025-09-23T21:37:58.767Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 18ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T21:38:02.495Z'
+}
+ GET /api/campaigns 200 in 57ms
+ GET /api/influencers?activeOnly=true 200 in 64ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 65ms
+ GET /api/campaigns 200 in 11ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T21:38:02.552Z'
+}
+ GET /api/influencers?activeOnly=true 200 in 14ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 18ms
+ ✓ Compiled in 1098ms (625 modules)
+ ✓ Compiled /api/events in 295ms (349 modules)
+ ✓ Compiled (357 modules)
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T21:39:14.824Z'
+}
+ GET /api/campaigns 200 in 711ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 723ms
+ GET /api/influencers?activeOnly=true 200 in 688ms
+ GET /api/campaigns 200 in 13ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T21:39:14.849Z'
+}
+ GET /api/influencers?activeOnly=true 200 in 18ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 28ms
+ GET /dashboard/links 200 in 138ms
+ GET /api/events 200 in 103243ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 618ms (614 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 709ms
+ ✓ Compiled /api/auth/[...nextauth] in 67ms (350 modules)
+ ✓ Compiled (591 modules)
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T21:40:59.258Z'
+}
+⚠️ NextAuth Warning: DEBUG_ENABLED
+ GET /api/auth/session 200 in 409ms
+ GET /api/campaigns 200 in 415ms
+ GET /api/auth/session 200 in 8ms
+ GET /api/campaigns 200 in 14ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 440ms
+ GET /api/influencers?activeOnly=true 200 in 452ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T21:40:59.349Z'
+}
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 40ms
+ GET /api/influencers?activeOnly=true 200 in 26ms
+ ✓ Compiled /s/[shortCode] in 173ms (600 modules)
+ GET /s/kS5H9r 307 in 331ms
+ GET /api/events 200 in 23434ms
+ ✓ Compiled in 589ms (921 modules)
+ ✓ Compiled in 0ms (600 modules)
+ ✓ Compiled in 0ms (600 modules)
+ ✓ Compiled in 0ms (600 modules)
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T21:41:22.749Z'
+}
+ GET /api/campaigns 200 in 436ms
+ GET /api/influencers?activeOnly=true 200 in 437ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 461ms
+ ✓ Compiled in 0ms (600 modules)
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T21:41:23.005Z'
+}
+ GET /api/campaigns 200 in 249ms
+ GET /api/influencers?activeOnly=true 200 in 233ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 238ms
+ ✓ Compiled in 463ms (921 modules)
+ GET /s/kS5H9r 307 in 133ms
+ ✓ Compiled in 407ms (921 modules)
+ ✓ Compiled in 510ms (921 modules)
+ GET /dashboard/links 200 in 77ms
+ GET /api/events 200 in 36914ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 59ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T21:42:00.454Z'
+}
+⚠️ NextAuth Warning: DEBUG_ENABLED
+ GET /api/auth/session 200 in 53ms
+ GET /api/campaigns 200 in 80ms
+ GET /api/influencers?activeOnly=true 200 in 84ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 86ms
+ GET /api/auth/session 200 in 23ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T21:42:00.539Z'
+}
+ GET /api/campaigns 200 in 40ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 35ms
+ GET /api/influencers?activeOnly=true 200 in 43ms
+ ✓ Compiled in 874ms (625 modules)
+ ✓ Compiled in 398ms (625 modules)
+ ○ Compiling /dashboard/customers ...
+ ✓ Compiled /dashboard/customers in 630ms (665 modules)
+ GET /api/events 200 in 132848ms
+ ✓ Compiled /api/customers in 181ms (377 modules)
+👥 Fetching customers with parameters: {
+  page: 1,
+  limit: 50,
+  query: null,
+  includeRelated: true,
+  timestamp: '2025-09-23T21:44:13.539Z'
+}
+📊 Fetching customers with pagination...
+✅ Customers with related data loaded: {
+  totalCustomers: 0,
+  totalClicks: 0,
+  totalLeads: 0,
+  totalEvents: 0,
+  page: 1,
+  totalPages: 0
+}
+ GET /api/customers?limit=50&includeRelated=true 200 in 336ms
+👥 Fetching customers with parameters: {
+  page: 1,
+  limit: 50,
+  query: null,
+  includeRelated: true,
+  timestamp: '2025-09-23T21:44:13.636Z'
+}
+📊 Fetching customers with pagination...
+✅ Customers with related data loaded: {
+  totalCustomers: 0,
+  totalClicks: 0,
+  totalLeads: 0,
+  totalEvents: 0,
+  page: 1,
+  totalPages: 0
+}
+ GET /api/customers?limit=50&includeRelated=true 200 in 13ms
+ ✓ Compiled /api/events in 122ms (379 modules)
+ ✓ Compiled (385 modules)
+ GET /api/campaigns 200 in 322ms
+ GET /api/influencers?dateFilter=today 200 in 333ms
+ GET /api/campaigns 200 in 7ms
+ GET /api/influencers?dateFilter=today 200 in 15ms
+ GET /api/events 200 in 409ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 1003ms (651 modules)
+ GET /dashboard/influencers 200 in 596ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 836ms (640 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 931ms
+ ✓ Compiled /api/auth/[...nextauth] in 108ms (349 modules)
+ ✓ Compiled (588 modules)
+⚠️ NextAuth Warning: DEBUG_ENABLED
+ GET /api/auth/session 200 in 778ms
+ GET /api/campaigns 200 in 890ms
+ GET /api/auth/session 200 in 71ms
+ GET /api/campaigns 200 in 50ms
+ GET /api/influencers?dateFilter=today 200 in 987ms
+ GET /api/events 200 in 1081ms
+ GET /api/influencers?dateFilter=today 200 in 245ms
+ ✓ Compiled in 411ms (935 modules)
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /dashboard/influencers 200 in 120ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 16ms
+⚠️ NextAuth Warning: DEBUG_ENABLED
+ GET /api/auth/session 200 in 62ms
+ GET /api/campaigns 200 in 75ms
+ GET /api/influencers?dateFilter=today 200 in 83ms
+ GET /api/auth/session 200 in 12ms
+ GET /api/campaigns 200 in 19ms
+ GET /api/events 200 in 119ms
+ GET /api/influencers?dateFilter=today 200 in 53ms
+ ✓ Compiled in 402ms (935 modules)
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /dashboard/influencers 200 in 103ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 19ms
+⚠️ NextAuth Warning: DEBUG_ENABLED
+ GET /api/auth/session 200 in 344ms
+ GET /api/campaigns 200 in 364ms
+ GET /api/influencers?dateFilter=today 200 in 390ms
+ GET /api/events 200 in 510ms
+ GET /api/auth/session 200 in 368ms
+ GET /api/campaigns 200 in 379ms
+ GET /api/influencers?dateFilter=today 200 in 388ms
+ ✓ Compiled in 425ms (935 modules)
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /dashboard/influencers 200 in 48ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 14ms
+⚠️ NextAuth Warning: DEBUG_ENABLED
+ GET /api/auth/session 200 in 22ms
+ GET /api/campaigns 200 in 26ms
+ GET /api/auth/session 200 in 9ms
+ GET /api/campaigns 200 in 13ms
+ GET /api/influencers?dateFilter=today 200 in 45ms
+ GET /api/influencers?dateFilter=today 200 in 14ms
+ GET /api/events 200 in 91ms
+ ✓ Compiled in 454ms (935 modules)
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /dashboard/influencers 200 in 84ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 34ms
+⚠️ NextAuth Warning: DEBUG_ENABLED
+ GET /api/auth/session 200 in 97ms
+ GET /api/campaigns 200 in 103ms
+ GET /api/influencers?dateFilter=today 200 in 164ms
+ GET /api/auth/session 200 in 60ms
+ GET /api/campaigns 200 in 64ms
+ GET /api/influencers?dateFilter=today 200 in 32ms
+ GET /api/events 200 in 251ms
+ ✓ Compiled in 177ms (347 modules)
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /dashboard/influencers 200 in 143ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 69ms
+ GET /api/auth/session 200 in 57ms
+ GET /api/campaigns 200 in 68ms
+ GET /api/auth/session 200 in 30ms
+ GET /api/influencers?dateFilter=today 200 in 138ms
+ GET /api/campaigns 200 in 52ms
+ GET /api/influencers?dateFilter=today 200 in 107ms
+ GET /api/events 200 in 232ms
+ ✓ Compiled in 522ms (937 modules)
+ GET /dashboard/influencers 200 in 76ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 20ms
+⚠️ NextAuth Warning: DEBUG_ENABLED
+ GET /api/auth/session 200 in 32ms
+ GET /api/campaigns 200 in 40ms
+ GET /api/influencers?dateFilter=today 200 in 45ms
+ GET /api/auth/session 200 in 15ms
+ GET /api/campaigns 200 in 22ms
+ GET /api/events 200 in 107ms
+ GET /api/influencers?dateFilter=today 200 in 80ms
+ ✓ Compiled in 430ms (937 modules)
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /dashboard/influencers 200 in 86ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 31ms
+⚠️ NextAuth Warning: DEBUG_ENABLED
+ GET /api/auth/session 200 in 48ms
+ GET /api/auth/session 200 in 8ms
+ GET /api/campaigns 200 in 82ms
+ GET /api/influencers?dateFilter=today 200 in 95ms
+ GET /api/campaigns 200 in 10ms
+ GET /api/influencers?dateFilter=today 200 in 66ms
+ GET /api/events 200 in 189ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 966ms (937 modules)
+ GET /dashboard/influencers 200 in 562ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 55ms
+⚠️ NextAuth Warning: DEBUG_ENABLED
+ GET /api/auth/session 200 in 74ms
+ GET /api/influencers?dateFilter=today 200 in 159ms
+ GET /api/auth/session 200 in 28ms
+ GET /api/campaigns 200 in 204ms
+ GET /api/influencers?dateFilter=today 200 in 66ms
+ GET /api/campaigns 200 in 30ms
+ GET /api/events 200 in 301ms
+ ✓ Compiled in 404ms (937 modules)
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /dashboard/influencers 200 in 69ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 21ms
+⚠️ NextAuth Warning: DEBUG_ENABLED
+ GET /api/auth/session 200 in 43ms
+ GET /api/campaigns 200 in 55ms
+ GET /api/influencers?dateFilter=today 200 in 58ms
+ GET /api/auth/session 200 in 17ms
+ GET /api/campaigns 200 in 23ms
+ GET /api/events 200 in 112ms
+ GET /api/influencers?dateFilter=today 200 in 83ms
+ GET /dashboard/influencers 200 in 33ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 15ms
+ GET /api/auth/session 200 in 18ms
+ GET /api/campaigns 200 in 28ms
+ GET /api/influencers?dateFilter=today 200 in 39ms
+ GET /api/auth/session 200 in 17ms
+ GET /api/campaigns 200 in 21ms
+ GET /api/events 200 in 115ms
+ GET /api/influencers?dateFilter=today 200 in 177ms
+ ✓ Compiled in 636ms (937 modules)
+ GET /dashboard/influencers 200 in 180ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 56ms
+ GET /api/campaigns 200 in 53ms
+⚠️ NextAuth Warning: DEBUG_ENABLED
+ GET /api/auth/session 200 in 107ms
+ GET /api/influencers?dateFilter=today 200 in 120ms
+ GET /api/auth/session 200 in 20ms
+ GET /api/campaigns 200 in 33ms
+ GET /api/influencers?dateFilter=today 200 in 69ms
+ ✓ Compiled in 396ms (937 modules)
+ GET /api/events 200 in 30509ms
+ ✓ Compiled /api/links in 354ms (592 modules)
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T21:50:42.978Z'
+}
+ GET /api/campaigns 200 in 488ms
+ GET /api/campaigns 200 in 7ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 508ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T21:50:43.020Z'
+}
+ GET /api/influencers?activeOnly=true 200 in 528ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 53ms
+ GET /api/events 200 in 566ms
+ GET /api/influencers?activeOnly=true 200 in 131ms
+ ✓ Compiled in 395ms (940 modules)
+ GET /dashboard/links 200 in 83ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 78ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T21:51:05.938Z'
+}
+⚠️ NextAuth Warning: DEBUG_ENABLED
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 68ms
+🚨 NextAuth Error: CLIENT_FETCH_ERROR {
+  error: '[object Object]',
+  url: '/api/auth/session',
+  message: 'Failed to fetch',
+  client: 'true'
+}
+🚨 NextAuth Error: CLIENT_FETCH_ERROR {
+  error: '[object Object]',
+  url: '/api/auth/session',
+  message: 'Failed to fetch',
+  client: 'true'
+}
+ POST /api/auth/_log 200 in 82ms
+ POST /api/auth/_log 200 in 81ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T21:51:07.168Z'
+}
+ GET /api/auth/session 200 in 21ms
+ GET /api/campaigns 200 in 60ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 68ms
+ GET /api/influencers?activeOnly=true 200 in 73ms
+ GET /api/campaigns 200 in 34ms
+ GET /api/auth/session 200 in 32ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T21:51:07.223Z'
+}
+ GET /api/events 200 in 123ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 129ms
+ GET /api/influencers?activeOnly=true 200 in 141ms
+ GET /dashboard/links 200 in 33ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 24ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T21:51:30.471Z'
+}
+ GET /api/auth/session 200 in 20ms
+ GET /api/campaigns 200 in 27ms
+ GET /api/influencers?activeOnly=true 200 in 39ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 41ms
+ GET /api/campaigns 200 in 25ms
+ GET /api/auth/session 200 in 28ms
+ GET /api/events 200 in 108ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T21:51:30.624Z'
+}
+ GET /api/influencers?activeOnly=true 200 in 274ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 277ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 691ms (653 modules)
+ GET /dashboard/links 200 in 386ms
+ ✓ Compiled /_not-found in 224ms (642 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 300ms
+ ✓ Compiled /api/influencers in 127ms (351 modules)
+ ✓ Compiled (592 modules)
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T21:53:57.010Z'
+}
+⚠️ NextAuth Warning: DEBUG_ENABLED
+ GET /api/auth/session 200 in 776ms
+ GET /api/auth/session 200 in 15ms
+ GET /api/campaigns 200 in 826ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 846ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T21:53:57.173Z'
+}
+ GET /api/campaigns 200 in 59ms
+ GET /api/influencers?activeOnly=true 200 in 900ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 67ms
+ GET /api/influencers?activeOnly=true 200 in 59ms
+ ✓ Compiled /dashboard/events in 376ms (932 modules)
+ GET /api/events 200 in 20457ms
+ ✓ Compiled /api/conversions in 124ms (598 modules)
+🔄 Fetching conversions with parameters: {
+  dateFilter: 'today',
+  eventType: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  campaign: 'all',
+  timestamp: '2025-09-23T21:54:16.918Z'
+}
+🔍 Applying where conditions for conversions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+📊 Conversions data loaded: { totalEvents: 0, recognizedCustomers: 0, anonymousEvents: 0 }
+✅ Conversions summary calculated: {
+  totalConversions: 0,
+  totalValue: 0,
+  uniqueCustomers: 0,
+  conversionRate: '0%',
+  eventTypesFound: 0,
+  campaignsFound: 0,
+  timestamp: '2025-09-23T21:54:16.928Z'
+}
+ GET /api/conversions?dateFilter=today&eventType=all&campaign=all 200 in 170ms
+🔄 Fetching conversions with parameters: {
+  dateFilter: 'today',
+  eventType: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  campaign: 'all',
+  timestamp: '2025-09-23T21:54:16.939Z'
+}
+🔍 Applying where conditions for conversions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+📊 Conversions data loaded: { totalEvents: 0, recognizedCustomers: 0, anonymousEvents: 0 }
+✅ Conversions summary calculated: {
+  totalConversions: 0,
+  totalValue: 0,
+  uniqueCustomers: 0,
+  conversionRate: '0%',
+  eventTypesFound: 0,
+  campaignsFound: 0,
+  timestamp: '2025-09-23T21:54:16.945Z'
+}
+ GET /api/conversions?dateFilter=today&eventType=all&campaign=all 200 in 14ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T21:54:17.963Z'
+}
+ GET /api/campaigns 200 in 43ms
+ GET /api/influencers?activeOnly=true 200 in 55ms
+ GET /api/campaigns 200 in 12ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 64ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T21:54:18.004Z'
+}
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 14ms
+ GET /api/influencers?activeOnly=true 200 in 23ms
+ ✓ Compiled /s/[shortCode] in 131ms (607 modules)
+ GET /s/kS5H9r 307 in 336ms
+ GET /s/kS5H9r 307 in 45ms
+ GET /dashboard/links 200 in 46ms
+ GET /api/events 200 in 30529ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 24ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T21:54:49.332Z'
+}
+⚠️ NextAuth Warning: DEBUG_ENABLED
+ GET /api/auth/session 200 in 60ms
+ GET /api/campaigns 200 in 83ms
+ GET /api/influencers?activeOnly=true 200 in 86ms
+ GET /api/auth/session 200 in 15ms
+ GET /api/campaigns 200 in 18ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 106ms
+ GET /api/influencers?activeOnly=true 200 in 22ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T21:54:49.414Z'
+}
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 14ms
+ GET /api/events 200 in 4832ms
+ GET /api/influencers?activeOnly=true 200 in 28ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 33ms
+ GET /api/influencers?activeOnly=true 200 in 36ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 35ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 18ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 14ms
+ GET /s/kS5H9r 307 in 91ms
+ GET /s/kS5H9r 307 in 44ms
+ ✓ Compiled in 739ms (655 modules)
+ ✓ Compiled in 485ms (655 modules)
+ ✓ Compiled in 241ms (348 modules)
+ ✓ Compiled /s/[shortCode] in 111ms (325 modules)
+ GET /s/kS5H9r 307 in 254ms
+ GET /dashboard/campaigns 200 in 70ms
+ GET /api/events 200 in 220740ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 505ms (662 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 653ms
+ ○ Compiling /api/events ...
+ ✓ Compiled /api/events in 602ms (364 modules)
+ ✓ Compiled (598 modules)
+⚠️ NextAuth Warning: DEBUG_ENABLED
+ GET /api/auth/session 200 in 1091ms
+ GET /api/auth/session 200 in 9ms
+ GET /api/influencers?activeOnly=true 200 in 1119ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 1139ms
+ GET /api/influencers?activeOnly=true 200 in 65ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 77ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 89ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 62ms
+ GET /api/events 200 in 3858ms
+ ✓ Compiled /api/clicks in 140ms (600 modules)
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-23T21:58:40.531Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+✅ Clicks data processed successfully: {
+  totalClicks: 20,
+  recognizedCustomers: 0,
+  anonymousClicks: 20,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 2,
+  sourcesFound: 2,
+  timestamp: '2025-09-23T21:58:40.540Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 287ms
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-23T21:58:40.550Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+✅ Clicks data processed successfully: {
+  totalClicks: 20,
+  recognizedCustomers: 0,
+  anonymousClicks: 20,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 2,
+  sourcesFound: 2,
+  timestamp: '2025-09-23T21:58:40.558Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 17ms
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-23T21:58:40.566Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+✅ Clicks data processed successfully: {
+  totalClicks: 20,
+  recognizedCustomers: 0,
+  anonymousClicks: 20,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 2,
+  sourcesFound: 2,
+  timestamp: '2025-09-23T21:58:40.577Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 17ms
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-23T21:58:40.590Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+✅ Clicks data processed successfully: {
+  totalClicks: 20,
+  recognizedCustomers: 0,
+  anonymousClicks: 20,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 2,
+  sourcesFound: 2,
+  timestamp: '2025-09-23T21:58:40.600Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 20ms
+ GET /api/events 200 in 1810ms
+ ✓ Compiled /api/links in 92ms (603 modules)
+ GET /api/campaigns 200 in 229ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T21:58:42.333Z'
+}
+ GET /api/influencers?activeOnly=true 200 in 236ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 265ms
+ GET /api/campaigns 200 in 47ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T21:58:42.388Z'
+}
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 48ms
+ GET /api/influencers?activeOnly=true 200 in 76ms
+ GET /s/kS5H9r 307 in 92ms
+ GET /s/kS5H9r 307 in 39ms
+ GET /dashboard/links 200 in 58ms
+ GET /api/events 200 in 18551ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 46ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T21:59:01.550Z'
+}
+⚠️ NextAuth Warning: DEBUG_ENABLED
+ GET /api/auth/session 200 in 55ms
+ GET /api/campaigns 200 in 66ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 70ms
+ GET /api/auth/session 200 in 10ms
+ GET /api/campaigns 200 in 14ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T21:59:01.613Z'
+}
+ GET /api/influencers?activeOnly=true 200 in 117ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 48ms
+ GET /api/influencers?activeOnly=true 200 in 19ms
+ ✓ Compiled /dashboard/events in 319ms (607 modules)
+ GET /api/events 200 in 2040ms
+ ✓ Compiled /api/conversions in 113ms (609 modules)
+🔄 Fetching conversions with parameters: {
+  dateFilter: 'today',
+  eventType: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  campaign: 'all',
+  timestamp: '2025-09-23T21:59:03.823Z'
+}
+🔍 Applying where conditions for conversions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+📊 Conversions data loaded: { totalEvents: 0, recognizedCustomers: 0, anonymousEvents: 0 }
+✅ Conversions summary calculated: {
+  totalConversions: 0,
+  totalValue: 0,
+  uniqueCustomers: 0,
+  conversionRate: '0%',
+  eventTypesFound: 0,
+  campaignsFound: 0,
+  timestamp: '2025-09-23T21:59:03.835Z'
+}
+ GET /api/conversions?dateFilter=today&eventType=all&campaign=all 200 in 261ms
+🔄 Fetching conversions with parameters: {
+  dateFilter: 'today',
+  eventType: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  campaign: 'all',
+  timestamp: '2025-09-23T21:59:03.854Z'
+}
+🔍 Applying where conditions for conversions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+📊 Conversions data loaded: { totalEvents: 0, recognizedCustomers: 0, anonymousEvents: 0 }
+✅ Conversions summary calculated: {
+  totalConversions: 0,
+  totalValue: 0,
+  uniqueCustomers: 0,
+  conversionRate: '0%',
+  eventTypesFound: 0,
+  campaignsFound: 0,
+  timestamp: '2025-09-23T21:59:03.861Z'
+}
+ GET /api/conversions?dateFilter=today&eventType=all&campaign=all 200 in 26ms
+ ✓ Compiled /dashboard/leads in 148ms (613 modules)
+ GET /api/events 200 in 1483ms
+ ✓ Compiled /api/leads in 206ms (615 modules)
+📋 Fetching leads with parameters: {
+  page: 1,
+  limit: 50,
+  campaign: undefined,
+  source: undefined,
+  country: undefined,
+  isDuplicate: undefined,
+  qualityScore: undefined,
+  search: undefined,
+  dateFrom: undefined,
+  dateTo: undefined,
+  timestamp: '2025-09-23T21:59:05.452Z'
+}
+🔍 Applying where conditions for leads: { whereConditions: {}, totalConditions: 0 }
+📊 Leads data loaded: {
+  totalLeads: 0,
+  totalCount: 0,
+  recognizedCustomers: 0,
+  duplicateLeads: 0,
+  avgQualityScore: NaN
+}
+✅ Lead filters and stats calculated: {
+  campaignsAvailable: 0,
+  sourcesAvailable: 0,
+  countriesAvailable: 0,
+  campaignStatsCalculated: 0,
+  topCampaign: 'None',
+  timestamp: '2025-09-23T21:59:05.471Z'
+}
+ GET /api/leads?page=1&limit=50 200 in 377ms
+📋 Fetching leads with parameters: {
+  page: 1,
+  limit: 50,
+  campaign: undefined,
+  source: undefined,
+  country: undefined,
+  isDuplicate: undefined,
+  qualityScore: undefined,
+  search: undefined,
+  dateFrom: undefined,
+  dateTo: undefined,
+  timestamp: '2025-09-23T21:59:05.479Z'
+}
+🔍 Applying where conditions for leads: { whereConditions: {}, totalConditions: 0 }
+📊 Leads data loaded: {
+  totalLeads: 0,
+  totalCount: 0,
+  recognizedCustomers: 0,
+  duplicateLeads: 0,
+  avgQualityScore: NaN
+}
+✅ Lead filters and stats calculated: {
+  campaignsAvailable: 0,
+  sourcesAvailable: 0,
+  countriesAvailable: 0,
+  campaignStatsCalculated: 0,
+  topCampaign: 'None',
+  timestamp: '2025-09-23T21:59:05.482Z'
+}
+ GET /api/leads?page=1&limit=50 200 in 10ms
+ ✓ Compiled /dashboard/customers in 231ms (643 modules)
+ GET /api/events 200 in 1823ms
+ ✓ Compiled /api/customers in 153ms (646 modules)
+👥 Fetching customers with parameters: {
+  page: 1,
+  limit: 50,
+  query: null,
+  includeRelated: true,
+  timestamp: '2025-09-23T21:59:07.147Z'
+}
+📊 Fetching customers with pagination...
+✅ Customers with related data loaded: {
+  totalCustomers: 0,
+  totalClicks: 0,
+  totalLeads: 0,
+  totalEvents: 0,
+  page: 1,
+  totalPages: 0
+}
+ GET /api/customers?limit=50&includeRelated=true 200 in 205ms
+👥 Fetching customers with parameters: {
+  page: 1,
+  limit: 50,
+  query: null,
+  includeRelated: true,
+  timestamp: '2025-09-23T21:59:07.166Z'
+}
+📊 Fetching customers with pagination...
+✅ Customers with related data loaded: {
+  totalCustomers: 0,
+  totalClicks: 0,
+  totalLeads: 0,
+  totalEvents: 0,
+  page: 1,
+  totalPages: 0
+}
+ GET /api/customers?limit=50&includeRelated=true 200 in 11ms
+ GET /api/campaigns 200 in 32ms
+ GET /api/influencers?dateFilter=today 200 in 39ms
+ GET /api/campaigns 200 in 16ms
+ GET /api/influencers?dateFilter=today 200 in 22ms
+ ✓ Compiled in 440ms (655 modules)
+ ✓ Compiled in 139ms (348 modules)
+ ✓ Compiled in 205ms (641 modules)
+ ✓ Compiled in 133ms (348 modules)
+ ✓ Compiled in 123ms (641 modules)
+ GET /api/events 200 in 269390ms
+ ✓ Compiled /api/events in 221ms (350 modules)
+ ✓ Compiled (358 modules)
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T22:03:38.330Z'
+}
+ GET /api/campaigns 200 in 714ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 736ms
+ GET /api/campaigns 200 in 26ms
+ GET /api/influencers?activeOnly=true 200 in 753ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T22:03:38.490Z'
+}
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 58ms
+ GET /api/influencers?activeOnly=true 200 in 33ms
+ ✓ Compiled /s/[shortCode] in 334ms (372 modules)
+ GET /s/kS5H9r 307 in 673ms
+ GET /api/events 200 in 24730ms
+ GET /api/influencers?activeOnly=true 200 in 91ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 95ms
+ GET /api/influencers?activeOnly=true 200 in 30ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 30ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 17ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 19ms
+ GET /dashboard/campaigns 200 in 68ms
+ GET /api/events 200 in 2935ms
+ ✓ Compiled /_not-found in 428ms (709 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 513ms
+ ✓ Compiled /api/auth/[...nextauth] in 252ms (601 modules)
+⚠️ NextAuth Warning: DEBUG_ENABLED
+ GET /api/auth/session 200 in 463ms
+ GET /api/influencers?activeOnly=true 200 in 471ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 478ms
+ GET /api/auth/session 200 in 12ms
+ GET /api/influencers?activeOnly=true 200 in 29ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 30ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 20ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 58ms
+ GET /s/kS5H9r 307 in 126ms
+ GET /s/kS5H9r 307 in 56ms
+ GET /dashboard/campaigns 200 in 81ms
+ GET /api/events 200 in 24500ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 78ms
+ GET /api/auth/session 200 in 19ms
+ GET /api/auth/session 200 in 7ms
+ GET /api/influencers?activeOnly=true 200 in 47ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 75ms
+ GET /api/influencers?activeOnly=true 200 in 46ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 31ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 40ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 13ms
+ ✓ Compiled in 288ms (348 modules)
+ ✓ Compiled in 126ms (348 modules)
+ ✓ Compiled in 252ms (655 modules)
+ ✓ Compiled in 126ms (348 modules)
+ ✓ Compiled in 146ms (348 modules)
+ ✓ Compiled in 725ms (655 modules)
+ ✓ Compiled in 416ms (655 modules)
+ ✓ Compiled in 513ms (655 modules)
+ ✓ Compiled in 469ms (655 modules)
+ ✓ Compiled in 240ms (348 modules)
+ ✓ Compiled in 377ms (655 modules)
+ ✓ Compiled in 160ms (348 modules)
+ ✓ Compiled in 531ms (655 modules)
+ ✓ Compiled in 213ms (348 modules)
+ ✓ Compiled in 137ms (348 modules)
+ GET /dashboard/campaigns 200 in 138ms
+ GET /api/events 200 in 281691ms
+ ✓ Compiled /_not-found in 446ms (644 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 527ms
+ ✓ Compiled /api/influencers in 320ms (548 modules)
+ ✓ Compiled (586 modules)
+⚠️ NextAuth Warning: DEBUG_ENABLED
+ GET /api/auth/session 200 in 559ms
+ GET /api/influencers?activeOnly=true 200 in 716ms
+ GET /api/influencers?activeOnly=true 200 in 723ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 732ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 727ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 192ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 780ms
+ ✓ Compiled /api/events in 251ms (589 modules)
+⚠️ NextAuth Warning: DEBUG_ENABLED
+ GET /api/auth/session 200 in 385ms
+ ✓ Compiled /s/[shortCode] in 183ms (598 modules)
+ GET /s/kS5H9r 307 in 340ms
+ GET /s/kS5H9r 307 in 50ms
+ GET /dashboard/campaigns 200 in 74ms
+ GET /api/events 200 in 22849ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 23ms
+⚠️ NextAuth Warning: DEBUG_ENABLED
+ GET /api/auth/session 200 in 47ms
+ GET /api/influencers?activeOnly=true 200 in 76ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 85ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 77ms
+ GET /api/influencers?activeOnly=true 200 in 82ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 85ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 35ms
+ GET /api/auth/session 200 in 27ms
+ GET /api/events 200 in 2107ms
+ ✓ Compiled /api/clicks in 161ms (600 modules)
+ ✓ Compiled in 0ms (600 modules)
+ ✓ Compiled in 1ms (600 modules)
+ ✓ Compiled in 0ms (600 modules)
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-23T22:09:42.142Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-23T22:09:42.142Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-23T22:09:42.143Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-23T22:09:42.143Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+✅ Clicks data processed successfully: {
+  totalClicks: 27,
+  recognizedCustomers: 0,
+  anonymousClicks: 27,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 2,
+  sourcesFound: 2,
+  timestamp: '2025-09-23T22:09:42.174Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 571ms
+✅ Clicks data processed successfully: {
+  totalClicks: 27,
+  recognizedCustomers: 0,
+  anonymousClicks: 27,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 2,
+  sourcesFound: 2,
+  timestamp: '2025-09-23T22:09:42.176Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 572ms
+✅ Clicks data processed successfully: {
+  totalClicks: 27,
+  recognizedCustomers: 0,
+  anonymousClicks: 27,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 2,
+  sourcesFound: 2,
+  timestamp: '2025-09-23T22:09:42.186Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 582ms
+✅ Clicks data processed successfully: {
+  totalClicks: 27,
+  recognizedCustomers: 0,
+  anonymousClicks: 27,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 2,
+  sourcesFound: 2,
+  timestamp: '2025-09-23T22:09:42.187Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 585ms
+ GET /api/events 200 in 3459ms
+ ✓ Compiled /api/links in 165ms (603 modules)
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T22:09:45.378Z'
+}
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T22:09:45.379Z'
+}
+ GET /api/campaigns 200 in 289ms
+ GET /api/campaigns 200 in 291ms
+ GET /api/influencers?activeOnly=true 200 in 308ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 310ms
+ GET /api/influencers?activeOnly=true 200 in 313ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 324ms
+ GET /api/events 200 in 8861ms
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-23T22:09:54.320Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-23T22:09:54.321Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-23T22:09:54.322Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-23T22:09:54.322Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+✅ Clicks data processed successfully: {
+  totalClicks: 27,
+  recognizedCustomers: 0,
+  anonymousClicks: 27,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 2,
+  sourcesFound: 2,
+  timestamp: '2025-09-23T22:09:54.349Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 45ms
+✅ Clicks data processed successfully: {
+  totalClicks: 27,
+  recognizedCustomers: 0,
+  anonymousClicks: 27,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 2,
+  sourcesFound: 2,
+  timestamp: '2025-09-23T22:09:54.350Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 51ms
+✅ Clicks data processed successfully: {
+  totalClicks: 27,
+  recognizedCustomers: 0,
+  anonymousClicks: 27,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 2,
+  sourcesFound: 2,
+  timestamp: '2025-09-23T22:09:54.352Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 50ms
+✅ Clicks data processed successfully: {
+  totalClicks: 27,
+  recognizedCustomers: 0,
+  anonymousClicks: 27,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 2,
+  sourcesFound: 2,
+  timestamp: '2025-09-23T22:09:54.354Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 52ms
+ GET /api/events 200 in 32069ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T22:10:26.425Z'
+}
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T22:10:26.430Z'
+}
+ GET /api/campaigns 200 in 39ms
+ GET /api/campaigns 200 in 37ms
+ GET /api/influencers?activeOnly=true 200 in 100ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 103ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 112ms
+ GET /api/influencers?activeOnly=true 200 in 117ms
+ ✓ Compiled /dashboard/events in 358ms (607 modules)
+ GET /api/events 200 in 4511ms
+ ✓ Compiled /api/conversions in 126ms (609 modules)
+🔄 Fetching conversions with parameters: {
+  dateFilter: 'today',
+  eventType: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  campaign: 'all',
+  timestamp: '2025-09-23T22:10:31.179Z'
+}
+🔍 Applying where conditions for conversions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+🔄 Fetching conversions with parameters: {
+  dateFilter: 'today',
+  eventType: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  campaign: 'all',
+  timestamp: '2025-09-23T22:10:31.179Z'
+}
+🔍 Applying where conditions for conversions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+📊 Conversions data loaded: { totalEvents: 0, recognizedCustomers: 0, anonymousEvents: 0 }
+📊 Conversions data loaded: { totalEvents: 0, recognizedCustomers: 0, anonymousEvents: 0 }
+✅ Conversions summary calculated: {
+  totalConversions: 0,
+  totalValue: 0,
+  uniqueCustomers: 0,
+  conversionRate: '0%',
+  eventTypesFound: 0,
+  campaignsFound: 0,
+  timestamp: '2025-09-23T22:10:31.221Z'
+}
+ GET /api/conversions?dateFilter=today&eventType=all&campaign=all 200 in 232ms
+✅ Conversions summary calculated: {
+  totalConversions: 0,
+  totalValue: 0,
+  uniqueCustomers: 0,
+  conversionRate: '0%',
+  eventTypesFound: 0,
+  campaignsFound: 0,
+  timestamp: '2025-09-23T22:10:31.225Z'
+}
+ GET /api/conversions?dateFilter=today&eventType=all&campaign=all 200 in 231ms
+ ✓ Compiled /dashboard/leads in 160ms (613 modules)
+ GET /api/events 200 in 1445ms
+ ✓ Compiled /api/leads in 105ms (615 modules)
+📋 Fetching leads with parameters: {
+  page: 1,
+  limit: 50,
+  campaign: undefined,
+  source: undefined,
+  country: undefined,
+  isDuplicate: undefined,
+  qualityScore: undefined,
+  search: undefined,
+  dateFrom: undefined,
+  dateTo: undefined,
+  timestamp: '2025-09-23T22:10:32.695Z'
+}
+🔍 Applying where conditions for leads: { whereConditions: {}, totalConditions: 0 }
+📋 Fetching leads with parameters: {
+  page: 1,
+  limit: 50,
+  campaign: undefined,
+  source: undefined,
+  country: undefined,
+  isDuplicate: undefined,
+  qualityScore: undefined,
+  search: undefined,
+  dateFrom: undefined,
+  dateTo: undefined,
+  timestamp: '2025-09-23T22:10:32.696Z'
+}
+🔍 Applying where conditions for leads: { whereConditions: {}, totalConditions: 0 }
+📊 Leads data loaded: {
+  totalLeads: 0,
+  totalCount: 0,
+  recognizedCustomers: 0,
+  duplicateLeads: 0,
+  avgQualityScore: NaN
+}
+📊 Leads data loaded: {
+  totalLeads: 0,
+  totalCount: 0,
+  recognizedCustomers: 0,
+  duplicateLeads: 0,
+  avgQualityScore: NaN
+}
+✅ Lead filters and stats calculated: {
+  campaignsAvailable: 0,
+  sourcesAvailable: 0,
+  countriesAvailable: 0,
+  campaignStatsCalculated: 0,
+  topCampaign: 'None',
+  timestamp: '2025-09-23T22:10:32.703Z'
+}
+ GET /api/leads?page=1&limit=50 200 in 245ms
+✅ Lead filters and stats calculated: {
+  campaignsAvailable: 0,
+  sourcesAvailable: 0,
+  countriesAvailable: 0,
+  campaignStatsCalculated: 0,
+  topCampaign: 'None',
+  timestamp: '2025-09-23T22:10:32.704Z'
+}
+ GET /api/leads?page=1&limit=50 200 in 248ms
+ ✓ Compiled /dashboard/customers in 232ms (643 modules)
+ GET /api/events 200 in 1306ms
+ ✓ Compiled /api/customers in 127ms (646 modules)
+👥 Fetching customers with parameters: {
+  page: 1,
+  limit: 50,
+  query: null,
+  includeRelated: true,
+  timestamp: '2025-09-23T22:10:33.960Z'
+}
+📊 Fetching customers with pagination...
+✅ Customers with related data loaded: {
+  totalCustomers: 0,
+  totalClicks: 0,
+  totalLeads: 0,
+  totalEvents: 0,
+  page: 1,
+  totalPages: 0
+}
+ GET /api/customers?limit=50&includeRelated=true 200 in 169ms
+👥 Fetching customers with parameters: {
+  page: 1,
+  limit: 50,
+  query: null,
+  includeRelated: true,
+  timestamp: '2025-09-23T22:10:33.975Z'
+}
+📊 Fetching customers with pagination...
+✅ Customers with related data loaded: {
+  totalCustomers: 0,
+  totalClicks: 0,
+  totalLeads: 0,
+  totalEvents: 0,
+  page: 1,
+  totalPages: 0
+}
+ GET /api/customers?limit=50&includeRelated=true 200 in 10ms
+ GET /api/campaigns 200 in 26ms
+ GET /api/campaigns 200 in 25ms
+ GET /api/influencers?dateFilter=today 200 in 30ms
+ GET /api/influencers?dateFilter=today 200 in 54ms
+ GET /api/campaigns 200 in 167ms
+ GET /api/influencers 200 in 208ms
+ ✓ Compiled /api/influencers/[id]/reset in 126ms (405 modules)
+[RESET INFLUENCER] Request for id= cmfwxtsm80000wio7kdbiv92g
+[RESET INFLUENCER] Updated and zeroed counters for id= cmfwxtsm80000wio7kdbiv92g
+ POST /api/influencers/cmfwxtsm80000wio7kdbiv92g/reset 200 in 189ms
+ GET /api/campaigns 200 in 56ms
+ GET /api/influencers?dateFilter=today 200 in 61ms
+ GET /api/campaigns 200 in 74ms
+ GET /api/influencers 200 in 81ms
+[RESET INFLUENCER] Request for id= cmfx1hi700002xovmiwx199kq
+[RESET INFLUENCER] Updated and zeroed counters for id= cmfx1hi700002xovmiwx199kq
+ POST /api/influencers/cmfx1hi700002xovmiwx199kq/reset 200 in 16ms
+ GET /api/campaigns 200 in 14ms
+ GET /api/influencers?dateFilter=today 200 in 17ms
+ GET /api/events 200 in 18539ms
+ GET /api/influencers?activeOnly=true 200 in 21ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 33ms
+ GET /api/influencers?activeOnly=true 200 in 33ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 33ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 36ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 36ms
+ GET /api/campaigns 200 in 85ms
+ GET /api/influencers?activeOnly=true 200 in 88ms
+ GET /api/campaigns 200 in 30ms
+ GET /api/influencers?activeOnly=true 200 in 29ms
+ ✓ Compiled /api/campaigns/[id]/reset in 120ms (407 modules)
+[RESET CAMPAIGN] Request for id= cmfwyhfxo0001wio71pcywmzp
+[RESET CAMPAIGN] Updated and zeroed counters for id= cmfwyhfxo0001wio71pcywmzp
+ POST /api/campaigns/cmfwyhfxo0001wio71pcywmzp/reset 200 in 165ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 26ms
+ GET /api/events 200 in 9335ms
+ GET /api/campaigns 200 in 55ms
+ GET /api/influencers?dateFilter=today 200 in 64ms
+ GET /api/campaigns 200 in 60ms
+ GET /api/influencers?dateFilter=today 200 in 63ms
+ GET /api/events 200 in 1458ms
+👥 Fetching customers with parameters: {
+  page: 1,
+  limit: 50,
+  query: null,
+  includeRelated: true,
+  timestamp: '2025-09-23T22:11:04.271Z'
+}
+📊 Fetching customers with pagination...
+✅ Customers with related data loaded: {
+  totalCustomers: 0,
+  totalClicks: 0,
+  totalLeads: 0,
+  totalEvents: 0,
+  page: 1,
+  totalPages: 0
+}
+ GET /api/customers?limit=50&includeRelated=true 200 in 21ms
+👥 Fetching customers with parameters: {
+  page: 1,
+  limit: 50,
+  query: null,
+  includeRelated: true,
+  timestamp: '2025-09-23T22:11:04.284Z'
+}
+📊 Fetching customers with pagination...
+✅ Customers with related data loaded: {
+  totalCustomers: 0,
+  totalClicks: 0,
+  totalLeads: 0,
+  totalEvents: 0,
+  page: 1,
+  totalPages: 0
+}
+ GET /api/customers?limit=50&includeRelated=true 200 in 10ms
+📋 Fetching leads with parameters: {
+  page: 1,
+  limit: 50,
+  campaign: undefined,
+  source: undefined,
+  country: undefined,
+  isDuplicate: undefined,
+  qualityScore: undefined,
+  search: undefined,
+  dateFrom: undefined,
+  dateTo: undefined,
+  timestamp: '2025-09-23T22:11:05.570Z'
+}
+🔍 Applying where conditions for leads: { whereConditions: {}, totalConditions: 0 }
+📋 Fetching leads with parameters: {
+  page: 1,
+  limit: 50,
+  campaign: undefined,
+  source: undefined,
+  country: undefined,
+  isDuplicate: undefined,
+  qualityScore: undefined,
+  search: undefined,
+  dateFrom: undefined,
+  dateTo: undefined,
+  timestamp: '2025-09-23T22:11:05.571Z'
+}
+🔍 Applying where conditions for leads: { whereConditions: {}, totalConditions: 0 }
+📊 Leads data loaded: {
+  totalLeads: 0,
+  totalCount: 0,
+  recognizedCustomers: 0,
+  duplicateLeads: 0,
+  avgQualityScore: NaN
+}
+📊 Leads data loaded: {
+  totalLeads: 0,
+  totalCount: 0,
+  recognizedCustomers: 0,
+  duplicateLeads: 0,
+  avgQualityScore: NaN
+}
+✅ Lead filters and stats calculated: {
+  campaignsAvailable: 0,
+  sourcesAvailable: 0,
+  countriesAvailable: 0,
+  campaignStatsCalculated: 0,
+  topCampaign: 'None',
+  timestamp: '2025-09-23T22:11:05.594Z'
+}
+ GET /api/leads?page=1&limit=50 200 in 40ms
+✅ Lead filters and stats calculated: {
+  campaignsAvailable: 0,
+  sourcesAvailable: 0,
+  countriesAvailable: 0,
+  campaignStatsCalculated: 0,
+  topCampaign: 'None',
+  timestamp: '2025-09-23T22:11:05.596Z'
+}
+ GET /api/leads?page=1&limit=50 200 in 40ms
+ GET /api/events 200 in 1055ms
+🔄 Fetching conversions with parameters: {
+  dateFilter: 'today',
+  eventType: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  campaign: 'all',
+  timestamp: '2025-09-23T22:11:06.644Z'
+}
+🔍 Applying where conditions for conversions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+🔄 Fetching conversions with parameters: {
+  dateFilter: 'today',
+  eventType: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  campaign: 'all',
+  timestamp: '2025-09-23T22:11:06.644Z'
+}
+🔍 Applying where conditions for conversions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+📊 Conversions data loaded: { totalEvents: 0, recognizedCustomers: 0, anonymousEvents: 0 }
+📊 Conversions data loaded: { totalEvents: 0, recognizedCustomers: 0, anonymousEvents: 0 }
+✅ Conversions summary calculated: {
+  totalConversions: 0,
+  totalValue: 0,
+  uniqueCustomers: 0,
+  conversionRate: '0%',
+  eventTypesFound: 0,
+  campaignsFound: 0,
+  timestamp: '2025-09-23T22:11:06.666Z'
+}
+ GET /api/conversions?dateFilter=today&eventType=all&campaign=all 200 in 37ms
+✅ Conversions summary calculated: {
+  totalConversions: 0,
+  totalValue: 0,
+  uniqueCustomers: 0,
+  conversionRate: '0%',
+  eventTypesFound: 0,
+  campaignsFound: 0,
+  timestamp: '2025-09-23T22:11:06.668Z'
+}
+ GET /api/conversions?dateFilter=today&eventType=all&campaign=all 200 in 40ms
+ GET /api/events 200 in 1239ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T22:11:07.899Z'
+}
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T22:11:07.900Z'
+}
+ GET /api/campaigns 200 in 25ms
+ GET /api/campaigns 200 in 22ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 34ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 31ms
+ GET /api/influencers?activeOnly=true 200 in 35ms
+ GET /api/influencers?activeOnly=true 200 in 32ms
+ ✓ Compiled /api/links/[id] in 231ms (407 modules)
+🗑️ Deleting link: {
+  linkId: 'cmfx082xn000a9yrwgqww0z4q',
+  timestamp: '2025-09-23T22:11:23.260Z'
+}
+ DELETE /api/links/cmfx082xn000a9yrwgqww0z4q 200 in 274ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T22:11:23.278Z'
+}
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 19ms
+ GET /api/events 200 in 18496ms
+ ✓ Compiled /api/clicks in 112ms (409 modules)
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-23T22:11:26.693Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-23T22:11:26.693Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-23T22:11:26.693Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-23T22:11:26.694Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+✅ Clicks data processed successfully: {
+  totalClicks: 27,
+  recognizedCustomers: 0,
+  anonymousClicks: 27,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 2,
+  sourcesFound: 2,
+  timestamp: '2025-09-23T22:11:26.701Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 271ms
+✅ Clicks data processed successfully: {
+  totalClicks: 27,
+  recognizedCustomers: 0,
+  anonymousClicks: 27,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 2,
+  sourcesFound: 2,
+  timestamp: '2025-09-23T22:11:26.703Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 272ms
+✅ Clicks data processed successfully: {
+  totalClicks: 27,
+  recognizedCustomers: 0,
+  anonymousClicks: 27,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 2,
+  sourcesFound: 2,
+  timestamp: '2025-09-23T22:11:26.705Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 279ms
+✅ Clicks data processed successfully: {
+  totalClicks: 27,
+  recognizedCustomers: 0,
+  anonymousClicks: 27,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 2,
+  sourcesFound: 2,
+  timestamp: '2025-09-23T22:11:26.708Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 277ms
+ GET /api/events 200 in 2948ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T22:11:29.407Z'
+}
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T22:11:29.408Z'
+}
+ GET /api/campaigns 200 in 38ms
+ GET /api/campaigns 200 in 38ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 45ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 45ms
+ GET /api/influencers?activeOnly=true 200 in 46ms
+ GET /api/influencers?activeOnly=true 200 in 48ms
+ GET /api/events 200 in 949ms
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-23T22:11:30.424Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-23T22:11:30.425Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-23T22:11:30.425Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-23T22:11:30.425Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+✅ Clicks data processed successfully: {
+  totalClicks: 27,
+  recognizedCustomers: 0,
+  anonymousClicks: 27,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 2,
+  sourcesFound: 2,
+  timestamp: '2025-09-23T22:11:30.435Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 28ms
+✅ Clicks data processed successfully: {
+  totalClicks: 27,
+  recognizedCustomers: 0,
+  anonymousClicks: 27,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 2,
+  sourcesFound: 2,
+  timestamp: '2025-09-23T22:11:30.436Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 30ms
+✅ Clicks data processed successfully: {
+  totalClicks: 27,
+  recognizedCustomers: 0,
+  anonymousClicks: 27,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 2,
+  sourcesFound: 2,
+  timestamp: '2025-09-23T22:11:30.438Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 31ms
+✅ Clicks data processed successfully: {
+  totalClicks: 27,
+  recognizedCustomers: 0,
+  anonymousClicks: 27,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 2,
+  sourcesFound: 2,
+  timestamp: '2025-09-23T22:11:30.441Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 37ms
+ GET /api/events 200 in 1216ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T22:11:31.654Z'
+}
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 21ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T22:11:31.665Z'
+}
+ GET /api/campaigns 200 in 25ms
+ GET /api/campaigns 200 in 26ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 38ms
+ GET /api/influencers?activeOnly=true 200 in 51ms
+ GET /api/influencers?activeOnly=true 200 in 51ms
+ GET /api/events 200 in 4196ms
+🔄 Fetching conversions with parameters: {
+  dateFilter: 'today',
+  eventType: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  campaign: 'all',
+  timestamp: '2025-09-23T22:11:35.912Z'
+}
+🔍 Applying where conditions for conversions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+🔄 Fetching conversions with parameters: {
+  dateFilter: 'today',
+  eventType: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  campaign: 'all',
+  timestamp: '2025-09-23T22:11:35.913Z'
+}
+🔍 Applying where conditions for conversions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+📊 Conversions data loaded: { totalEvents: 0, recognizedCustomers: 0, anonymousEvents: 0 }
+📊 Conversions data loaded: { totalEvents: 0, recognizedCustomers: 0, anonymousEvents: 0 }
+✅ Conversions summary calculated: {
+  totalConversions: 0,
+  totalValue: 0,
+  uniqueCustomers: 0,
+  conversionRate: '0%',
+  eventTypesFound: 0,
+  campaignsFound: 0,
+  timestamp: '2025-09-23T22:11:35.934Z'
+}
+ GET /api/conversions?dateFilter=today&eventType=all&campaign=all 200 in 43ms
+✅ Conversions summary calculated: {
+  totalConversions: 0,
+  totalValue: 0,
+  uniqueCustomers: 0,
+  conversionRate: '0%',
+  eventTypesFound: 0,
+  campaignsFound: 0,
+  timestamp: '2025-09-23T22:11:35.935Z'
+}
+ GET /api/conversions?dateFilter=today&eventType=all&campaign=all 200 in 43ms
+ GET /api/events 200 in 1214ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T22:11:37.137Z'
+}
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T22:11:37.157Z'
+}
+ GET /api/campaigns 200 in 33ms
+ GET /api/campaigns 200 in 31ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 37ms
+ GET /api/influencers?activeOnly=true 200 in 40ms
+ GET /api/influencers?activeOnly=true 200 in 39ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 44ms
+ GET /api/events 200 in 549ms
+📋 Fetching leads with parameters: {
+  page: 1,
+  limit: 50,
+  campaign: undefined,
+  source: undefined,
+  country: undefined,
+  isDuplicate: undefined,
+  qualityScore: undefined,
+  search: undefined,
+  dateFrom: undefined,
+  dateTo: undefined,
+  timestamp: '2025-09-23T22:11:37.727Z'
+}
+🔍 Applying where conditions for leads: { whereConditions: {}, totalConditions: 0 }
+📋 Fetching leads with parameters: {
+  page: 1,
+  limit: 50,
+  campaign: undefined,
+  source: undefined,
+  country: undefined,
+  isDuplicate: undefined,
+  qualityScore: undefined,
+  search: undefined,
+  dateFrom: undefined,
+  dateTo: undefined,
+  timestamp: '2025-09-23T22:11:37.728Z'
+}
+🔍 Applying where conditions for leads: { whereConditions: {}, totalConditions: 0 }
+📊 Leads data loaded: {
+  totalLeads: 0,
+  totalCount: 0,
+  recognizedCustomers: 0,
+  duplicateLeads: 0,
+  avgQualityScore: NaN
+}
+📊 Leads data loaded: {
+  totalLeads: 0,
+  totalCount: 0,
+  recognizedCustomers: 0,
+  duplicateLeads: 0,
+  avgQualityScore: NaN
+}
+✅ Lead filters and stats calculated: {
+  campaignsAvailable: 0,
+  sourcesAvailable: 0,
+  countriesAvailable: 0,
+  campaignStatsCalculated: 0,
+  topCampaign: 'None',
+  timestamp: '2025-09-23T22:11:37.732Z'
+}
+ GET /api/leads?page=1&limit=50 200 in 19ms
+✅ Lead filters and stats calculated: {
+  campaignsAvailable: 0,
+  sourcesAvailable: 0,
+  countriesAvailable: 0,
+  campaignStatsCalculated: 0,
+  topCampaign: 'None',
+  timestamp: '2025-09-23T22:11:37.733Z'
+}
+ GET /api/leads?page=1&limit=50 200 in 19ms
+ ✓ Compiled in 317ms (348 modules)
+ ✓ Compiled in 554ms (645 modules)
+ ✓ Compiled /dashboard/events in 317ms (315 modules)
+ GET /api/events 200 in 389370ms
+ ✓ Compiled /api/events in 118ms (347 modules)
+ ✓ Compiled (351 modules)
+🔄 Fetching conversions with parameters: {
+  dateFilter: 'today',
+  eventType: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  campaign: 'all',
+  timestamp: '2025-09-23T22:18:07.613Z'
+}
+🔍 Applying where conditions for conversions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+🔄 Fetching conversions with parameters: {
+  dateFilter: 'today',
+  eventType: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  campaign: 'all',
+  timestamp: '2025-09-23T22:18:07.614Z'
+}
+🔍 Applying where conditions for conversions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+📊 Conversions data loaded: { totalEvents: 0, recognizedCustomers: 0, anonymousEvents: 0 }
+📊 Conversions data loaded: { totalEvents: 0, recognizedCustomers: 0, anonymousEvents: 0 }
+✅ Conversions summary calculated: {
+  totalConversions: 0,
+  totalValue: 0,
+  uniqueCustomers: 0,
+  conversionRate: '0%',
+  eventTypesFound: 0,
+  campaignsFound: 0,
+  timestamp: '2025-09-23T22:18:07.709Z'
+}
+ GET /api/conversions?dateFilter=today&eventType=all&campaign=all 200 in 610ms
+✅ Conversions summary calculated: {
+  totalConversions: 0,
+  totalValue: 0,
+  uniqueCustomers: 0,
+  conversionRate: '0%',
+  eventTypesFound: 0,
+  campaignsFound: 0,
+  timestamp: '2025-09-23T22:18:07.711Z'
+}
+ GET /api/conversions?dateFilter=today&eventType=all&campaign=all 200 in 610ms
+ GET /api/events 200 in 1348ms
+ ✓ Compiled /api/leads in 241ms (363 modules)
+📋 Fetching leads with parameters: {
+  page: 1,
+  limit: 50,
+  campaign: undefined,
+  source: undefined,
+  country: undefined,
+  isDuplicate: undefined,
+  qualityScore: undefined,
+  search: undefined,
+  dateFrom: undefined,
+  dateTo: undefined,
+  timestamp: '2025-09-23T22:18:08.844Z'
+}
+🔍 Applying where conditions for leads: { whereConditions: {}, totalConditions: 0 }
+📋 Fetching leads with parameters: {
+  page: 1,
+  limit: 50,
+  campaign: undefined,
+  source: undefined,
+  country: undefined,
+  isDuplicate: undefined,
+  qualityScore: undefined,
+  search: undefined,
+  dateFrom: undefined,
+  dateTo: undefined,
+  timestamp: '2025-09-23T22:18:08.844Z'
+}
+🔍 Applying where conditions for leads: { whereConditions: {}, totalConditions: 0 }
+📊 Leads data loaded: {
+  totalLeads: 0,
+  totalCount: 0,
+  recognizedCustomers: 0,
+  duplicateLeads: 0,
+  avgQualityScore: NaN
+}
+📊 Leads data loaded: {
+  totalLeads: 0,
+  totalCount: 0,
+  recognizedCustomers: 0,
+  duplicateLeads: 0,
+  avgQualityScore: NaN
+}
+✅ Lead filters and stats calculated: {
+  campaignsAvailable: 0,
+  sourcesAvailable: 0,
+  countriesAvailable: 0,
+  campaignStatsCalculated: 0,
+  topCampaign: 'None',
+  timestamp: '2025-09-23T22:18:08.861Z'
+}
+ GET /api/leads?page=1&limit=50 200 in 403ms
+✅ Lead filters and stats calculated: {
+  campaignsAvailable: 0,
+  sourcesAvailable: 0,
+  countriesAvailable: 0,
+  campaignStatsCalculated: 0,
+  topCampaign: 'None',
+  timestamp: '2025-09-23T22:18:08.862Z'
+}
+ GET /api/leads?page=1&limit=50 200 in 404ms
+ ✓ Compiled /dashboard/customers in 324ms (391 modules)
+ GET /api/events 200 in 1478ms
+ ✓ Compiled /api/customers in 124ms (394 modules)
+👥 Fetching customers with parameters: {
+  page: 1,
+  limit: 50,
+  query: null,
+  includeRelated: true,
+  timestamp: '2025-09-23T22:18:10.164Z'
+}
+📊 Fetching customers with pagination...
+✅ Customers with related data loaded: {
+  totalCustomers: 0,
+  totalClicks: 0,
+  totalLeads: 0,
+  totalEvents: 0,
+  page: 1,
+  totalPages: 0
+}
+ GET /api/customers?limit=50&includeRelated=true 200 in 190ms
+👥 Fetching customers with parameters: {
+  page: 1,
+  limit: 50,
+  query: null,
+  includeRelated: true,
+  timestamp: '2025-09-23T22:18:10.197Z'
+}
+📊 Fetching customers with pagination...
+✅ Customers with related data loaded: {
+  totalCustomers: 0,
+  totalClicks: 0,
+  totalLeads: 0,
+  totalEvents: 0,
+  page: 1,
+  totalPages: 0
+}
+ GET /api/customers?limit=50&includeRelated=true 200 in 17ms
+ ✓ Compiled /api/campaigns in 108ms (396 modules)
+ ✓ Compiled (398 modules)
+ GET /api/campaigns 200 in 237ms
+ GET /api/campaigns 200 in 239ms
+ GET /api/influencers?dateFilter=today 200 in 260ms
+ GET /api/influencers?dateFilter=today 200 in 272ms
+ GET /api/campaigns 200 in 101ms
+ GET /api/influencers 200 in 150ms
+ ✓ Compiled /api/influencers/[id] in 234ms (400 modules)
+📊 [API] Updating influencer: cmfx1hi700002xovmiwx199kq {
+  "name": "Mr White",
+  "email": "",
+  "phone": "",
+  "socialHandle": "@walterwhite",
+  "platform": "instagram",
+  "followers": 0,
+  "engagementRate": 0,
+  "category": "Uncategorized",
+  "location": "",
+  "paymentMethod": "bank_transfer",
+  "paymentDetails": {},
+  "notes": "",
+  "profileImage": "/uploads/1758661211572_IMG_7080.jpeg",
+  "profileImageFile": null,
+  "conversionTypes": [],
+  "conversionConfig": {
+    "leads": true,
+    "clicks": true,
+    "registrations": true,
+    "ftd": true
+  },
+  "assignedCampaignIds": [
+    "cmfwyhfxo0001wio71pcywmzp"
+  ]
+}
+🔗 [API] Updating campaign assignments for influencer: cmfx1hi700002xovmiwx199kq [ 'cmfwyhfxo0001wio71pcywmzp' ]
+ PUT /api/influencers/cmfx1hi700002xovmiwx199kq 200 in 781ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 1040ms (648 modules)
+ GET /themes/todoalrojo.js 404 in 1180ms
+ GET /themes/default.js 404 in 14ms
+ GET /api/events 200 in 204707ms
+ ✓ Compiled /api/influencers in 233ms (354 modules)
+ ✓ Compiled (356 modules)
+ GET /api/influencers?activeOnly=true 200 in 458ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 473ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 504ms
+ GET /api/influencers?activeOnly=true 200 in 506ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 508ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 515ms
+ ✓ Compiled /api/events in 232ms (360 modules)
+ GET /api/campaigns 200 in 81ms
+ GET /api/influencers?activeOnly=true 200 in 111ms
+ GET /api/events 200 in 33531ms
+ GET /api/campaigns 200 in 31ms
+ GET /api/influencers?dateFilter=today 200 in 44ms
+ GET /api/campaigns 200 in 46ms
+ GET /api/influencers?dateFilter=today 200 in 49ms
+ ✓ Compiled /dashboard/customers in 450ms (387 modules)
+ GET /api/events 200 in 5673ms
+ ✓ Compiled /api/customers in 145ms (390 modules)
+👥 Fetching customers with parameters: {
+  page: 1,
+  limit: 50,
+  query: null,
+  includeRelated: true,
+  timestamp: '2025-09-23T22:22:16.235Z'
+}
+📊 Fetching customers with pagination...
+✅ Customers with related data loaded: {
+  totalCustomers: 0,
+  totalClicks: 0,
+  totalLeads: 0,
+  totalEvents: 0,
+  page: 1,
+  totalPages: 0
+}
+ GET /api/customers?limit=50&includeRelated=true 200 in 282ms
+👥 Fetching customers with parameters: {
+  page: 1,
+  limit: 50,
+  query: null,
+  includeRelated: true,
+  timestamp: '2025-09-23T22:22:16.319Z'
+}
+📊 Fetching customers with pagination...
+✅ Customers with related data loaded: {
+  totalCustomers: 0,
+  totalClicks: 0,
+  totalLeads: 0,
+  totalEvents: 0,
+  page: 1,
+  totalPages: 0
+}
+ GET /api/customers?limit=50&includeRelated=true 200 in 66ms
+ ✓ Compiled /api/leads in 228ms (392 modules)
+📋 Fetching leads with parameters: {
+  page: 1,
+  limit: 50,
+  campaign: undefined,
+  source: undefined,
+  country: undefined,
+  isDuplicate: undefined,
+  qualityScore: undefined,
+  search: undefined,
+  dateFrom: undefined,
+  dateTo: undefined,
+  timestamp: '2025-09-23T22:22:19.867Z'
+}
+🔍 Applying where conditions for leads: { whereConditions: {}, totalConditions: 0 }
+📋 Fetching leads with parameters: {
+  page: 1,
+  limit: 50,
+  campaign: undefined,
+  source: undefined,
+  country: undefined,
+  isDuplicate: undefined,
+  qualityScore: undefined,
+  search: undefined,
+  dateFrom: undefined,
+  dateTo: undefined,
+  timestamp: '2025-09-23T22:22:19.868Z'
+}
+🔍 Applying where conditions for leads: { whereConditions: {}, totalConditions: 0 }
+📊 Leads data loaded: {
+  totalLeads: 0,
+  totalCount: 0,
+  recognizedCustomers: 0,
+  duplicateLeads: 0,
+  avgQualityScore: NaN
+}
+📊 Leads data loaded: {
+  totalLeads: 0,
+  totalCount: 0,
+  recognizedCustomers: 0,
+  duplicateLeads: 0,
+  avgQualityScore: NaN
+}
+✅ Lead filters and stats calculated: {
+  campaignsAvailable: 0,
+  sourcesAvailable: 0,
+  countriesAvailable: 0,
+  campaignStatsCalculated: 0,
+  topCampaign: 'None',
+  timestamp: '2025-09-23T22:22:19.874Z'
+}
+ GET /api/leads?page=1&limit=50 200 in 371ms
+✅ Lead filters and stats calculated: {
+  campaignsAvailable: 0,
+  sourcesAvailable: 0,
+  countriesAvailable: 0,
+  campaignStatsCalculated: 0,
+  topCampaign: 'None',
+  timestamp: '2025-09-23T22:22:19.875Z'
+}
+ GET /api/leads?page=1&limit=50 200 in 372ms
+ ✓ Compiled /dashboard/events in 277ms (396 modules)
+ GET /api/events 200 in 3908ms
+ ✓ Compiled /api/conversions in 120ms (398 modules)
+🔄 Fetching conversions with parameters: {
+  dateFilter: 'today',
+  eventType: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  campaign: 'all',
+  timestamp: '2025-09-23T22:22:23.697Z'
+}
+🔍 Applying where conditions for conversions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+🔄 Fetching conversions with parameters: {
+  dateFilter: 'today',
+  eventType: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  campaign: 'all',
+  timestamp: '2025-09-23T22:22:23.697Z'
+}
+🔍 Applying where conditions for conversions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+📊 Conversions data loaded: { totalEvents: 0, recognizedCustomers: 0, anonymousEvents: 0 }
+📊 Conversions data loaded: { totalEvents: 0, recognizedCustomers: 0, anonymousEvents: 0 }
+✅ Conversions summary calculated: {
+  totalConversions: 0,
+  totalValue: 0,
+  uniqueCustomers: 0,
+  conversionRate: '0%',
+  eventTypesFound: 0,
+  campaignsFound: 0,
+  timestamp: '2025-09-23T22:22:23.707Z'
+}
+ GET /api/conversions?dateFilter=today&eventType=all&campaign=all 200 in 249ms
+✅ Conversions summary calculated: {
+  totalConversions: 0,
+  totalValue: 0,
+  uniqueCustomers: 0,
+  conversionRate: '0%',
+  eventTypesFound: 0,
+  campaignsFound: 0,
+  timestamp: '2025-09-23T22:22:23.708Z'
+}
+ GET /api/conversions?dateFilter=today&eventType=all&campaign=all 200 in 254ms
+ GET /api/events 200 in 4505ms
+ ✓ Compiled /api/links in 113ms (401 modules)
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T22:22:28.220Z'
+}
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T22:22:28.220Z'
+}
+ GET /api/campaigns 200 in 238ms
+ GET /api/campaigns 200 in 249ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 253ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 250ms
+ GET /api/influencers?activeOnly=true 200 in 269ms
+ GET /api/influencers?activeOnly=true 200 in 271ms
+ GET /api/events 200 in 5323ms
+ ✓ Compiled /api/clicks in 178ms (403 modules)
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-23T22:22:33.927Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-23T22:22:33.927Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-23T22:22:33.927Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-23T22:22:33.928Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+✅ Clicks data processed successfully: {
+  totalClicks: 27,
+  recognizedCustomers: 0,
+  anonymousClicks: 27,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 2,
+  sourcesFound: 2,
+  timestamp: '2025-09-23T22:22:33.938Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 353ms
+✅ Clicks data processed successfully: {
+  totalClicks: 27,
+  recognizedCustomers: 0,
+  anonymousClicks: 27,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 2,
+  sourcesFound: 2,
+  timestamp: '2025-09-23T22:22:33.939Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 356ms
+✅ Clicks data processed successfully: {
+  totalClicks: 27,
+  recognizedCustomers: 0,
+  anonymousClicks: 27,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 2,
+  sourcesFound: 2,
+  timestamp: '2025-09-23T22:22:33.940Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 357ms
+✅ Clicks data processed successfully: {
+  totalClicks: 27,
+  recognizedCustomers: 0,
+  anonymousClicks: 27,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 2,
+  sourcesFound: 2,
+  timestamp: '2025-09-23T22:22:33.945Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 359ms
+ GET /api/events 200 in 44027ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T22:23:17.656Z'
+}
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T22:23:17.657Z'
+}
+ GET /api/campaigns 200 in 39ms
+ GET /api/campaigns 200 in 38ms
+ GET /api/influencers?activeOnly=true 200 in 51ms
+ GET /api/influencers?activeOnly=true 200 in 63ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 73ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 73ms
+ GET /api/events 200 in 2900ms
+🔄 Fetching conversions with parameters: {
+  dateFilter: 'today',
+  eventType: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  campaign: 'all',
+  timestamp: '2025-09-23T22:23:20.605Z'
+}
+🔍 Applying where conditions for conversions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+📊 Conversions data loaded: { totalEvents: 0, recognizedCustomers: 0, anonymousEvents: 0 }
+🔄 Fetching conversions with parameters: {
+  dateFilter: 'today',
+  eventType: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  campaign: 'all',
+  timestamp: '2025-09-23T22:23:20.610Z'
+}
+🔍 Applying where conditions for conversions: {
+  whereConditions: { createdAt: { gte: 2025-09-22T23:00:00.000Z } },
+  totalConditions: 1
+}
+📊 Conversions data loaded: { totalEvents: 0, recognizedCustomers: 0, anonymousEvents: 0 }
+✅ Conversions summary calculated: {
+  totalConversions: 0,
+  totalValue: 0,
+  uniqueCustomers: 0,
+  conversionRate: '0%',
+  eventTypesFound: 0,
+  campaignsFound: 0,
+  timestamp: '2025-09-23T22:23:20.616Z'
+}
+ GET /api/conversions?dateFilter=today&eventType=all&campaign=all 200 in 20ms
+✅ Conversions summary calculated: {
+  totalConversions: 0,
+  totalValue: 0,
+  uniqueCustomers: 0,
+  conversionRate: '0%',
+  eventTypesFound: 0,
+  campaignsFound: 0,
+  timestamp: '2025-09-23T22:23:20.617Z'
+}
+ GET /api/conversions?dateFilter=today&eventType=all&campaign=all 200 in 22ms
+ GET /api/events 200 in 834ms
+📋 Fetching leads with parameters: {
+  page: 1,
+  limit: 50,
+  campaign: undefined,
+  source: undefined,
+  country: undefined,
+  isDuplicate: undefined,
+  qualityScore: undefined,
+  search: undefined,
+  dateFrom: undefined,
+  dateTo: undefined,
+  timestamp: '2025-09-23T22:23:21.459Z'
+}
+🔍 Applying where conditions for leads: { whereConditions: {}, totalConditions: 0 }
+📊 Leads data loaded: {
+  totalLeads: 0,
+  totalCount: 0,
+  recognizedCustomers: 0,
+  duplicateLeads: 0,
+  avgQualityScore: NaN
+}
+📋 Fetching leads with parameters: {
+  page: 1,
+  limit: 50,
+  campaign: undefined,
+  source: undefined,
+  country: undefined,
+  isDuplicate: undefined,
+  qualityScore: undefined,
+  search: undefined,
+  dateFrom: undefined,
+  dateTo: undefined,
+  timestamp: '2025-09-23T22:23:21.462Z'
+}
+🔍 Applying where conditions for leads: { whereConditions: {}, totalConditions: 0 }
+✅ Lead filters and stats calculated: {
+  campaignsAvailable: 0,
+  sourcesAvailable: 0,
+  countriesAvailable: 0,
+  campaignStatsCalculated: 0,
+  topCampaign: 'None',
+  timestamp: '2025-09-23T22:23:21.463Z'
+}
+ GET /api/leads?page=1&limit=50 200 in 19ms
+📊 Leads data loaded: {
+  totalLeads: 0,
+  totalCount: 0,
+  recognizedCustomers: 0,
+  duplicateLeads: 0,
+  avgQualityScore: NaN
+}
+✅ Lead filters and stats calculated: {
+  campaignsAvailable: 0,
+  sourcesAvailable: 0,
+  countriesAvailable: 0,
+  campaignStatsCalculated: 0,
+  topCampaign: 'None',
+  timestamp: '2025-09-23T22:23:21.466Z'
+}
+ GET /api/leads?page=1&limit=50 200 in 21ms
+ GET /api/events 200 in 656ms
+👥 Fetching customers with parameters: {
+  page: 1,
+  limit: 50,
+  query: null,
+  includeRelated: true,
+  timestamp: '2025-09-23T22:23:22.136Z'
+}
+📊 Fetching customers with pagination...
+✅ Customers with related data loaded: {
+  totalCustomers: 0,
+  totalClicks: 0,
+  totalLeads: 0,
+  totalEvents: 0,
+  page: 1,
+  totalPages: 0
+}
+ GET /api/customers?limit=50&includeRelated=true 200 in 20ms
+👥 Fetching customers with parameters: {
+  page: 1,
+  limit: 50,
+  query: null,
+  includeRelated: true,
+  timestamp: '2025-09-23T22:23:22.150Z'
+}
+📊 Fetching customers with pagination...
+✅ Customers with related data loaded: {
+  totalCustomers: 0,
+  totalClicks: 0,
+  totalLeads: 0,
+  totalEvents: 0,
+  page: 1,
+  totalPages: 0
+}
+ GET /api/customers?limit=50&includeRelated=true 200 in 8ms
+ GET /api/campaigns 200 in 19ms
+ GET /api/campaigns 200 in 20ms
+ GET /api/influencers?dateFilter=today 200 in 22ms
+ GET /api/influencers?dateFilter=today 200 in 23ms
+ GET /api/events 200 in 529ms
+ GET /api/influencers?activeOnly=true 200 in 24ms
+ GET /api/influencers?activeOnly=true 200 in 29ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 35ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 38ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 41ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 43ms
+ ✓ Compiled /dashboard in 293ms (740 modules)
+ GET /api/events 200 in 1297ms
+ ✓ Compiled /_not-found in 186ms (741 modules)
+ GET /themes/todoalrojo.js 404 in 264ms
+ GET /themes/default.js 404 in 12ms
+ GET /themes/todoalrojo.js 404 in 14ms
+ GET /themes/default.js 404 in 14ms
+ GET /themes/todoalrojo.js 404 in 13ms
+ GET /themes/default.js 404 in 13ms
+ GET /themes/todoalrojo.js 404 in 15ms
+ GET /themes/default.js 404 in 12ms
+ GET /themes/todoalrojo.js 404 in 15ms
+ GET /themes/default.js 404 in 15ms
+ GET /api/influencers?activeOnly=true 200 in 66ms
+ GET /api/influencers?activeOnly=true 200 in 65ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 69ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 73ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 74ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 73ms
+ GET /api/events 200 in 1037ms
+ GET /api/campaigns 200 in 18ms
+ GET /api/campaigns 200 in 19ms
+ GET /api/influencers?dateFilter=today 200 in 23ms
+ GET /api/influencers?dateFilter=today 200 in 25ms
+ GET /api/events 200 in 991ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 27ms
+ GET /api/influencers?activeOnly=true 200 in 27ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 29ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 28ms
+ GET /api/influencers?activeOnly=true 200 in 32ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 34ms
+ GET /api/events 200 in 1834ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T22:26:48.493Z'
+}
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-23T22:26:48.493Z'
+}
+ GET /api/campaigns 200 in 16ms
+ GET /api/campaigns 200 in 17ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 20ms
+ GET /api/influencers?activeOnly=true 200 in 24ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 24ms
+ GET /api/influencers?activeOnly=true 200 in 26ms
+ GET /api/events 200 in 7552ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 28ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 28ms
+ GET /api/influencers?activeOnly=true 200 in 30ms
+ GET /api/influencers?activeOnly=true 200 in 31ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 34ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 36ms
+ GET /api/campaigns 200 in 21ms
+ GET /api/campaigns 200 in 32ms
+ GET /api/influencers?activeOnly=true 200 in 79ms
+ GET /api/influencers?activeOnly=true 200 in 13ms
+ GET /api/campaigns 200 in 17ms
+ GET /api/influencers?activeOnly=true 200 in 23ms
+ GET /api/campaigns 200 in 22ms
+ GET /api/influencers?activeOnly=true 200 in 34ms
+ GET /api/events 200 in 116783ms
+ GET /api/events 200 in 43895952ms
+ GET /api/events 200 in 6022337ms
+ GET /api/campaigns 200 in 141ms
+ GET /api/campaigns 200 in 145ms
+ GET /api/influencers?dateFilter=today 200 in 198ms
+ GET /api/influencers?dateFilter=today 200 in 197ms
+ GET /api/events 200 in 997ms
+ GET /api/influencers?activeOnly=true 200 in 112ms
+ GET /api/influencers?activeOnly=true 200 in 101ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 123ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 111ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 125ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 125ms
+ GET /dashboard/campaigns 200 in 457ms
+ GET /api/events 200 in 8483603ms
+ ○ Compiling /api/influencers ...
+ ✓ Compiled /api/influencers in 1197ms (609 modules)
+ ✓ Compiled (611 modules)
+⚠️ NextAuth Warning: DEBUG_ENABLED
+ GET /api/auth/session 200 in 1565ms
+ GET /api/influencers?activeOnly=true 200 in 2151ms
+ GET /api/influencers?activeOnly=true 200 in 2189ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 2192ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 2190ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 580ms
+ GET /api/campaigns?includeStats=true&dateFilter=today 200 in 2197ms
+ ✓ Compiled /api/avatar in 106ms (614 modules)
+ ✓ Compiled (616 modules)
+⚠️ NextAuth Warning: DEBUG_ENABLED
+ GET /api/auth/session 200 in 332ms
+ GET /api/avatar?seed=abiola-admin&size=48 200 in 1912ms
+ GET /api/avatar?seed=abiola-admin&size=40 200 in 2238ms
+ GET /api/events 200 in 4996ms
+ GET /api/events 200 in 2267ms
+ GET /api/campaigns?includeStats=true&dateFilter=all 200 in 50ms
+ GET /api/events 200 in 1017433ms
+ ✓ Compiled /api/influencers in 461ms (376 modules)
+ ✓ Compiled (380 modules)
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-24T16:49:42.121Z'
+}
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-24T16:49:42.122Z'
+}
+ GET /api/campaigns 200 in 701ms
+ GET /api/campaigns 200 in 699ms
+ GET /api/influencers?activeOnly=true 200 in 717ms
+ GET /api/influencers?activeOnly=true 200 in 722ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 726ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 729ms
+ ✓ Compiled /api/events in 71ms (384 modules)
+ GET /api/events 200 in 6653ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'betsson',
+  isActive: null,
+  timestamp: '2025-09-24T16:49:48.836Z'
+}
+ GET /api/campaigns 200 in 36ms
+ GET /api/links?page=1&limit=10&search=&campaign=betsson 200 in 38ms
+ GET /api/influencers?activeOnly=true 200 in 40ms
+ GET /api/events 200 in 1728ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-24T16:49:50.558Z'
+}
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 19ms
+ GET /api/campaigns 200 in 19ms
+ GET /api/influencers?activeOnly=true 200 in 22ms
+ ✓ Compiled /dashboard/clicks in 292ms (388 modules)
+ GET /api/events 200 in 22161ms
+ ✓ Compiled /api/clicks in 98ms (390 modules)
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-24T16:50:12.957Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-23T23:00:00.000Z } },
+  totalConditions: 1
+}
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-24T16:50:12.957Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-23T23:00:00.000Z } },
+  totalConditions: 1
+}
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-24T16:50:12.957Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-23T23:00:00.000Z } },
+  totalConditions: 1
+}
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-24T16:50:12.957Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-23T23:00:00.000Z } },
+  totalConditions: 1
+}
+✅ Clicks data processed successfully: {
+  totalClicks: 0,
+  recognizedCustomers: 0,
+  anonymousClicks: 0,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 0,
+  sourcesFound: 0,
+  timestamp: '2025-09-24T16:50:12.969Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 221ms
+✅ Clicks data processed successfully: {
+  totalClicks: 0,
+  recognizedCustomers: 0,
+  anonymousClicks: 0,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 0,
+  sourcesFound: 0,
+  timestamp: '2025-09-24T16:50:12.969Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 205ms
+✅ Clicks data processed successfully: {
+  totalClicks: 0,
+  recognizedCustomers: 0,
+  anonymousClicks: 0,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 0,
+  sourcesFound: 0,
+  timestamp: '2025-09-24T16:50:12.970Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 203ms
+✅ Clicks data processed successfully: {
+  totalClicks: 0,
+  recognizedCustomers: 0,
+  anonymousClicks: 0,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 0,
+  sourcesFound: 0,
+  timestamp: '2025-09-24T16:50:12.971Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 201ms
+ ✓ Compiled /dashboard/analytics in 208ms (726 modules)
+ GET /api/events 200 in 2623ms
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-24T16:50:17.748Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-23T23:00:00.000Z } },
+  totalConditions: 1
+}
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-24T16:50:17.748Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-23T23:00:00.000Z } },
+  totalConditions: 1
+}
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-24T16:50:17.748Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-23T23:00:00.000Z } },
+  totalConditions: 1
+}
+🔍 Fetching clicks with parameters: {
+  dateFilter: 'today',
+  campaign: 'all',
+  source: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  timestamp: '2025-09-24T16:50:17.749Z'
+}
+🔍 Applying where conditions: {
+  whereConditions: { createdAt: { gte: 2025-09-23T23:00:00.000Z } },
+  totalConditions: 1
+}
+✅ Clicks data processed successfully: {
+  totalClicks: 0,
+  recognizedCustomers: 0,
+  anonymousClicks: 0,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 0,
+  sourcesFound: 0,
+  timestamp: '2025-09-24T16:50:17.756Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 27ms
+✅ Clicks data processed successfully: {
+  totalClicks: 0,
+  recognizedCustomers: 0,
+  anonymousClicks: 0,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 0,
+  sourcesFound: 0,
+  timestamp: '2025-09-24T16:50:17.757Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 27ms
+✅ Clicks data processed successfully: {
+  totalClicks: 0,
+  recognizedCustomers: 0,
+  anonymousClicks: 0,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 0,
+  sourcesFound: 0,
+  timestamp: '2025-09-24T16:50:17.758Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 28ms
+✅ Clicks data processed successfully: {
+  totalClicks: 0,
+  recognizedCustomers: 0,
+  anonymousClicks: 0,
+  recognitionRate: '0%',
+  fraudClicks: 0,
+  campaignsFound: 0,
+  sourcesFound: 0,
+  timestamp: '2025-09-24T16:50:17.761Z'
+}
+ GET /api/clicks?dateFilter=today&campaign=all&source=all&search= 200 in 30ms
+ GET /api/events 200 in 1628ms
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-24T16:50:19.382Z'
+}
+🔍 Fetching links with filters: {
+  page: 1,
+  limit: 10,
+  search: '',
+  campaign: 'all',
+  isActive: null,
+  timestamp: '2025-09-24T16:50:19.382Z'
+}
+ GET /api/campaigns 200 in 27ms
+ GET /api/influencers?activeOnly=true 200 in 29ms
+ GET /api/campaigns 200 in 30ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 45ms
+ GET /api/links?page=1&limit=10&search=&campaign=all 200 in 50ms
+ GET /api/influencers?activeOnly=true 200 in 51ms
+ GET /api/events 200 in 1367ms
+ ✓ Compiled /api/conversions in 83ms (394 modules)
+🔄 Fetching conversions with parameters: {
+  dateFilter: 'today',
+  eventType: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  campaign: 'all',
+  timestamp: '2025-09-24T16:50:20.976Z'
+}
+🔍 Applying where conditions for conversions: {
+  whereConditions: { createdAt: { gte: 2025-09-23T23:00:00.000Z } },
+  totalConditions: 1
+}
+🔄 Fetching conversions with parameters: {
+  dateFilter: 'today',
+  eventType: 'all',
+  search: '',
+  fromDate: null,
+  toDate: null,
+  page: 1,
+  limit: 50,
+  campaign: 'all',
+  timestamp: '2025-09-24T16:50:20.977Z'
+}
+🔍 Applying where conditions for conversions: {
+  whereConditions: { createdAt: { gte: 2025-09-23T23:00:00.000Z } },
+  totalConditions: 1
+}
+📊 Conversions data loaded: { totalEvents: 0, recognizedCustomers: 0, anonymousEvents: 0 }
+📊 Conversions data loaded: { totalEvents: 0, recognizedCustomers: 0, anonymousEvents: 0 }
+✅ Conversions summary calculated: {
+  totalConversions: 0,
+  totalValue: 0,
+  uniqueCustomers: 0,
+  conversionRate: '0%',
+  eventTypesFound: 0,
+  campaignsFound: 0,
+  timestamp: '2025-09-24T16:50:20.987Z'
+}
+ GET /api/conversions?dateFilter=today&eventType=all&campaign=all 200 in 202ms
+✅ Conversions summary calculated: {
+  totalConversions: 0,
+  totalValue: 0,
+  uniqueCustomers: 0,
+  conversionRate: '0%',
+  eventTypesFound: 0,
+  campaignsFound: 0,
+  timestamp: '2025-09-24T16:50:20.988Z'
+}
+ GET /api/conversions?dateFilter=today&eventType=all&campaign=all 200 in 202ms
+ ✓ Compiled /dashboard/leads in 103ms (398 modules)
+ GET /api/events 200 in 1587ms
+ ✓ Compiled /api/leads in 81ms (400 modules)
+📋 Fetching leads with parameters: {
+  page: 1,
+  limit: 50,
+  campaign: undefined,
+  source: undefined,
+  country: undefined,
+  isDuplicate: undefined,
+  qualityScore: undefined,
+  search: undefined,
+  dateFrom: undefined,
+  dateTo: undefined,
+  timestamp: '2025-09-24T16:50:22.582Z'
+}
+🔍 Applying where conditions for leads: { whereConditions: {}, totalConditions: 0 }
+📋 Fetching leads with parameters: {
+  page: 1,
+  limit: 50,
+  campaign: undefined,
+  source: undefined,
+  country: undefined,
+  isDuplicate: undefined,
+  qualityScore: undefined,
+  search: undefined,
+  dateFrom: undefined,
+  dateTo: undefined,
+  timestamp: '2025-09-24T16:50:22.582Z'
+}
+🔍 Applying where conditions for leads: { whereConditions: {}, totalConditions: 0 }
+📊 Leads data loaded: {
+  totalLeads: 0,
+  totalCount: 0,
+  recognizedCustomers: 0,
+  duplicateLeads: 0,
+  avgQualityScore: NaN
+}
+📊 Leads data loaded: {
+  totalLeads: 0,
+  totalCount: 0,
+  recognizedCustomers: 0,
+  duplicateLeads: 0,
+  avgQualityScore: NaN
+}
+✅ Lead filters and stats calculated: {
+  campaignsAvailable: 0,
+  sourcesAvailable: 0,
+  countriesAvailable: 0,
+  campaignStatsCalculated: 0,
+  topCampaign: 'None',
+  timestamp: '2025-09-24T16:50:22.587Z'
+}
+ GET /api/leads?page=1&limit=50 200 in 198ms
+✅ Lead filters and stats calculated: {
+  campaignsAvailable: 0,
+  sourcesAvailable: 0,
+  countriesAvailable: 0,
+  campaignStatsCalculated: 0,
+  topCampaign: 'None',
+  timestamp: '2025-09-24T16:50:22.588Z'
+}
+ GET /api/leads?page=1&limit=50 200 in 200ms
+ GET /api/events 200 in 1027ms
+ ✓ Compiled /api/customers in 230ms (403 modules)
+👥 Fetching customers with parameters: {
+  page: 1,
+  limit: 50,
+  query: null,
+  includeRelated: true,
+  timestamp: '2025-09-24T16:50:23.702Z'
+}
+📊 Fetching customers with pagination...
+✅ Customers with related data loaded: {
+  totalCustomers: 0,
+  totalClicks: 0,
+  totalLeads: 0,
+  totalEvents: 0,
+  page: 1,
+  totalPages: 0
+}
+ GET /api/customers?limit=50&includeRelated=true 200 in 270ms
+👥 Fetching customers with parameters: {
+  page: 1,
+  limit: 50,
+  query: null,
+  includeRelated: true,
+  timestamp: '2025-09-24T16:50:23.721Z'
+}
+📊 Fetching customers with pagination...
+✅ Customers with related data loaded: {
+  totalCustomers: 0,
+  totalClicks: 0,
+  totalLeads: 0,
+  totalEvents: 0,
+  page: 1,
+  totalPages: 0
+}
+ GET /api/customers?limit=50&includeRelated=true 200 in 10ms
+ ✓ Compiled /dashboard/influencers in 195ms (408 modules)
+ GET /api/campaigns 200 in 26ms
+ GET /api/campaigns 200 in 22ms
+ GET /api/influencers?dateFilter=today 200 in 30ms
+ GET /api/influencers?dateFilter=today 200 in 26ms
+ GET /dashboard/influencers 200 in 214ms
+ GET /api/events 200 in 1368803ms
+ ○ Compiling /api/campaigns ...
+ ✓ Compiled /api/campaigns in 535ms (586 modules)
+ ✓ Compiled (591 modules)
+⚠️ NextAuth Warning: DEBUG_ENABLED
+ GET /api/auth/session 200 in 813ms
+ GET /api/auth/session 200 in 7ms
+ GET /api/campaigns 200 in 1008ms
+ GET /api/campaigns 200 in 1008ms
+ GET /api/influencers?dateFilter=today 200 in 1081ms
+ GET /api/influencers?dateFilter=today 200 in 1085ms
+ GET /api/events 200 in 9876ms
+ ⨯ ./src/components/ui/avatar.tsx
+Error: Failed to read source code from /Users/bheelz/Desktop/Todoalrojo/crm-system/src/components/ui/avatar.tsx
+
+Caused by:
+    No such file or directory (os error 2)
+
+Import trace for requested module:
+./src/components/ui/avatar.tsx
+./src/app/dashboard/leads/page.tsx

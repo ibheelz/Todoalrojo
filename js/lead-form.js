@@ -22,15 +22,23 @@ const CONFIG = {
 };
 
 /***********************************
+ *  Dynamic Verification Configuration
+ ***********************************/
+// Check if this is a Rushbet campaign
+const urlParams = new URLSearchParams(window.location.search);
+const campaign = urlParams.get('campaign') || urlParams.get('promo') || urlParams.get('theme') || '';
+const isRushbetCampaign = campaign.toLowerCase() === 'rushbet';
+
+/***********************************
  *  Email Verification Configuration
  ***********************************/
 const EMAIL_VERIFICATION = {
-  enabled: true,
+  enabled: true, // Keep email verification enabled for all campaigns
   checkDomainExists: true,
   blockDisposable: true,
   autoCorrectTypos: true,
   requireVerificationForSuspicious: true,
-  requireVerificationForAll: true, // Force verification for all emails
+  requireVerificationForAll: true, // Keep email verification enabled for all campaigns
   apiTimeout: 3000,
   verificationCodeLength: 6,
   verificationExpiryMinutes: 10,
@@ -40,8 +48,8 @@ const EMAIL_VERIFICATION = {
  *  SMS Verification Configuration
  ***********************************/
 const SMS_VERIFICATION = {
-  enabled: true,
-  requireVerificationForAll: true, // Force SMS verification for all phone numbers
+  enabled: !isRushbetCampaign, // Disable for Rushbet campaign
+  requireVerificationForAll: !isRushbetCampaign, // Disable for Rushbet campaign
   apiTimeout: 5000,
   verificationCodeLength: 6,
   verificationExpiryMinutes: 10,
@@ -1634,6 +1642,7 @@ async function loadTheme() {
   let theme = (window.ThemeRegistry && window.ThemeRegistry.get && window.ThemeRegistry.get()) || null;
   if (!theme) {
     if (themeKey === 'pinup' && window.PinUpTheme?.apply) theme = window.PinUpTheme;
+    else if (themeKey === 'rushbet' && window.RushbetTheme?.apply) theme = window.RushbetTheme;
     else if (window.GlassDefaultTheme?.apply) theme = window.GlassDefaultTheme;
   }
 

@@ -8,8 +8,8 @@
   const RushbetTheme = {
     config: {
       name: 'rushbet',
-      logo: 'https://www.rushbet.co/cms/promotions/appreview_logo.png',
-      bgImage: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyMCIgaGVpZ2h0PSIxMDgwIiB2aWV3Qm94PSIwIDAgMTkyMCAxMDgwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxkZWZzPjxyYWRpYWxHcmFkaWVudCBpZD0iYmciIGN4PSI1MCUiIGN5PSI1MCUiIHI9IjcwJSI+PHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6IzBiMmU0YyIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6IzA4MWEyOSIvPjwvcmFkaWFsR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJibHVlIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMjY1ZjkyO3N0b3Atb3BhY2l0eTowLjE1Ii8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMGIyZTRjO3N0b3Atb3BhY2l0eTowLjA4Ii8+PC9saW5lYXJHcmFkaWVudD48bGluZWFyR3JhZGllbnQgaWQ9ImdvbGQiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNGREI2MUM7c3RvcC1vcGFjaXR5OjAuMTIiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNGREI2MUM7c3RvcC1vcGFjaXR5OjAuMDUiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iMTkyMCIgaGVpZ2h0PSIxMDgwIiBmaWxsPSJ1cmwoI2JnKSIvPjxyZWN0IHdpZHRoPSIxOTIwIiBoZWlnaHQ9IjEwODAiIGZpbGw9InVybCgjYmx1ZSkiLz48Y2lyY2xlIGN4PSIyMDAiIGN5PSIxNTAiIHI9IjEyMCIgZmlsbD0idXJsKCNnb2xkKSIgb3BhY2l0eT0iMC4xIi8+PGNpcmNsZSBjeD0iMTcwMCIgY3k9IjkzMCIgcj0iMTgwIiBmaWxsPSJ1cmwoI2JsdWUpIiBvcGFjaXR5PSIwLjA4Ii8+PGNpcmNsZSBjeD0iMTAwIiBjeT0iNzUwIiByPSI5MCIgZmlsbD0idXJsKCNnb2xkKSIgb3BhY2l0eT0iMC4wNiIvPjxjaXJjbGUgY3g9IjE4MDAiIGN5PSIyNTAiIHI9IjE1MCIgZmlsbD0idXJsKCNibHVlKSIgb3BhY2l0eT0iMC4wNyIvPjwvc3ZnPg==',
+      logo: '/assets/rushbet-logo.png',
+      bgImage: '/assets/Rushbet-BG.png',
       colors: {
         primary: '#265f92', // Rushbet blue
         primaryDark: '#0b2e4c', // Darker blue
@@ -168,7 +168,7 @@
         req.classList.add('ml-1');
       });
 
-      // Inputs (2px edges with Rushbet orange)
+      // Inputs (2px edges with Rushbet blue)
       document.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"]').forEach((input) => {
         input.className = 'w-full px-4 py-3 text-white placeholder-gray-400 transition-all';
         input.style.backgroundColor = 'rgba(31,41,55,0.55)';
@@ -176,6 +176,10 @@
         input.style.border = `2px solid ${this.config.colors.primary}`;
         input.style.borderRadius = RADIUS + 'px';
       });
+
+      // Hide input icons & adjust padding (same as PinUp)
+      document.querySelectorAll('.input-icon').forEach((icon) => (icon.style.display = 'none'));
+      document.querySelectorAll('input').forEach((input) => { if (input.style.paddingLeft) input.style.paddingLeft = '1rem'; });
 
       // Selects (2px edges with Rushbet orange)
       document.querySelectorAll('select').forEach((select) => {
@@ -205,10 +209,10 @@
         }
       }
 
-      // Default phone country: Chile +56
+      // FORCE Peru +51 as default for Rushbet ONLY
       const cc = document.getElementById('countryCode');
-      if (cc && !cc.value) {
-        cc.value = '+56';
+      if (cc) {
+        cc.value = '+51'; // Force Peru regardless of current value
         cc.dispatchEvent(new Event('change', { bubbles: true }));
       }
 
@@ -286,15 +290,70 @@
           .header h1 { color: #4A90C2 !important; }
           .submit-btn { border-radius: ${RADIUS}px !important; border-width: 2px !important; }
 
-          /* OTP Card styling */
+          /* OTP Card styling to match Rushbet theme */
           .otp-card {
-            background: rgba(255,102,0,0.05) !important;
-            border-color: rgba(255,102,0,0.2) !important;
+            background: linear-gradient(to bottom, rgba(42,48,60,0.65), rgba(11,12,16,0.65)) !important;
+            backdrop-filter: blur(16px) saturate(140%) !important;
+            -webkit-backdrop-filter: blur(16px) saturate(140%) !important;
+            border: 1px solid rgba(255,255,255,0.08) !important;
+            border-radius: ${RADIUS}px !important;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.35) !important;
+          }
+
+          .otp-title {
+            color: #4A90C2 !important;
+            font-weight: 700 !important;
+          }
+
+          .otp-to {
+            color: #9ca3af !important;
+          }
+
+          .otp-input {
+            background: rgba(31,41,55,0.55) !important;
+            backdrop-filter: blur(6px) !important;
+            border: 2px solid ${this.config.colors.primary} !important;
+            border-radius: 10px !important;
+            color: #e5e7eb !important;
           }
 
           .otp-input:focus {
-            border-color: ${this.config.colors.primary} !important;
-            box-shadow: 0 0 0 2px rgba(255,102,0,0.25) !important;
+            border-color: ${this.config.green} !important;
+            box-shadow: none !important;
+          }
+
+          .otp-btn-send {
+            background: linear-gradient(to bottom, ${this.config.buttonTop}, ${this.config.buttonBottom}) !important;
+            border: 2px solid transparent !important;
+            border-radius: 8px !important;
+            color: #fff !important;
+          }
+
+          .otp-btn-resend {
+            background: transparent !important;
+            color: ${this.config.colors.primary} !important;
+            border: 2px solid ${this.config.colors.primary} !important;
+            border-radius: 8px !important;
+          }
+
+          .otp-msg.ok {
+            color: ${this.config.green} !important;
+          }
+
+          .otp-msg.err {
+            color: ${this.config.colors.primary} !important;
+          }
+
+          /* Remove glow effects from inputs (icons are hidden) */
+          .rushbet-skin input:focus,
+          .rushbet-skin select:focus {
+            box-shadow: none !important;
+            outline: none !important;
+          }
+
+          /* Phone input padding - no icons */
+          .phone-container .input-wrapper input {
+            padding-left: 1rem !important;
           }
         `;
         document.head.appendChild(style);
