@@ -33,12 +33,12 @@ const isRushbetCampaign = campaign.toLowerCase() === 'rushbet';
  *  Email Verification Configuration
  ***********************************/
 const EMAIL_VERIFICATION = {
-  enabled: true, // Keep email verification enabled for all campaigns
+  enabled: !isRushbetCampaign, // Disable email verification for Rushbet campaign
   checkDomainExists: true,
   blockDisposable: true,
   autoCorrectTypos: true,
   requireVerificationForSuspicious: true,
-  requireVerificationForAll: true, // Keep email verification enabled for all campaigns
+  requireVerificationForAll: !isRushbetCampaign, // Disable email verification for Rushbet campaign
   apiTimeout: 3000,
   verificationCodeLength: 6,
   verificationExpiryMinutes: 10,
@@ -48,8 +48,8 @@ const EMAIL_VERIFICATION = {
  *  SMS Verification Configuration
  ***********************************/
 const SMS_VERIFICATION = {
-  enabled: !isRushbetCampaign, // Disable for Rushbet campaign
-  requireVerificationForAll: !isRushbetCampaign, // Disable for Rushbet campaign
+  enabled: isRushbetCampaign, // Enable ONLY for Rushbet campaign
+  requireVerificationForAll: isRushbetCampaign, // Enable ONLY for Rushbet campaign
   apiTimeout: 5000,
   verificationCodeLength: 6,
   verificationExpiryMinutes: 10,
@@ -485,45 +485,97 @@ async function sendSMSVerificationCode(phoneNumber, countryCode) {
     // Clean phone number (remove any non-digits)
     const cleanPhone = phoneNumber.replace(/\D/g, '');
 
-    // Real Laaffic SMS API call - send phone without country code
+    // Concatenate country prefix with phone number (51 for Peru, 56 for Chile)
+    const countryPrefix = countryCode === '+51' ? '51' : countryCode.replace('+', '');
+    const fullPhoneNumber = countryPrefix + cleanPhone;
+
+    // Determine Laaffic ID based on country
+    const laafficId = countryCode === '+51' ? 'AG5ZrMl7' : null; // Peru gets specific ID
+
+    // Real Laaffic SMS API call - send full phone number with country code
+    const requestBody = {
+      action: 'send-code',
+      phone: fullPhoneNumber, // Send full phone number with country code
+      language: 'es'
+    };
+
+    // Add Laaffic ID if it's Peru
+    if (laafficId) {
+      requestBody.laaffic_id = laafficId;
+    }
+
+    // DETAILED DEBUG LOGGING
+    console.log('=== SMS SEND REQUEST ===');
+    console.log('Original phone input:', phoneNumber);
+    console.log('Country code:', countryCode);
+    console.log('Cleaned phone:', cleanPhone);
+    console.log('Country prefix applied:', countryPrefix);
+    console.log('Full phone number:', fullPhoneNumber);
+    console.log('Laaffic ID:', laafficId);
+    console.log('API Endpoint:', CONFIG.SMS_VERIFICATION_API);
+    console.log('Request body:', JSON.stringify(requestBody, null, 2));
+    console.log('========================');
+
     const res = await fetch(CONFIG.SMS_VERIFICATION_API, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'send-code',
-        phone: cleanPhone, // Send clean phone number without country code
-        countryCode: countryCode,
-        language: 'es'
-      })
+      body: JSON.stringify(requestBody)
     });
-    
-    const raw = await res.text(); 
-    let data = {}; 
-    try { 
-      data = JSON.parse(raw); 
-    } catch {}
-    
+
+    const raw = await res.text();
+    let data = {};
+    try {
+      data = JSON.parse(raw);
+    } catch (parseError) {
+      console.error('Failed to parse SMS API response as JSON:', parseError);
+      console.log('Raw response text:', raw);
+    }
+
+    // DETAILED DEBUG LOGGING FOR RESPONSE
+    console.log('=== SMS SEND RESPONSE ===');
+    console.log('Response status:', res.status);
+    console.log('Response status text:', res.statusText);
+    console.log('Response headers:', Object.fromEntries(res.headers.entries()));
+    console.log('Raw response:', raw);
+    console.log('Parsed data:', data);
+    console.log('=========================');
+
     debugLog('SMS API Response:', { status: res.status, data });
-    
+
     if (!res.ok || data?.success === false) {
-      return { 
-        success: false, 
-        error: data?.details || data?.error || `HTTP ${res.status}` 
+      console.error('SMS send failed:', {
+        httpStatus: res.status,
+        dataSuccess: data?.success,
+        error: data?.details || data?.error,
+        fullResponse: data
+      });
+      return {
+        success: false,
+        error: data?.details || data?.error || `HTTP ${res.status}`
       };
     }
-    
+
+    console.log('SMS send successful:', {
+      verificationId: data.verificationId,
+      expiresAt: data.expiresAt,
+      phoneNumber: data.phoneNumber || fullPhoneNumber,
+      message: data.message
+    });
+
     return {
       success: true,
       verificationId: data.verificationId,
       expiresAt: data.expiresAt,
-      phoneNumber: data.phoneNumber || `${countryCode.replace('+', '')}${cleanPhone}`,
+      phoneNumber: data.phoneNumber || fullPhoneNumber,
       message: data.message
     };
   } catch (error) {
+    console.error('SMS send exception:', error);
+    console.error('Error stack:', error.stack);
     debugLog('Send SMS verification code error:', error);
-    return { 
-      success: false, 
-      error: 'No se pudo enviar el código SMS' 
+    return {
+      success: false,
+      error: 'No se pudo enviar el código SMS'
     };
   }
 }
@@ -537,46 +589,103 @@ async function verifySMSCode(verificationId, code) {
     const phoneNumber = qs('phone').value.trim().replace(/\D/g, '');
     const countryCode = qs('countryCode').value;
 
-    console.log('Verifying SMS code:', { verificationId, code, phoneNumber, countryCode });
+    // Concatenate country prefix with phone number (51 for Peru, 56 for Chile) - same as send
+    const countryPrefix = countryCode === '+51' ? '51' : countryCode.replace('+', '');
+    const fullPhoneNumber = countryPrefix + phoneNumber;
 
-    // Send the phone number in the same format as when it was originally entered
+    // Determine Laaffic ID based on country
+    const laafficId = countryCode === '+51' ? 'AG5ZrMl7' : null; // Peru gets specific ID
+
+    // Send the phone number in the same format as when it was sent (with country code)
+    const requestBody = {
+      action: 'verify-code',
+      verificationId,
+      code,
+      phone: fullPhoneNumber // Send full phone number with country code
+    };
+
+    // Add Laaffic ID if it's Peru
+    if (laafficId) {
+      requestBody.laaffic_id = laafficId;
+    }
+
+    // DETAILED DEBUG LOGGING FOR VERIFY REQUEST
+    console.log('=== SMS VERIFY REQUEST ===');
+    console.log('Verification ID:', verificationId);
+    console.log('Code entered:', code);
+    console.log('Original phone input:', qs('phone').value.trim());
+    console.log('Country code:', countryCode);
+    console.log('Cleaned phone:', phoneNumber);
+    console.log('Country prefix applied:', countryPrefix);
+    console.log('Full phone number:', fullPhoneNumber);
+    console.log('Laaffic ID:', laafficId);
+    console.log('API Endpoint:', CONFIG.SMS_VERIFICATION_API);
+    console.log('Request body:', JSON.stringify(requestBody, null, 2));
+    console.log('==========================');
+
     const res = await fetch(CONFIG.SMS_VERIFICATION_API, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'verify-code',
-        verificationId,
-        code,
-        phone: phoneNumber, // Send original phone number without country code
-        countryCode: countryCode
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     const txt = await res.text();
     let data = {};
     try {
       data = JSON.parse(txt);
-    } catch {}
+    } catch (parseError) {
+      console.error('Failed to parse SMS verify response as JSON:', parseError);
+      console.log('Raw verify response text:', txt);
+    }
 
-    console.log('SMS Verification Response:', { status: res.status, data, txt });
+    // DETAILED DEBUG LOGGING FOR VERIFY RESPONSE
+    console.log('=== SMS VERIFY RESPONSE ===');
+    console.log('Response status:', res.status);
+    console.log('Response status text:', res.statusText);
+    console.log('Response headers:', Object.fromEntries(res.headers.entries()));
+    console.log('Raw response:', txt);
+    console.log('Parsed data:', data);
+    console.log('Data.valid:', data.valid);
+    console.log('Data.success:', data.success);
+    console.log('Data.error:', data.error);
+    console.log('===========================');
+
     debugLog('SMS Verification Response:', { status: res.status, data });
 
     if (!res.ok) {
-      return { 
-        success: false, 
-        error: data?.error || `HTTP ${res.status}` 
+      console.error('SMS verify failed - HTTP error:', {
+        httpStatus: res.status,
+        statusText: res.statusText,
+        error: data?.error,
+        fullResponse: data
+      });
+      return {
+        success: false,
+        error: data?.error || `HTTP ${res.status}`
       };
     }
 
+    const isValid = !!data.valid || !!data.success;
+    const errorMsg = (data.valid || data.success) ? null : (data?.error || 'Código SMS incorrecto');
+
+    console.log('SMS verify result:', {
+      isValid,
+      errorMsg,
+      dataValid: data.valid,
+      dataSuccess: data.success
+    });
+
     return {
-      success: !!data.valid || !!data.success, // Check both valid and success
-      error: (data.valid || data.success) ? null : (data?.error || 'Código SMS incorrecto'),
+      success: isValid,
+      error: errorMsg,
     };
   } catch (error) {
+    console.error('SMS verify exception:', error);
+    console.error('Error stack:', error.stack);
     debugLog('Verify SMS code error:', error);
-    return { 
-      success: false, 
-      error: 'Error al verificar el código SMS' 
+    return {
+      success: false,
+      error: 'Error al verificar el código SMS'
     };
   }
 }
