@@ -24,21 +24,24 @@ const CONFIG = {
 /***********************************
  *  Dynamic Verification Configuration
  ***********************************/
-// Check if this is a Rushbet campaign
+// Check campaign type for verification settings
 const urlParams = new URLSearchParams(window.location.search);
 const campaign = urlParams.get('campaign') || urlParams.get('promo') || urlParams.get('theme') || '';
-const isRushbetCampaign = campaign.toLowerCase() === 'rushbet';
+const campaignLower = campaign.toLowerCase();
+const isRushbetCampaign = campaignLower === 'rushbet';
+const isPinupCampaign = campaignLower === 'pinup';
+const isRoobetCampaign = campaignLower === 'roobet';
 
 /***********************************
  *  Email Verification Configuration
  ***********************************/
 const EMAIL_VERIFICATION = {
-  enabled: !isRushbetCampaign, // Disable email verification for Rushbet campaign
+  enabled: !isRushbetCampaign, // Disable email verification for Rushbet campaign only
   checkDomainExists: true,
   blockDisposable: true,
   autoCorrectTypos: true,
   requireVerificationForSuspicious: true,
-  requireVerificationForAll: !isRushbetCampaign, // Disable email verification for Rushbet campaign
+  requireVerificationForAll: !isRushbetCampaign, // Disable email verification for Rushbet campaign only
   apiTimeout: 3000,
   verificationCodeLength: 6,
   verificationExpiryMinutes: 10,
@@ -48,8 +51,8 @@ const EMAIL_VERIFICATION = {
  *  SMS Verification Configuration
  ***********************************/
 const SMS_VERIFICATION = {
-  enabled: isRushbetCampaign, // Enable ONLY for Rushbet campaign
-  requireVerificationForAll: isRushbetCampaign, // Enable ONLY for Rushbet campaign
+  enabled: isPinupCampaign || isRoobetCampaign || isRushbetCampaign, // Enable for pinup, roobet, and rushbet
+  requireVerificationForAll: isPinupCampaign || isRoobetCampaign || isRushbetCampaign, // Enable for pinup, roobet, and rushbet
   apiTimeout: 5000,
   verificationCodeLength: 6,
   verificationExpiryMinutes: 10,
@@ -1751,6 +1754,7 @@ async function loadTheme() {
   let theme = (window.ThemeRegistry && window.ThemeRegistry.get && window.ThemeRegistry.get()) || null;
   if (!theme) {
     if (themeKey === 'pinup' && window.PinUpTheme?.apply) theme = window.PinUpTheme;
+    else if (themeKey === 'roobet' && window.RoobetTheme?.apply) theme = window.RoobetTheme;
     else if (themeKey === 'rushbet' && window.RushbetTheme?.apply) theme = window.RushbetTheme;
     else if (window.GlassDefaultTheme?.apply) theme = window.GlassDefaultTheme;
   }
