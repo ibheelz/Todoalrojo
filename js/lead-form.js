@@ -1768,8 +1768,8 @@ async function loadTheme() {
  ***********************************/
 function initializeTracking() {
   const p = new URLSearchParams(location.search);
-  // Only use click_id parameter (with underscore) - standardized
-  const clickId = p.get('click_id') || p.get('clickid') || p.get('payload') || '';
+  // Support multiple click ID parameter names including userid
+  const clickId = p.get('click_id') || p.get('clickid') || p.get('payload') || p.get('userid') || '';
   const campaign = p.get('campaign') || '';
   // Broaden source detection to support common UTM aliases
   const source = p.get('source') || p.get('utm_source') || p.get('src') || p.get('traffic_source') || '';
