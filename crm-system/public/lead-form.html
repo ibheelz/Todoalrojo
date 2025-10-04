@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Comienza Tu Viaje Hoy</title>
+  <style>
+    /* --- Minimal neutral base (no purple) --- */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root { --success:#48bb78; --error:#e53e3e; --neutral:#9aa0a6; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      background: #0b0d11; /* neutral dark */
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      padding: 20px; position: relative; overflow-x: hidden;
+      color: #e5e7eb;
+    }
+
+    /* Decorative circles kept subtle */
+    .bg-decoration { position:absolute; border-radius:50%; background: rgba(255,255,255,0.05); filter: blur(2px); }
+    .bg-decoration:nth-child(1){ width:300px; height:300px; top:-120px; left:-120px; }
+    .bg-decoration:nth-child(2){ width:200px; height:200px; bottom:-100px; right:-100px; }
+    .bg-decoration:nth-child(3){ width:150px; height:150px; top:60%; left:-75px; }
+
+    /* Container: neutral, no white card; themes will restyle */
+    .container { width: min(500px, 92vw); position: relative; z-index: 1; padding: 16px; }
+
+    .header { text-align:center; margin-bottom: 16px; }
+    .logo { display:none; } /* no purple tile flash */
+    .header h1 { color:#fff; font-size:28px; font-weight:800; margin-bottom:6px; letter-spacing:-.5px; }
+    .header p { color:#cbd5e1; font-size:14px; }
+
+    .form-group { margin-bottom: 14px; position: relative; }
+    label { display:block; color:#ffffff; font-weight:600; margin-bottom:6px; font-size:14px; display:flex; align-items:center; gap:8px; }
+    label .required { color: var(--error); font-size:16px; }
+
+    .input-wrapper { position: relative; }
+    .input-icon { position:absolute; left:14px; top:50%; transform:translateY(-50%); width:20px; height:20px; fill:#ffffff; opacity:.9; }
+
+    input, select {
+      width:100%; padding:12px 14px 12px 44px; border:2px solid rgba(255,255,255,0.25);
+      border-radius: 12px; font-size:16px; transition: all .2s ease; background: rgba(255,255,255,0.06); color:#fff;
+    }
+    select { cursor:pointer; padding-left:14px; color: var(--neutral); }
+    input::placeholder { color: var(--neutral); }
+    input:focus, select:focus { outline:none; border-color: rgba(255,255,255,0.4); box-shadow: 0 0 0 3px rgba(255,255,255,0.08); }
+
+    .phone-container { display:flex; gap:8px; }
+    .phone-container select { flex:0 0 45%; }
+    .phone-container input { flex:1; }
+
+    /* Checkbox styling */
+    .checkbox-group { margin-bottom: 16px; }
+    .checkbox-container { display: flex; align-items: flex-start; gap: 12px; }
+    .checkbox-wrapper { position: relative; flex-shrink: 0; margin-top: 2px; }
+    
+    input[type="checkbox"] {
+      width: 20px; height: 20px; padding: 0; margin: 0;
+      border: 2px solid rgba(255,255,255,0.25);
+      border-radius: 4px;
+      background: rgba(255,255,255,0.06);
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      position: relative;
+    }
+    
+    input[type="checkbox"]:checked {
+      background: var(--success);
+      border-color: var(--success);
+    }
+    
+    input[type="checkbox"]:checked::after {
+      content: '✓';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      font-size: 14px;
+      font-weight: bold;
+    }
+    
+    input[type="checkbox"]:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.08);
+    }
+    
+    .checkbox-label {
+      color: #ffffff;
+      font-size: 14px;
+      line-height: 1.4;
+      cursor: pointer;
+      flex: 1;
+      margin: 0;
+      display: block;
+    }
+    
+    .checkbox-label .required {
+      color: var(--error);
+      margin-left: 4px;
+    }
+
+    .form-group.success input, .form-group.success select { border-color: var(--success); }
+    .form-group.error input, .form-group.error select { border-color: var(--error); }
+    .form-group.error input[type="checkbox"] { border-color: var(--error); }
+
+    .validation-message { display:flex; align-items:center; gap:6px; margin-top:6px; font-size:13px; opacity:0; transform:translateY(-6px); transition: all .2s ease; }
+    .validation-message.show { opacity:1; transform: translateY(0); }
+    .validation-message.error { color: var(--error); }
+    .validation-message.success { color: var(--success); }
+    .validation-message svg { width:14px; height:14px; }
+
+    .submit-btn { width:100%; background:#fff; color:#111; padding:14px 28px; border:none; border-radius:12px; font-size:16px; font-weight:700; cursor:pointer; transition: all .25s ease; display:flex; align-items:center; justify-content:center; gap:8px; }
+    .submit-btn:hover{ filter: brightness(1.03); }
+    .submit-btn .spinner{ width:20px; height:20px; border:2px solid rgba(0,0,0,0.15); border-top-color:#111; border-radius:50%; animation: spin .6s linear infinite; display:none; }
+    .submit-btn.loading .spinner{ display:block; } .submit-btn.loading .btn-text{ display:none; }
+    @keyframes spin{ to{ transform: rotate(360deg); } }
+
+    .footer { margin-top:16px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.08); text-align:center; }
+    .footer p { font-size:12px; color:#cbd5e1; line-height:1.5; }
+    .footer a { color:#e5e7eb; text-decoration:underline; }
+
+    .success-message { display:none; text-align:center; padding:32px; }
+    .success-message.show { display:block; }
+
+    .loading-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); backdrop-filter: blur(5px); display:none; align-items:center; justify-content:center; z-index:9999; }
+    .loading-overlay.show { display:flex; }
+  </style>
+  <style>
+    /* Theme overrides */
+    body.theme-pinup { background: #0a0a0a; }
+    body.theme-pinup .submit-btn {
+      background: linear-gradient(135deg, rgba(253, 198, 0, 0.95), rgba(253, 198, 0, 0.8));
+      color: #0a0a0a;
+      border: 1px solid rgba(253, 198, 0, 0.35);
+      box-shadow: 0 8px 28px rgba(253, 198, 0, 0.15), inset 0 1px 0 rgba(255,255,255,0.25);
+    }
+    body.theme-pinup .header h1 { color:#fdc600; }
+    body.theme-pinup input:focus, body.theme-pinup select:focus { box-shadow: 0 0 0 3px rgba(253,198,0,0.15); border-color: rgba(253,198,0,0.55); }
+    body.theme-pinup .success-icon { background: linear-gradient(135deg, rgba(253,198,0,0.15), rgba(253,198,0,0.1)); color:#fdc600; }
+  </style>
+  <script src="/js/lead-form.js" defer></script>
+</head>
+<body>
+  <!-- Background decorations (subtle) -->
+  <div class="bg-decoration"></div>
+  <div class="bg-decoration"></div>
+  <div class="bg-decoration"></div>
+
+  <div class="container">
+    <div id="formSection">
+      <div class="header">
+        <div class="logo"></div>
+        <h1>Comienza Tu Viaje</h1>
+        <p>Únete a más de 10,000 clientes satisfechos en todo el mundo</p>
+      </div>
+
+      <form id="leadForm" novalidate>
+        <div class="form-group" id="nameGroup">
+          <label for="fullName">Nombre Completo <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <svg class="input-icon" viewBox="0 0 24 24"><path d="M12 12C14.21 12 16 10.21 16 8S14.21 4 12 4 8 5.79 8 8 9.79 12 12 12M12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"/></svg>
+            <input type="text" id="fullName" name="fullName" placeholder="Juan Pérez" required autocomplete="name" />
+          </div>
+          <div class="validation-message" id="nameMessage">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12S6.48 22 12 22 22 17.52 22 12 17.52 2 12 2M13 17H11V15H13V17M13 13H11V7H13V13Z"/></svg>
+            <span id="nameMessageText"></span>
+</div>
+  </div>
+
+  
+        <div class="form-group" id="emailGroup">
+          <label for="email">Correo Electrónico <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <svg class="input-icon" viewBox="0 0 24 24"><path d="M20 4H4C2.89 4 2 4.89 2 6V18C2 19.11 2.89 20 4 20H20C21.11 20 22 19.11 22 18V6C22 4.89 21.11 4 20 4M20 8L12 13L4 8V6L12 11L20 6V8Z"/></svg>
+            <input type="email" id="email" name="email" placeholder="juan@ejemplo.com" required autocomplete="email" />
+          </div>
+          <div class="validation-message" id="emailMessage">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12S6.48 22 12 22 22 17.52 22 12 17.52 2 12 2M13 17H11V15H13V17M13 13H11V7H13V13Z"/></svg>
+            <span id="emailMessageText"></span>
+          </div>
+        </div>
+
+        <div class="form-group" id="phoneGroup">
+          <label for="phone">Número de Teléfono <span class="required">*</span></label>
+          <div class="phone-container">
+            <select id="countryCode" name="countryCode" required>
+              <option value="+56">🇨🇱 Chile (+56)</option>
+            </select>
+            <div class="input-wrapper" style="flex:1;">
+              <svg class="input-icon" viewBox="0 0 24 24"><path d="M6.62 10.79C8.06 13.62 10.38 15.94 13.21 17.38L15.41 15.18C15.69 14.9 16.08 14.82 16.43 14.93C17.55 15.3 18.75 15.5 20 15.5C20.55 15.5 21 15.95 21 16.5V20C21 20.55 20.55 21 20 21C10.61 21 3 13.39 3 4C3 3.45 3.45 3 4 3H7.5C8.05 3 8.5 3.45 8.5 4C8.5 5.25 8.7 6.45 9.07 7.57C9.18 7.92 9.1 8.31 8.82 8.59L6.62 10.79Z"/></svg>
+              <input type="tel" id="phone" name="phone" placeholder="987654321" required autocomplete="tel" />
+            </div>
+          </div>
+          <div class="validation-message" id="phoneMessage">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12S6.48 22 12 22 22 17.52 22 12 17.52 2 12 2M13 17H11V15H13V17M13 13H11V7H13V13Z"/></svg>
+            <span id="phoneMessageText"></span>
+          </div>
+        </div>
+
+        <!-- Age Verification Checkbox (Mandatory) -->
+        <div class="form-group checkbox-group" id="ageVerificationGroup">
+          <div class="checkbox-container">
+            <div class="checkbox-wrapper">
+              <input type="checkbox" id="ageVerification" name="ageVerification" required />
+            </div>
+            <label for="ageVerification" class="checkbox-label">
+              Confirmo que soy mayor de 18 años. <span class="required">*</span>
+            </label>
+          </div>
+          <div class="validation-message" id="ageVerificationMessage">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12S6.48 22 12 22 22 17.52 22 12 17.52 2 12 2M13 17H11V15H13V17M13 13H11V7H13V13Z"/></svg>
+            <span id="ageVerificationMessageText"></span>
+          </div>
+        </div>
+
+        <!-- Promotional Consent Checkbox (Optional) -->
+        <div class="form-group checkbox-group" id="promoConsentGroup">
+          <div class="checkbox-container">
+            <div class="checkbox-wrapper">
+              <input type="checkbox" id="promoConsent" name="promoConsent" />
+            </div>
+            <label for="promoConsent" class="checkbox-label">
+              Acepto recibir promociones de Todo al Rojo y sus afiliados. Puedo cancelar este consentimiento en cualquier momento.
+            </label>
+          </div>
+        </div>
+
+        <button type="submit" class="submit-btn" id="submitBtn">
+          <span class="btn-text">Comenzar Ahora</span>
+          <div class="spinner"></div>
+        </button>
+      </form>
+    </div>
+
+    <div class="footer">
+      <p>
+        Al hacer clic en "Comenzar Ahora", aceptas recibir información promocional a través de correo electrónico y SMS.
+        <br />Nunca compartiremos tu información sin tu permiso.
+      </p>
+    </div>
+
+    <div class="success-message" id="successSection">
+      <div class="success-icon"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z"/></svg></div>
+      <h2 style="color:#fff;margin-bottom:12px;">¡Éxito! 🎉</h2>
+      <p style="color:#cbd5e1;margin-bottom:16px;">¡Gracias por registrarte! Hemos recibido tu información y nos pondremos en contacto pronto.</p>
+      <p style="color:#9aa0a6;font-size:14px;">Redirigiendo en <span id="countdown">3</span> segundos...</p>
+    </div>
+  </div>
+
+  <div class="loading-overlay" id="loadingOverlay">
+    <div style="text-align:center;color:#fff;">
+      <div style="width:60px;height:60px;border:4px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;margin:0 auto 20px;animation: spin 1s linear infinite;"></div>
+      <p>Procesando tu solicitud...</p>
+    </div>
+  </div>
+</body>
+</html>

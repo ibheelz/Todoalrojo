@@ -4,27 +4,54 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { PlusIcon, SearchIcon, ExportIcon, UsersIcon } from '@/components/ui/icons'
 
+interface Customer {
+  id: string
+  firstName: string | null
+  lastName: string | null
+  masterEmail: string | null
+  masterPhone: string | null
+  country: string | null
+  createdAt: string
+  totalClicks: number
+  totalLeads: number
+  totalEvents: number
+}
+
 export default function UsersPage() {
-  const [users, setUsers] = useState([])
+  const [users, setUsers] = useState<Customer[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Simulate loading
-    setTimeout(() => {
-      setUsers([
-        { id: '1', firstName: 'John', lastName: 'Doe', email: 'john@example.com', country: 'USA', createdAt: new Date() },
-        { id: '2', firstName: 'Jane', lastName: 'Smith', email: 'jane@example.com', country: 'UK', createdAt: new Date() },
-        { id: '3', firstName: 'Bob', lastName: 'Johnson', email: 'bob@example.com', country: 'Canada', createdAt: new Date() },
-      ])
-      setLoading(false)
-    }, 1000)
+    fetchCustomers()
   }, [])
 
-  const filteredUsers = users.filter((user: any) =>
-    user.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchQuery.toLowerCase())
+  const fetchCustomers = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      const response = await fetch('/api/customers?limit=50')
+      const data = await response.json()
+
+      if (data.success) {
+        setUsers(data.customers)
+      } else {
+        setError(data.error || 'Failed to fetch customers')
+      }
+    } catch (err) {
+      console.error('Error fetching customers:', err)
+      setError('Failed to connect to server')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const filteredUsers = users.filter((user: Customer) =>
+    (user.firstName && user.firstName.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (user.lastName && user.lastName.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (user.masterEmail && user.masterEmail.toLowerCase().includes(searchQuery.toLowerCase()))
   )
 
   return (
@@ -70,8 +97,22 @@ export default function UsersPage() {
         </div>
       </div>
 
+      {/* Error State */}
+      {error && (
+        <div className="text-center py-12">
+          <div className="text-red-400 text-xl mb-4">⚠️ Error Loading Customers</div>
+          <p className="text-white/60 mb-6">{error}</p>
+          <button
+            onClick={fetchCustomers}
+            className="premium-button-primary"
+          >
+            Try Again
+          </button>
+        </div>
+      )}
+
       {/* Users Grid */}
-      {loading ? (
+      {!error && (loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[...Array(6)].map((_, i) => (
             <div key={i} className="premium-card p-6 shimmer">
@@ -81,13 +122,23 @@ export default function UsersPage() {
             </div>
           ))}
         </div>
+      ) : filteredUsers.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="text-white/40 text-lg mb-2">No customers found</div>
+          <p className="text-white/60">
+            {searchQuery
+              ? 'Try adjusting your search query to see more results.'
+              : 'No customers have been added to the system yet.'
+            }
+          </p>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredUsers.map((user: any, index) => (
+          {filteredUsers.map((user: Customer, index) => (
             <Link
               key={user.id}
-              href={`/dashboard/users/${user.id}`}
-              className="premium-card p-6 hover:scale-105 transition-all duration-300 glow-effect group"
+              href={`/dashboard/customers/${user.id}`}
+              className="premium-card p-6 transition-all duration-300 group"
               style={{ animationDelay: `${index * 100}ms` }}
             >
               <div className="flex items-start justify-between mb-4">
@@ -102,35 +153,49 @@ export default function UsersPage() {
               </div>
               <div className="space-y-2">
                 <h3 className="text-lg font-black text-foreground group-hover:text-primary transition-colors">
-                  {user.firstName} {user.lastName}
+                  {user.firstName && user.lastName
+                    ? `${user.firstName} ${user.lastName}`
+                    : user.masterEmail
+                  }
                 </h3>
-                <p className="text-sm text-muted-foreground font-medium">{user.email}</p>
-                <p className="text-xs text-muted-foreground">{user.country}</p>
+                <p className="text-sm text-muted-foreground font-medium">{user.masterEmail}</p>
+                <p className="text-xs text-muted-foreground">{user.country || 'Unknown Location'}</p>
+                <div className="text-xs text-muted-foreground mt-2">
+                  {user.totalClicks} clicks • {user.totalLeads} leads • {user.totalEvents} events
+                </div>
               </div>
             </Link>
           ))}
         </div>
-      )}
+      ))}
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="premium-card p-6 text-center">
-          <div className="text-3xl font-black text-primary mb-2">{users.length}</div>
-          <div className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Total Users</div>
+      {/* Real Stats - Only show if we have users */}
+      {!loading && !error && users.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="premium-card p-6 text-center">
+            <div className="text-3xl font-black text-primary mb-2">{users.length}</div>
+            <div className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Total Customers</div>
+          </div>
+          <div className="premium-card p-6 text-center">
+            <div className="text-3xl font-black text-blue-400 mb-2">
+              {users.reduce((sum, user) => sum + (user.totalClicks || 0), 0).toLocaleString()}
+            </div>
+            <div className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Total Clicks</div>
+          </div>
+          <div className="premium-card p-6 text-center">
+            <div className="text-3xl font-black text-green-400 mb-2">
+              {users.reduce((sum, user) => sum + (user.totalLeads || 0), 0).toLocaleString()}
+            </div>
+            <div className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Total Leads</div>
+          </div>
+          <div className="premium-card p-6 text-center">
+            <div className="text-3xl font-black text-purple-400 mb-2">
+              {users.reduce((sum, user) => sum + (user.totalEvents || 0), 0).toLocaleString()}
+            </div>
+            <div className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Total Events</div>
+          </div>
         </div>
-        <div className="premium-card p-6 text-center">
-          <div className="text-3xl font-black text-primary mb-2">98%</div>
-          <div className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Active Rate</div>
-        </div>
-        <div className="premium-card p-6 text-center">
-          <div className="text-3xl font-black text-foreground mb-2">24h</div>
-          <div className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Avg Session</div>
-        </div>
-        <div className="premium-card p-6 text-center">
-          <div className="text-3xl font-black text-foreground mb-2">85%</div>
-          <div className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Retention</div>
-        </div>
-      </div>
+      )}
     </div>
   )
 }

@@ -23,7 +23,7 @@ export default function ClientDashboard() {
   useEffect(() => {
     if (status === 'loading') return
 
-    if (!session || session.user.userType !== 'client') {
+    if (!session || (session.user as any)?.userType !== 'client') {
       router.push('/auth/signin')
       return
     }

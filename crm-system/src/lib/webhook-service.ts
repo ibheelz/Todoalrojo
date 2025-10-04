@@ -244,7 +244,7 @@ export class WebhookService {
     })
   }
 
-  static async onUserCreated(user: any): Promise<void> {
+  static async onUserCreated(customer: any): Promise<void> {
     await this.triggerWebhooks('user.created', {
       id: user.id,
       masterEmail: user.masterEmail,

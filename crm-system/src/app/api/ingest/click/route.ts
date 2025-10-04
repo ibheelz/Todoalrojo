@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
+import { emitStats } from '@/lib/event-bus'
+import { incrementInfluencerCountersByClickId } from '@/lib/attribution'
 import { UserService } from '@/lib/user-service'
 
 const clickSchema = z.object({
@@ -80,7 +82,7 @@ export async function POST(request: NextRequest) {
 
     // Create click record
     const clickData: any = {
-      userId: user?.id,
+      customerId: user?.id,
       clickId: validatedData.clickId,
       sessionId: validatedData.sessionId,
       deviceId: validatedData.deviceId,
@@ -121,7 +123,7 @@ export async function POST(request: NextRequest) {
 
     // Update user click count
     if (user) {
-      await prisma.user.update({
+      await prisma.customer.update({
         where: { id: user.id },
         data: {
           totalClicks: { increment: 1 },
@@ -129,6 +131,34 @@ export async function POST(request: NextRequest) {
         }
       })
     }
+
+    // Find existing campaign (case-insensitive) and update stats
+    if (validatedData.campaign) {
+      const existingCampaign = await prisma.campaign.findFirst({
+        where: {
+          OR: [
+            { slug: { equals: validatedData.campaign, mode: 'insensitive' } },
+            { name: { equals: validatedData.campaign, mode: 'insensitive' } }
+          ]
+        }
+      })
+
+      if (existingCampaign) {
+        await prisma.campaign.update({
+          where: { id: existingCampaign.id },
+          data: {
+            totalClicks: { increment: 1 }
+          }
+        })
+        console.log(`📈 [CLICK API] Updated campaign stats for: ${existingCampaign.name} (matched: ${validatedData.campaign})`)
+      } else {
+        console.log(`⚠️ [CLICK API] Campaign not found: ${validatedData.campaign}`)
+      }
+    }
+
+    // Attribute click to influencer via link mapping
+    await incrementInfluencerCountersByClickId(validatedData.clickId, { clicks: 1 })
+    emitStats({ type: 'click', payload: { campaign: validatedData.campaign, clickId: validatedData.clickId } })
 
     return NextResponse.json({
       success: true,

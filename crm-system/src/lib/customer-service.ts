@@ -99,6 +99,28 @@ export class CustomerService {
         updateData.masterPhone = phone
       }
 
+      // Handle clickId replacement strategy
+      if (clickId) {
+        // Check if this is a new clickId for this customer
+        const existingClickId = existingCustomer.identifiers.find(id => id.type === 'CLICK_ID' && id.value === clickId)
+
+        if (!existingClickId) {
+          // Set the new clickId as non-primary for all existing CLICK_ID identifiers
+          await prisma.identifier.updateMany({
+            where: {
+              customerId: existingCustomer.id,
+              type: 'CLICK_ID'
+            },
+            data: {
+              isPrimary: false
+            }
+          })
+
+          console.log(`🔄 [CUSTOMER SERVICE] Replacing primary clickId for customer ${existingCustomer.id}`)
+          console.log(`   Old clickIds set to non-primary, new clickId: ${clickId}`)
+        }
+      }
+
       // Update context data if provided
       if (contextData) {
         Object.keys(contextData).forEach(key => {
@@ -114,7 +136,7 @@ export class CustomerService {
         include: { identifiers: true }
       })
 
-      // Add new identifiers if they don't exist
+      // Add new identifiers if they don't exist (new clickId will be added as primary)
       await this.addMissingIdentifiers(updatedCustomer.id, identificationData)
 
       return updatedCustomer
@@ -122,17 +144,34 @@ export class CustomerService {
       // Create new customer
       const customerData: any = {
         masterEmail: email,
-        masterPhone: phone,
         firstSeen: new Date(),
         lastSeen: new Date(),
         assignedTeam: contextData?.assignedTeam || [],
         ...contextData
       }
 
-      const newCustomer = await prisma.customer.create({
-        data: customerData,
-        include: { identifiers: true }
-      })
+      // Only set masterPhone if it doesn't already exist in the database
+      if (phone) {
+        const existingPhoneCustomer = await prisma.customer.findFirst({
+          where: { masterPhone: phone }
+        })
+
+        if (!existingPhoneCustomer) {
+          customerData.masterPhone = phone
+        }
+      }
+
+      let newCustomer
+      try {
+        newCustomer = await prisma.customer.create({
+          data: customerData,
+          include: { identifiers: true }
+        })
+      } catch (createError) {
+        console.error('Customer creation error:', createError)
+        console.error('Customer data that failed:', customerData)
+        throw createError
+      }
 
       // Add all identifiers
       await this.addMissingIdentifiers(newCustomer.id, identificationData)
@@ -144,7 +183,7 @@ export class CustomerService {
     }
   }
 
-  static async addMissingIdentifiers(customerId: string, identificationData: CustomerIdentificationData) {
+  static async addMissingIdentifiers(customerId: string, identificationData: CustomerIdentificationData, verificationData?: any) {
     const identifiersToAdd = []
 
     if (identificationData.email) {
@@ -157,7 +196,13 @@ export class CustomerService {
           type: 'EMAIL' as IdentifierType,
           value: identificationData.email,
           isPrimary: true,
-          isVerified: false
+          isVerified: verificationData?.emailVerified || false
+        })
+      } else if (verificationData?.emailVerified && !exists.isVerified) {
+        // Update existing identifier if verification status changed
+        await prisma.identifier.update({
+          where: { id: exists.id },
+          data: { isVerified: true }
         })
       }
     }
@@ -172,7 +217,13 @@ export class CustomerService {
           type: 'PHONE' as IdentifierType,
           value: identificationData.phone,
           isPrimary: !identificationData.email,
-          isVerified: false
+          isVerified: verificationData?.smsVerified || false
+        })
+      } else if (verificationData?.smsVerified && !exists.isVerified) {
+        // Update existing identifier if verification status changed
+        await prisma.identifier.update({
+          where: { id: exists.id },
+          data: { isVerified: true }
         })
       }
     }
@@ -182,11 +233,12 @@ export class CustomerService {
         where: { customerId, type: 'CLICK_ID', value: identificationData.clickId }
       })
       if (!exists) {
+        // New clickIds become the primary clickId (most recent)
         identifiersToAdd.push({
           customerId,
           type: 'CLICK_ID' as IdentifierType,
           value: identificationData.clickId,
-          isPrimary: false,
+          isPrimary: true,
           isVerified: true
         })
       }
@@ -258,6 +310,35 @@ export class CustomerService {
       },
       include: {
         identifiers: true,
+        leads: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          select: {
+            id: true,
+            campaign: true,
+            source: true,
+            medium: true,
+            userAgent: true,
+            ip: true,
+            landingPage: true,
+            createdAt: true
+          }
+        },
+        clicks: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          select: {
+            id: true,
+            clickId: true,
+            campaign: true,
+            source: true,
+            medium: true,
+            userAgent: true,
+            ip: true,
+            landingPage: true,
+            createdAt: true
+          }
+        },
         _count: {
           select: {
             clicks: true,
@@ -275,9 +356,69 @@ export class CustomerService {
       where: { id: customerId },
       include: {
         identifiers: true,
-        clicks: { orderBy: { createdAt: 'desc' }, take: 50 },
-        leads: { orderBy: { createdAt: 'desc' }, take: 50 },
-        events: { orderBy: { createdAt: 'desc' }, take: 50 },
+        clicks: {
+          orderBy: { createdAt: 'desc' },
+          take: 50,
+          select: {
+            id: true,
+            clickId: true,
+            campaign: true,
+            source: true,
+            medium: true,
+            ip: true,
+            country: true,
+            city: true,
+            device: true,
+            browser: true,
+            os: true,
+            landingPage: true,
+            userAgent: true,
+            createdAt: true
+          }
+        },
+        leads: {
+          orderBy: { createdAt: 'desc' },
+          take: 50,
+          select: {
+            id: true,
+            email: true,
+            phone: true,
+            firstName: true,
+            lastName: true,
+            campaign: true,
+            source: true,
+            medium: true,
+            ip: true,
+            country: true,
+            city: true,
+            landingPage: true,
+            formUrl: true,
+            userAgent: true,
+            customFields: true,
+            qualityScore: true,
+            isDuplicate: true,
+            value: true,
+            createdAt: true
+          }
+        },
+        events: {
+          orderBy: { createdAt: 'desc' },
+          take: 50,
+          select: {
+            id: true,
+            eventType: true,
+            eventName: true,
+            category: true,
+            value: true,
+            currency: true,
+            isRevenue: true,
+            isConverted: true,
+            campaign: true,
+            clickId: true,
+            properties: true,
+            createdAt: true
+          }
+        },
         _count: {
           select: {
             clicks: true,
@@ -289,6 +430,31 @@ export class CustomerService {
     })
   }
 
+  static async deleteCustomer(customerId: string) {
+    // Delete in order: identifiers, related records (leads, clicks, events), then customer
+    await prisma.identifier.deleteMany({
+      where: { customerId }
+    })
+
+    await prisma.lead.deleteMany({
+      where: { customerId }
+    })
+
+    await prisma.click.deleteMany({
+      where: { customerId }
+    })
+
+    await prisma.event.deleteMany({
+      where: { customerId }
+    })
+
+    const deletedCustomer = await prisma.customer.delete({
+      where: { id: customerId }
+    })
+
+    return deletedCustomer
+  }
+
   static async listCustomers(page: number = 1, limit: number = 10) {
     const skip = (page - 1) * limit
 
@@ -298,6 +464,37 @@ export class CustomerService {
         take: limit,
         orderBy: { createdAt: 'desc' },
         include: {
+          identifiers: true,
+          leads: {
+            orderBy: { createdAt: 'desc' },
+            take: 1,
+            select: {
+              id: true,
+              campaign: true,
+              source: true,
+              medium: true,
+              userAgent: true,
+              ip: true,
+              landingPage: true,
+              customFields: true,
+              createdAt: true
+            }
+          },
+          clicks: {
+            orderBy: { createdAt: 'desc' },
+            take: 1,
+            select: {
+              id: true,
+              clickId: true,
+              campaign: true,
+              source: true,
+              medium: true,
+              userAgent: true,
+              ip: true,
+              landingPage: true,
+              createdAt: true
+            }
+          },
           _count: {
             select: {
               clicks: true,
@@ -317,5 +514,56 @@ export class CustomerService {
       limit,
       totalPages: Math.ceil(total / limit)
     }
+  }
+
+  static async updateCustomer(customerId: string, updateData: Partial<CustomerContextData>) {
+    const updatedCustomer = await prisma.customer.update({
+      where: { id: customerId },
+      data: {
+        ...updateData,
+        updatedAt: new Date()
+      },
+      include: {
+        identifiers: true,
+        leads: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          select: {
+            id: true,
+            campaign: true,
+            source: true,
+            medium: true,
+            userAgent: true,
+            ip: true,
+            landingPage: true,
+            createdAt: true
+          }
+        },
+        clicks: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          select: {
+            id: true,
+            clickId: true,
+            campaign: true,
+            source: true,
+            medium: true,
+            userAgent: true,
+            ip: true,
+            landingPage: true,
+            createdAt: true
+          }
+        },
+        _count: {
+          select: {
+            clicks: true,
+            leads: true,
+            events: true
+          }
+        }
+      }
+    })
+
+    return updatedCustomer
   }
 }

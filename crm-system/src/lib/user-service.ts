@@ -30,12 +30,24 @@ export class UserService {
   ) {
     const { email, phone, clickId, deviceId, sessionId, fingerprint, ip, userAgent } = identificationData
 
+    // Debug: Check if prisma is defined
+    console.log('🔍 [USER SERVICE] Prisma client check:', {
+      prismaExists: !!prisma,
+      prismaType: typeof prisma,
+      prismaCustomer: !!prisma?.customer,
+      prismaCustomerFindFirst: !!prisma?.customer?.findFirst
+    })
+
+    if (!prisma) {
+      throw new Error('Prisma client is not initialized')
+    }
+
     // Try to find existing user by identifiers
     let existingUser = null
 
     // First try by email (strongest identifier)
     if (email) {
-      existingUser = await prisma.user.findFirst({
+      existingUser = await prisma.customer.findFirst({
         where: {
           OR: [
             { masterEmail: email },
@@ -48,7 +60,7 @@ export class UserService {
 
     // Then try by phone
     if (!existingUser && phone) {
-      existingUser = await prisma.user.findFirst({
+      existingUser = await prisma.customer.findFirst({
         where: {
           OR: [
             { masterPhone: phone },
@@ -67,7 +79,7 @@ export class UserService {
       if (sessionId) searchTerms.push({ type: 'SESSION_ID' as IdentifierType, value: sessionId })
 
       if (searchTerms.length > 0) {
-        existingUser = await prisma.user.findFirst({
+        existingUser = await prisma.customer.findFirst({
           where: {
             identifiers: {
               some: {
@@ -103,7 +115,7 @@ export class UserService {
         })
       }
 
-      const updatedUser = await prisma.user.update({
+      const updatedUser = await prisma.customer.update({
         where: { id: existingUser.id },
         data: updateData,
         include: { identifiers: true }
@@ -123,7 +135,7 @@ export class UserService {
         ...contextData
       }
 
-      const newUser = await prisma.user.create({
+      const newUser = await prisma.customer.create({
         data: userData,
         include: { identifiers: true }
       })
@@ -131,23 +143,23 @@ export class UserService {
       // Add all identifiers
       await this.addMissingIdentifiers(newUser.id, identificationData)
 
-      return await prisma.user.findUnique({
+      return await prisma.customer.findUnique({
         where: { id: newUser.id },
         include: { identifiers: true }
       })
     }
   }
 
-  static async addMissingIdentifiers(userId: string, identificationData: UserIdentificationData) {
+  static async addMissingIdentifiers(customerId: string, identificationData: UserIdentificationData) {
     const identifiersToAdd = []
 
     if (identificationData.email) {
       const exists = await prisma.identifier.findFirst({
-        where: { userId, type: 'EMAIL', value: identificationData.email }
+        where: { customerId, type: 'EMAIL', value: identificationData.email }
       })
       if (!exists) {
         identifiersToAdd.push({
-          userId,
+          customerId,
           type: 'EMAIL' as IdentifierType,
           value: identificationData.email,
           isPrimary: true,
@@ -158,11 +170,11 @@ export class UserService {
 
     if (identificationData.phone) {
       const exists = await prisma.identifier.findFirst({
-        where: { userId, type: 'PHONE', value: identificationData.phone }
+        where: { customerId, type: 'PHONE', value: identificationData.phone }
       })
       if (!exists) {
         identifiersToAdd.push({
-          userId,
+          customerId,
           type: 'PHONE' as IdentifierType,
           value: identificationData.phone,
           isPrimary: !identificationData.email,
@@ -173,11 +185,11 @@ export class UserService {
 
     if (identificationData.clickId) {
       const exists = await prisma.identifier.findFirst({
-        where: { userId, type: 'CLICK_ID', value: identificationData.clickId }
+        where: { customerId, type: 'CLICK_ID', value: identificationData.clickId }
       })
       if (!exists) {
         identifiersToAdd.push({
-          userId,
+          customerId,
           type: 'CLICK_ID' as IdentifierType,
           value: identificationData.clickId,
           isPrimary: false,
@@ -188,11 +200,11 @@ export class UserService {
 
     if (identificationData.deviceId) {
       const exists = await prisma.identifier.findFirst({
-        where: { userId, type: 'DEVICE_ID', value: identificationData.deviceId }
+        where: { customerId, type: 'DEVICE_ID', value: identificationData.deviceId }
       })
       if (!exists) {
         identifiersToAdd.push({
-          userId,
+          customerId,
           type: 'DEVICE_ID' as IdentifierType,
           value: identificationData.deviceId,
           isPrimary: false,
@@ -203,11 +215,11 @@ export class UserService {
 
     if (identificationData.sessionId) {
       const exists = await prisma.identifier.findFirst({
-        where: { userId, type: 'SESSION_ID', value: identificationData.sessionId }
+        where: { customerId, type: 'SESSION_ID', value: identificationData.sessionId }
       })
       if (!exists) {
         identifiersToAdd.push({
-          userId,
+          customerId,
           type: 'SESSION_ID' as IdentifierType,
           value: identificationData.sessionId,
           isPrimary: false,
@@ -218,11 +230,11 @@ export class UserService {
 
     if (identificationData.fingerprint) {
       const exists = await prisma.identifier.findFirst({
-        where: { userId, type: 'FINGERPRINT', value: identificationData.fingerprint }
+        where: { customerId, type: 'FINGERPRINT', value: identificationData.fingerprint }
       })
       if (!exists) {
         identifiersToAdd.push({
-          userId,
+          customerId,
           type: 'FINGERPRINT' as IdentifierType,
           value: identificationData.fingerprint,
           isPrimary: false,
@@ -239,7 +251,7 @@ export class UserService {
   }
 
   static async searchUsers(query: string) {
-    return await prisma.user.findMany({
+    return await prisma.customer.findMany({
       where: {
         OR: [
           { masterEmail: { contains: query, mode: 'insensitive' } },
@@ -263,9 +275,9 @@ export class UserService {
     })
   }
 
-  static async getUserDetails(userId: string) {
-    return await prisma.user.findUnique({
-      where: { id: userId },
+  static async getUserDetails(customerId: string) {
+    return await prisma.customer.findUnique({
+      where: { id: customerId },
       include: {
         identifiers: true,
         clicks: { orderBy: { createdAt: 'desc' }, take: 50 },

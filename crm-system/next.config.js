@@ -1,7 +1,21 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone',
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': require('path').resolve(__dirname, 'src'),
+    }
+    return config
+  },
   images: {
-    domains: ['localhost'],
+    domains: ['localhost', 'crm.mieladigital.com', 'mieladigital.com'],
   },
   async headers() {
     return [

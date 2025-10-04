@@ -27,7 +27,7 @@ export default function SignInPage() {
         setError('Invalid credentials')
       } else {
         const session = await getSession()
-        if (session?.user?.userType === 'client') {
+        if ((session?.user as any)?.userType === 'client') {
           router.push('/client/dashboard')
         } else {
           router.push('/dashboard')
@@ -50,9 +50,9 @@ export default function SignInPage() {
       {/* Ultra-Premium Animated Background */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-br from-background via-background/95 to-background/90" />
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse glow-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary/8 rounded-full blur-3xl animate-pulse delay-1000" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-primary/5 via-transparent to-secondary/5 rounded-full blur-3xl opacity-60" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary/8 rounded-full delay-1000" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-primary/5 via-transparent to-secondary/5 rounded-full opacity-60" />
       </div>
 
       {/* Floating Particles */}
@@ -60,7 +60,7 @@ export default function SignInPage() {
         {[...Array(20)].map((_, i) => (
           <div
             key={i}
-            className="absolute w-2 h-2 bg-primary/20 rounded-full animate-pulse"
+            className="absolute w-2 h-2 bg-primary/20 rounded-full"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
@@ -73,11 +73,11 @@ export default function SignInPage() {
 
       {/* Main Content */}
       <div className="relative z-10 min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8">
-        <div className="w-full max-w-md xl:max-w-lg space-y-10 fade-in">
+        <div className="w-full max-w-md xl:max-w-lg space-y-10">
           {/* Ultra-Premium Header */}
           <div className="text-center space-y-6">
-            <div className="inline-block p-6 rounded-full bg-gradient-to-br from-primary/30 via-primary/20 to-secondary/20 mb-8 glow-effect">
-              <div className="w-20 h-20 mx-auto bg-gradient-to-br from-primary to-primary/80 rounded-2xl flex items-center justify-center text-3xl font-black text-primary-foreground shadow-2xl glow-pulse">
+            <div className="inline-block p-6 rounded-full bg-gradient-to-br from-primary/30 via-primary/20 to-secondary/20 mb-8">
+              <div className="w-20 h-20 mx-auto bg-gradient-to-br from-primary to-primary/80 rounded-2xl flex items-center justify-center text-3xl font-black text-primary-foreground">
                 ⚡
               </div>
             </div>
@@ -99,10 +99,10 @@ export default function SignInPage() {
           </div>
 
           {/* Ultra-Premium Login Card */}
-          <div className="premium-card p-10 sm:p-12 xl:p-14 glow-effect scale-in">
+          <div className="premium-card p-10 sm:p-12 xl:p-14">
             <form onSubmit={handleSubmit} className="space-y-8">
               {error && (
-                <div className="p-5 rounded-2xl bg-destructive/10 border border-destructive/30 text-destructive text-center font-semibold animate-pulse glow-pulse">
+                <div className="p-5 rounded-2xl bg-destructive/10 border border-destructive/30 text-destructive text-center font-semibold">
                   <div className="flex items-center justify-center space-x-2">
                     <span className="text-lg">⚠️</span>
                     <span>{error}</span>
@@ -147,7 +147,7 @@ export default function SignInPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="premium-button-primary w-full py-5 text-lg font-black glow-effect"
+                className="premium-button-primary w-full py-5 text-lg font-black"
               >
                 {loading ? (
                   <div className="flex items-center justify-center space-x-3">
@@ -173,7 +173,7 @@ export default function SignInPage() {
 
               <div className="grid gap-6">
                 <div
-                  className="premium-card p-6 cursor-pointer transition-all duration-300 hover:scale-105 glow-effect group"
+                  className="premium-card p-6 cursor-pointer transition-all duration-300 group"
                   onClick={() => fillCredentials('abiola@mieladigital.com', 'admin123')}
                 >
                   <div className="flex items-center justify-between">
@@ -200,14 +200,14 @@ export default function SignInPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="text-2xl opacity-40 group-hover:opacity-80 transition-all duration-300 group-hover:scale-110">
+                    <div className="text-2xl opacity-40 group-hover:opacity-80 transition-all duration-300">
                       ⚡
                     </div>
                   </div>
                 </div>
 
                 <div
-                  className="premium-card p-6 cursor-pointer transition-all duration-300 hover:scale-105 glow-effect group"
+                  className="premium-card p-6 cursor-pointer transition-all duration-300 group"
                   onClick={() => fillCredentials('client@example.com', 'client123')}
                 >
                   <div className="flex items-center justify-between">
@@ -234,7 +234,7 @@ export default function SignInPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="text-2xl opacity-40 group-hover:opacity-80 transition-all duration-300 group-hover:scale-110">
+                    <div className="text-2xl opacity-40 group-hover:opacity-80 transition-all duration-300">
                       📊
                     </div>
                   </div>

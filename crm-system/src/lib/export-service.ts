@@ -3,7 +3,7 @@ import ExcelJS from 'exceljs'
 
 export class ExportService {
   static async exportUsers(format: 'csv' | 'excel' = 'csv', filters?: any) {
-    const users = await prisma.user.findMany({
+    const users = await prisma.customer.findMany({
       include: {
         identifiers: true,
         _count: {
@@ -28,7 +28,7 @@ export class ExportService {
   static async exportLeads(format: 'csv' | 'excel' = 'csv', filters?: any) {
     const leads = await prisma.lead.findMany({
       include: {
-        user: {
+        customer: {
           select: {
             id: true,
             masterEmail: true,
@@ -52,7 +52,7 @@ export class ExportService {
   static async exportClicks(format: 'csv' | 'excel' = 'csv', filters?: any) {
     const clicks = await prisma.click.findMany({
       include: {
-        user: {
+        customer: {
           select: {
             id: true,
             masterEmail: true,
@@ -74,7 +74,7 @@ export class ExportService {
   static async exportEvents(format: 'csv' | 'excel' = 'csv', filters?: any) {
     const events = await prisma.event.findMany({
       include: {
-        user: {
+        customer: {
           select: {
             id: true,
             masterEmail: true,

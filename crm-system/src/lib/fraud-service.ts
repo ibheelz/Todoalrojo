@@ -114,7 +114,7 @@ export class FraudService {
         }
       },
       include: {
-        user: {
+        customer: {
           select: {
             id: true,
             masterEmail: true,
@@ -295,7 +295,7 @@ export class FraudService {
         }
       }),
       // Flagged users
-      prisma.user.count({
+      prisma.customer.count({
         where: {
           isFraud: true,
           updatedAt: { gte: since }

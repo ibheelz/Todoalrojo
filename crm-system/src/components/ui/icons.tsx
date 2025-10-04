@@ -91,7 +91,7 @@ export const ManageIcon = ({ size = 20, className = '' }: IconProps) => (
 
 export const ExportIcon = ({ size = 20, className = '' }: IconProps) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
-    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+    <path d="M12 2l-4 4h3v6h2V6h3l-4-4zm-6 8v8c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2v-8h-2v8H8v-8H6z"/>
   </svg>
 )
 
@@ -231,5 +231,29 @@ export const NotificationIcon = ({ size = 20, className = '' }: IconProps) => (
 export const FilterIcon = ({ size = 20, className = '' }: IconProps) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
     <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/>
+  </svg>
+)
+
+export const ImportIcon = ({ size = 20, className = '' }: IconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+    <path d="M12 22l4-4h-3V8h-2v10H8l4 4zM6 2v8h2V4h8v8h2V2c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2z"/>
+  </svg>
+)
+
+export const RevenueIcon = ({ size = 20, className = '' }: IconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87 1.96 0 2.4-.98 2.4-1.59 0-.83-.44-1.61-2.67-2.14-2.48-.6-4.18-1.62-4.18-3.67 0-1.72 1.39-2.84 3.11-3.21V4h2.67v1.95c1.86.45 2.79 1.86 2.85 3.39H14.3c-.05-1.11-.64-1.87-2.22-1.87-1.5 0-2.4.68-2.4 1.64 0 .84.65 1.39 2.67 1.91s4.18 1.39 4.18 3.91c-.01 1.83-1.38 2.83-3.12 3.16z"/>
+  </svg>
+)
+
+export const InfluencerIcon = ({ size = 20, className = '' }: IconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+  </svg>
+)
+
+export const LinksIcon = ({ size = 20, className = '' }: IconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+    <path d="M10.59 13.41c.41.39.41 1.03 0 1.42-.39.39-1.03.39-1.42 0a5.003 5.003 0 0 1 0-7.07l3.54-3.54a5.003 5.003 0 0 1 7.07 0 5.003 5.003 0 0 1 0 7.07l-1.49 1.49c.01-.82-.12-1.64-.4-2.42l.47-.48a2.5 2.5 0 0 0 0-3.54 2.5 2.5 0 0 0-3.54 0l-3.54 3.54a2.5 2.5 0 0 0 0 3.54zm2.82-4.24c.39-.39 1.03-.39 1.42 0a5.003 5.003 0 0 1 0 7.07l-3.54 3.54a5.003 5.003 0 0 1-7.07 0 5.003 5.003 0 0 1 0-7.07l1.49-1.49c-.01.82.12 1.64.4 2.43l-.47.47a2.5 2.5 0 0 0 0 3.54 2.5 2.5 0 0 0 3.54 0l3.54-3.54a2.5 2.5 0 0 0 0-3.54.999.999 0 0 1 0-1.41z"/>
   </svg>
 )

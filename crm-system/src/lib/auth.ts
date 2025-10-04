@@ -62,7 +62,7 @@ export const authOptions: NextAuthOptions = {
                 role: adminUser.role,
                 userType: 'admin'
               }
-              console.log('👤 Returning admin user:', userResponse)
+              console.log('👤 Returning admin customer:', userResponse)
               return userResponse
             } else {
               console.log('❌ Invalid password for admin user')
@@ -105,7 +105,7 @@ export const authOptions: NextAuthOptions = {
                 role: 'CLIENT',
                 userType: 'client'
               }
-              console.log('👤 Returning client user:', userResponse)
+              console.log('👤 Returning client customer:', userResponse)
               return userResponse
             } else {
               console.log('❌ Invalid password for client user')

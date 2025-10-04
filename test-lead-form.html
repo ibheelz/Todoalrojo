@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Lead Form - CRM Integration</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    .form-container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 30px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: #555;
+      font-weight: bold;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      box-sizing: border-box;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .status {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 5px;
+      display: none;
+    }
+
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .phone-container {
+      display: flex;
+      gap: 10px;
+    }
+
+    .phone-container select {
+      flex: 0 0 30%;
+    }
+
+    .phone-container input {
+      flex: 1;
+    }
+
+    .checkbox-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .checkbox-container input[type="checkbox"] {
+      width: auto;
+    }
+
+    .debug-message {
+      margin: 2px 0;
+      padding: 2px 5px;
+      border-left: 3px solid #007bff;
+      background: #f8f9fa;
+      font-family: monospace;
+      font-size: 11px;
+      color: #495057;
+    }
+
+    .debug-message:nth-child(even) {
+      background: #e9ecef;
+    }
+  </style>
+</head>
+<body>
+  <div class="form-container">
+    <h1>Test Lead Form - CRM Integration</h1>
+
+    <!-- Debug Panel -->
+    <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; padding: 15px; margin-bottom: 20px;">
+      <h3 style="margin-top: 0; color: #495057; font-size: 14px;">🔍 Debug Information</h3>
+      <div id="debugContainer" style="max-height: 150px; overflow-y: auto; background: #ffffff; border: 1px solid #e9ecef; border-radius: 3px; padding: 10px; font-family: monospace; font-size: 12px;">
+        <div class="debug-message"><small>Debug logs will appear here...</small></div>
+      </div>
+      <div style="margin-top: 10px; font-size: 12px; color: #6c757d;">
+        <strong>Form Status:</strong> <span id="connectionStatus">Checking connection...</span>
+      </div>
+    </div>
+
+    <form id="testLeadForm">
+      <div class="form-group">
+        <label for="fullName">Full Name *</label>
+        <input type="text" id="fullName" name="fullName" required>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email *</label>
+        <input type="email" id="email" name="email" required>
+      </div>
+
+      <div class="form-group">
+        <label for="phone">Phone Number *</label>
+        <div class="phone-container">
+          <select id="countryCode" name="countryCode" required>
+            <option value="+1">🇺🇸 +1 (US)</option>
+            <option value="+56">🇨🇱 +56 (Chile)</option>
+            <option value="+34">🇪🇸 +34 (Spain)</option>
+            <option value="+44">🇬🇧 +44 (UK)</option>
+            <option value="+49">🇩🇪 +49 (Germany)</option>
+            <option value="+33">🇫🇷 +33 (France)</option>
+          </select>
+          <input type="tel" id="phone" name="phone" placeholder="123456789" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="campaign">Campaign</label>
+        <input type="text" id="campaign" name="campaign" placeholder="summer-2024">
+      </div>
+
+      <div class="form-group">
+        <label for="source">Traffic Source</label>
+        <input type="text" id="source" name="source" placeholder="google">
+      </div>
+
+      <div class="form-group">
+        <div class="checkbox-container">
+          <input type="checkbox" id="ageVerification" name="ageVerification" required>
+          <label for="ageVerification">I confirm I am over 18 years old *</label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="checkbox-container">
+          <input type="checkbox" id="promoConsent" name="promoConsent">
+          <label for="promoConsent">I agree to receive promotional emails</label>
+        </div>
+      </div>
+
+      <button type="submit" id="submitBtn">Submit Lead</button>
+    </form>
+
+    <div id="status" class="status"></div>
+  </div>
+
+  <script>
+    // Configuration
+    const CRM_API_URL = 'http://localhost:3005/api/ingest/lead';
+
+    // Enhanced debugging
+    const addDebugLog = (message, data = null) => {
+      const timestamp = new Date().toLocaleTimeString();
+      const logMessage = `[${timestamp}] FORM DEBUG: ${message}`;
+      console.log(logMessage, data);
+
+      // Also show in UI
+      const debugContainer = document.getElementById('debugContainer');
+      if (debugContainer) {
+        const logDiv = document.createElement('div');
+        logDiv.className = 'debug-message';
+        logDiv.innerHTML = `<small>${logMessage}${data ? ' - ' + JSON.stringify(data, null, 2) : ''}</small>`;
+        debugContainer.appendChild(logDiv);
+        debugContainer.scrollTop = debugContainer.scrollHeight;
+
+        // Keep only last 10 messages
+        while (debugContainer.children.length > 10) {
+          debugContainer.removeChild(debugContainer.firstChild);
+        }
+      }
+    };
+
+    // Helper function to detect user language
+    function detectUserLanguage() {
+      const browserLang = navigator.language || navigator.userLanguage || 'en';
+      const langCode = browserLang.split('-')[0].toLowerCase();
+
+      const languageMap = {
+        'es': 'Spanish',
+        'en': 'English',
+        'pt': 'Portuguese',
+        'fr': 'French',
+        'de': 'German',
+        'it': 'Italian'
+      };
+
+      return languageMap[langCode] || 'English';
+    }
+
+    // Get geo data
+    async function getGeoData() {
+      try {
+        const response = await fetch('https://ipapi.co/json/');
+        const data = await response.json();
+        return {
+          ip: data.ip || '',
+          country: data.country_name || '',
+          city: data.city || '',
+          region: data.region || '',
+          countryCode: data.country_code || ''
+        };
+      } catch (error) {
+        console.error('Failed to get geo data:', error);
+        return {};
+      }
+    }
+
+    // Show status message
+    function showStatus(message, isError = false) {
+      const statusEl = document.getElementById('status');
+      statusEl.textContent = message;
+      statusEl.className = `status ${isError ? 'error' : 'success'}`;
+      statusEl.style.display = 'block';
+    }
+
+    // Test API connection on page load
+    document.addEventListener('DOMContentLoaded', async () => {
+      addDebugLog('🚀 Form initialized, testing API connection...');
+
+      try {
+        const response = await fetch(CRM_API_URL.replace('/lead', '/lead'), {
+          method: 'GET'
+        });
+
+        if (response.ok) {
+          addDebugLog('✅ API connection successful');
+          document.getElementById('connectionStatus').textContent = '✅ Connected to CRM API';
+          document.getElementById('connectionStatus').style.color = '#28a745';
+        } else {
+          addDebugLog('⚠️ API responded with error', { status: response.status });
+          document.getElementById('connectionStatus').textContent = '⚠️ API connection issues';
+          document.getElementById('connectionStatus').style.color = '#ffc107';
+        }
+      } catch (error) {
+        addDebugLog('❌ API connection failed', error.message);
+        document.getElementById('connectionStatus').textContent = '❌ Unable to connect to CRM API';
+        document.getElementById('connectionStatus').style.color = '#dc3545';
+      }
+    });
+
+    // Handle form submission
+    document.getElementById('testLeadForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      addDebugLog('📝 Form submission started...');
+
+      const submitBtn = document.getElementById('submitBtn');
+      const originalText = submitBtn.textContent;
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting...';
+
+      try {
+        // Get form data
+        addDebugLog('📄 Collecting form data...');
+        const formData = new FormData(e.target);
+        addDebugLog('🌍 Getting geo data...');
+        const geoData = await getGeoData();
+        addDebugLog('🌍 Geo data received', geoData);
+
+        // Build lead data
+        const leadData = {
+          // Required fields
+          email: formData.get('email'),
+          phone: `${formData.get('countryCode')} ${formData.get('phone')}`,
+          ip: geoData.ip || '127.0.0.1',
+
+          // Personal data
+          firstName: formData.get('fullName').split(' ')[0] || '',
+          lastName: formData.get('fullName').split(' ').slice(1).join(' ') || '',
+
+          // Custom fields
+          customFields: {
+            ageVerification: formData.get('ageVerification') === 'on',
+            promoConsent: formData.get('promoConsent') === 'on',
+            emailVerified: false,
+            smsVerified: false,
+            language: detectUserLanguage()
+          },
+
+          // Attribution
+          clickId: `test-${Date.now()}`,
+          campaign: formData.get('campaign') || 'test-campaign',
+          source: formData.get('source') || 'test-form',
+          medium: 'web',
+
+          // Technical
+          userAgent: navigator.userAgent,
+          referrer: document.referrer || 'direct',
+          landingPage: window.location.href,
+          formUrl: window.location.href,
+
+          // Geographic
+          country: geoData.country || '',
+          region: geoData.region || '',
+          city: geoData.city || '',
+
+          // Timing
+          submittedAt: new Date().toISOString()
+        };
+
+        addDebugLog('📤 Submitting lead data to CRM...', leadData);
+
+        // Submit to CRM API
+        addDebugLog('🚀 Sending request to CRM API...', { url: CRM_API_URL });
+
+        const response = await fetch(CRM_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(leadData)
+        });
+
+        addDebugLog('📥 Received response from CRM API', {
+          status: response.status,
+          statusText: response.statusText,
+          headers: Object.fromEntries(response.headers.entries())
+        });
+
+        const result = await response.json();
+        addDebugLog('📋 Parsed API response', result);
+
+        if (response.ok && result.success) {
+          const successMessage = `✅ Lead submitted successfully!\n` +
+            `Customer ID: ${result.customerId || result.userId}\n` +
+            `Lead ID: ${result.leadId}\n` +
+            `Quality Score: ${result.qualityScore}\n` +
+            `Processing Time: ${result.processingTime}ms\n` +
+            `Is Duplicate: ${result.isDuplicate ? 'Yes' : 'No'}`;
+
+          addDebugLog('🎉 Lead submission successful!', result);
+          showStatus(successMessage, false);
+
+          // Reset form after successful submission
+          setTimeout(() => {
+            e.target.reset();
+            addDebugLog('🔄 Form reset completed');
+          }, 1000);
+        } else {
+          const errorMessage = `❌ Error: ${result.error || 'Submission failed'}`;
+          addDebugLog('❌ Lead submission failed', result);
+          showStatus(errorMessage, true);
+        }
+
+      } catch (error) {
+        addDebugLog('💥 Submission error occurred', {
+          message: error.message,
+          stack: error.stack
+        });
+        console.error('Submission error:', error);
+        showStatus(`❌ Network error: ${error.message}`, true);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+        addDebugLog('🏁 Form submission process completed');
+      }
+    });
+
+    // Phone number formatting
+    document.getElementById('phone').addEventListener('input', function() {
+      this.value = this.value.replace(/\D/g, '');
+    });
+  </script>
+</body>
+</html>

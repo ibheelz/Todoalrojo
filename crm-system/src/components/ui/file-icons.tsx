@@ -31,7 +31,7 @@ export const FileIcon = ({ type, size = 'md', className = '' }: FileIconProps) =
   return (
     <div className={`relative ${sizeClass} ${className}`}>
       {/* Main document shape */}
-      <div className="absolute inset-0 bg-gray-100 rounded-t-lg rounded-br-lg shadow-lg">
+      <div className="absolute inset-0 bg-gray-100 rounded-t-lg rounded-br-lg">
         {/* Folded corner */}
         <div className="absolute top-0 right-0 w-3 h-3 bg-gray-300 transform rotate-45 origin-bottom-left translate-x-1.5 -translate-y-1.5 rounded-sm"></div>
 
@@ -86,7 +86,6 @@ export const PNGIcon = ({ size = 'lg', className = '' }: { size?: 'sm' | 'md' | 
           fill="#FFFFFF"
           stroke="#D1D5DB"
           strokeWidth="1"
-          filter="drop-shadow(2px 2px 4px rgba(0,0,0,0.1))"
         />
 
         {/* Folded corner with gradient */}

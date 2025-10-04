@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { ExportService } from '@/lib/export-service'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -23,7 +25,7 @@ export async function GET(request: NextRequest) {
     }
 
     const filters = { limit }
-    let data: string | Buffer
+    let data: any
     let filename: string
     let contentType: string
 

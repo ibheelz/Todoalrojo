@@ -25,7 +25,7 @@ const CONFIG = {
 const verificationStore = new Map();
 
 // Email transporter setup
-const transporter = nodemailer.createTransporter({
+const transporter = nodemailer.createTransport({
   service: CONFIG.EMAIL_SERVICE,
   auth: {
     user: CONFIG.EMAIL_USER,

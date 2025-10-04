@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: 'Miela CRM | TodoAlRojo',
   description: 'Advanced Identity Graph + Journey Tracking System with CRM capabilities',
   keywords: ['CRM', 'Identity Graph', 'Journey Tracking', 'Lead Management', 'Campaign Analytics'],
+  icons: {
+    icon: '/favicon.svg',
+  },
 }
 
 export default function RootLayout({
