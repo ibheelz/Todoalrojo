@@ -51,7 +51,7 @@ export default function BrandDetailPage() {
       fetchOperator();
       fetchCustomers();
     }
-  }, [operatorId]);
+  }, [operatorId, stageFilter]);
 
   const fetchOperator = async () => {
     try {
@@ -65,11 +65,21 @@ export default function BrandDetailPage() {
 
   const fetchCustomers = async () => {
     try {
-      // This would need a dedicated API endpoint to fetch customers by operator
-      // For now, we'll show a placeholder
-      setCustomers([]);
+      setLoading(true);
+      const stageParam = stageFilter === 'all' ? 'all' : stageFilter.toString();
+      const response = await fetch(`/api/operators/${operatorId}/customers?stage=${stageParam}`);
+      const data = await response.json();
+
+      if (data.success) {
+        setCustomers(data.customers);
+        console.log('✅ Loaded customers:', data.customers.length);
+      } else {
+        console.error('Failed to fetch customers:', data.error);
+        setCustomers([]);
+      }
     } catch (error) {
       console.error('Failed to fetch customers:', error);
+      setCustomers([]);
     } finally {
       setLoading(false);
     }
@@ -295,7 +305,7 @@ export default function BrandDetailPage() {
                 {customers.map((customer) => (
                   <tr key={customer.id} className="hover:bg-white/5 transition-colors">
                     <td className="py-4 px-4">
-                      <div className="flex items-center gap-3">
+                      <Link href={`/dashboard/customers/${customer.id}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
                         <Avatar
                           firstName={customer.firstName}
                           lastName={customer.lastName}
@@ -310,7 +320,7 @@ export default function BrandDetailPage() {
                             {customer.masterEmail || customer.masterPhone}
                           </p>
                         </div>
-                      </div>
+                      </Link>
                     </td>
                     <td className="py-4 px-4">
                       {customer.journeyState && (
