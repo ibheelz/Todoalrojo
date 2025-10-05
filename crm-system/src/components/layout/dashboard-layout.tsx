@@ -131,7 +131,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               </div>
             )}
             {navigation.map((item, index) => {
-              const isActive = pathname === item.href
+              // Special handling for dashboard root to avoid it matching all routes
+              const isActive = item.href === '/dashboard'
+                ? pathname === '/dashboard'
+                : pathname === item.href || pathname.startsWith(item.href + '/')
               return (
                 <Link
                   key={item.name}

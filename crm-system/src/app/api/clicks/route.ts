@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { cache } from '@/lib/cache'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,6 +16,13 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '50')
     const offset = (page - 1) * limit
+
+    // Check cache
+    const cacheKey = `clicks:${dateFilter}:${campaign}:${source}:${search}:${fromDate}:${toDate}:${page}`
+    const cached = cache.get(cacheKey)
+    if (cached) {
+      return NextResponse.json(cached)
+    }
 
     console.log('🔍 Fetching clicks with parameters:', {
       dateFilter,
@@ -218,11 +226,14 @@ export async function GET(request: NextRequest) {
       timestamp: new Date().toISOString()
     })
 
-    return NextResponse.json({
+    const result = {
       success: true,
       clicks,
       summary
-    })
+    }
+
+    cache.set(cacheKey, result, 120) // 2 minute TTL
+    return NextResponse.json(result)
 
   } catch (error) {
     console.error('❌ Get clicks error:', error)

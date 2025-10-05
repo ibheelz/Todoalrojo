@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import OperatorService from '@/lib/operator-service'
+import { cache } from '@/lib/cache'
 
 export const dynamic = 'force-dynamic'
 
@@ -27,6 +28,13 @@ export async function GET(request: NextRequest) {
     const dateFilter = searchParams.get('dateFilter') || 'all'
     const fromDate = searchParams.get('fromDate')
     const toDate = searchParams.get('toDate')
+
+    // Generate cache key based on query params
+    const cacheKey = `campaigns:${includeStats}:${dateFilter}:${fromDate}:${toDate}`
+    const cached = cache.get(cacheKey)
+    if (cached) {
+      return NextResponse.json(cached)
+    }
 
     // Calculate date range for filtering metrics
     let dateWhere = {}
@@ -75,12 +83,24 @@ export async function GET(request: NextRequest) {
     }
 
     if (includeStats) {
-      // Get campaigns with detailed analytics
+      // Get campaigns with detailed analytics - select only needed fields
       const campaigns = await prisma.campaign.findMany({
-        orderBy: { createdAt: 'desc' },
-        include: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          description: true,
+          clientId: true,
+          brandId: true,
+          logoUrl: true,
+          conversionTypes: true,
+          createdAt: true,
+          updatedAt: true,
+          resetAt: true,
+          approvedRegistrations: true,
+          qualifiedDeposits: true,
           campaignInfluencers: {
-            include: {
+            select: {
               influencer: {
                 select: {
                   id: true,
@@ -91,7 +111,8 @@ export async function GET(request: NextRequest) {
               }
             }
           }
-        }
+        },
+        orderBy: { createdAt: 'desc' }
       })
 
       // Calculate stats for each campaign
@@ -224,17 +245,28 @@ export async function GET(request: NextRequest) {
         })
       )
 
-      return NextResponse.json({
+      const result = {
         success: true,
         campaigns: campaignsWithStats
-      })
+      }
+      cache.set(cacheKey, result, 180) // 3 minute TTL
+      return NextResponse.json(result)
     } else {
-      // Get basic campaign list
+      // Get basic campaign list with only necessary fields
       const campaigns = await prisma.campaign.findMany({
-        orderBy: { createdAt: 'desc' },
-        include: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          description: true,
+          clientId: true,
+          brandId: true,
+          logoUrl: true,
+          conversionTypes: true,
+          createdAt: true,
+          updatedAt: true,
           campaignInfluencers: {
-            include: {
+            select: {
               influencer: {
                 select: {
                   id: true,
@@ -245,7 +277,8 @@ export async function GET(request: NextRequest) {
               }
             }
           }
-        }
+        },
+        orderBy: { createdAt: 'desc' }
       })
 
       // Transform campaigns to include influencer data
@@ -255,10 +288,12 @@ export async function GET(request: NextRequest) {
         influencers: campaign.campaignInfluencers.map(ci => ci.influencer)
       }))
 
-      return NextResponse.json({
+      const result = {
         success: true,
         campaigns: transformedCampaigns
-      })
+      }
+      cache.set(cacheKey, result, 180) // 3 minute TTL
+      return NextResponse.json(result)
     }
 
   } catch (error) {
@@ -274,6 +309,9 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const validatedData = createCampaignSchema.parse(body)
+
+    // Clear cache when creating new campaign
+    cache.clear()
 
     // Check if slug already exists
     const existingCampaign = await prisma.campaign.findUnique({

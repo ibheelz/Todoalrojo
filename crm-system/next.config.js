@@ -7,6 +7,11 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  // Production optimizations
+  swcMinify: true,
+  compress: true,
+  poweredByHeader: false,
+  reactStrictMode: true,
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,
@@ -15,7 +20,14 @@ const nextConfig = {
     return config
   },
   images: {
-    domains: ['localhost', 'crm.mieladigital.com', 'mieladigital.com'],
+    domains: ['localhost', 'crm.mieladigital.com', 'mieladigital.com', 'api.dicebear.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'api.dicebear.com',
+        pathname: '/7.x/**',
+      },
+    ],
   },
   async headers() {
     return [

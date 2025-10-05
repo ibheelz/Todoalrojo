@@ -542,6 +542,16 @@ export default function ClicksPage() {
                     </div>
                   </div>
 
+                  {/* Click ID */}
+                  <div className="mb-2">
+                    <span className="text-xs font-mono text-yellow-400 px-2 py-1 rounded inline-block" style={{
+                      background: 'rgba(253, 198, 0, 0.1)',
+                      border: '1px solid rgba(253, 198, 0, 0.3)'
+                    }}>
+                      {click.clickId || 'No Click ID'}
+                    </span>
+                  </div>
+
                   {/* Campaign & Source */}
                   <div className="space-y-1">
                     <div className="text-sm">
@@ -578,6 +588,7 @@ export default function ClicksPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-white/10">
+                    <th className="text-left p-3 text-sm font-medium text-white/80">Click ID</th>
                     <th className="text-left p-3 text-sm font-medium text-white/80">User</th>
                     <th className="text-left p-3 text-sm font-medium text-white/80">Campaign</th>
                     <th className="text-left p-3 text-sm font-medium text-white/80">Source</th>
@@ -590,6 +601,14 @@ export default function ClicksPage() {
                 <tbody>
                   {clicks.map((click) => (
                     <tr key={click.id} className="border-b border-white/5 hover:bg-white/5">
+                      <td className="p-3">
+                        <span className="text-xs font-mono text-yellow-400 px-2 py-1 rounded inline-block" style={{
+                          background: 'rgba(253, 198, 0, 0.1)',
+                          border: '1px solid rgba(253, 198, 0, 0.3)'
+                        }}>
+                          {click.clickId || '-'}
+                        </span>
+                      </td>
                       <td className="p-3">
                         <div className="flex items-center gap-3">
                           {/* Customer Avatar */}

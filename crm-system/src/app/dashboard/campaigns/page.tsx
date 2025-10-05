@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { PlusIcon, TargetIcon, WarningIcon, SearchIcon } from '@/components/ui/icons'
 import CampaignModal from '@/components/ui/campaign-modal'
 
@@ -72,6 +73,7 @@ const SortIcon = ({ field, sortField, sortDirection }: { field: string, sortFiel
 }
 
 export default function CampaignsPage() {
+  const router = useRouter()
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const [influencers, setInfluencers] = useState<Influencer[]>([])
   const [loading, setLoading] = useState(true)
@@ -407,6 +409,10 @@ export default function CampaignsPage() {
   const handleManageCampaign = (campaign: Campaign) => {
     // Directly open the edit modal
     setManagingCampaign(campaign)
+  }
+
+  const handleViewCampaign = (campaignId: string) => {
+    router.push(`/dashboard/campaigns/${campaignId}`)
   }
 
   const handleDeleteCampaign = async (campaignId: string) => {
@@ -1209,6 +1215,7 @@ export default function CampaignsPage() {
 
                           {/* View Button */}
                           <button
+                            onClick={() => handleViewCampaign(campaign.id)}
                             className="w-10 sm:w-16 px-1 sm:px-3 py-1 sm:py-1.5 text-[9px] sm:text-xs font-bold rounded-lg bg-primary text-black hover:bg-primary/90 transition-colors flex items-center justify-center"
                           >
                             <span className="hidden sm:inline">VIEW</span>
@@ -1381,6 +1388,7 @@ export default function CampaignsPage() {
 
                   {/* View Button */}
                   <button
+                    onClick={() => handleViewCampaign(campaign.id)}
                     className="w-full px-2 sm:px-3 lg:px-4 py-1 sm:py-1.5 text-[10px] sm:text-xs font-bold rounded-md lg:rounded-lg bg-primary text-black hover:bg-primary/90 transition-colors flex items-center justify-center"
                   >
                     VIEW

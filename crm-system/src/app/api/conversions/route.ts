@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { cache } from '@/lib/cache'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,6 +16,13 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '50')
     const offset = (page - 1) * limit
     const campaign = searchParams.get('campaign') || 'all'
+
+    // Check cache
+    const cacheKey = `conversions:${dateFilter}:${eventType}:${search}:${fromDate}:${toDate}:${page}:${campaign}`
+    const cached = cache.get(cacheKey)
+    if (cached) {
+      return NextResponse.json(cached)
+    }
 
     console.log('🔄 Fetching conversions with parameters:', {
       dateFilter,
@@ -275,11 +283,14 @@ export async function GET(request: NextRequest) {
       timestamp: new Date().toISOString()
     })
 
-    return NextResponse.json({
+    const result = {
       success: true,
       events: enrichedEvents,
       summary
-    })
+    }
+
+    cache.set(cacheKey, result, 120) // 2 minute TTL
+    return NextResponse.json(result)
 
   } catch (error) {
     console.error('❌ Get conversions error:', error)

@@ -119,6 +119,8 @@ model Click {
   @@index([createdAt])
   @@index([country])
   @@index([isFraud])
+  @@index([campaign, createdAt])
+  @@index([customerId, campaign])
   @@map("clicks")
 }
 
@@ -161,6 +163,8 @@ model Lead {
   @@index([clientId])
   @@index([createdAt])
   @@index([isDuplicate])
+  @@index([campaign, createdAt])
+  @@index([customerId, campaign])
   @@map("leads")
 }
 
@@ -197,6 +201,8 @@ model Event {
   @@index([clientId])
   @@index([createdAt])
   @@index([isRevenue])
+  @@index([campaign, createdAt])
+  @@index([customerId, campaign])
   @@map("events")
 }
 

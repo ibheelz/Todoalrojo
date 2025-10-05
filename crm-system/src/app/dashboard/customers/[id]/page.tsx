@@ -90,6 +90,17 @@ interface CustomerDetails {
   }>
 }
 
+interface CampaignActivity {
+  campaign: string
+  clicks: number
+  leads: number
+  events: number
+  conversions: number
+  totalValue: number
+  firstSeen: string
+  lastSeen: string
+}
+
 export default function CustomerDetailPage() {
   const params = useParams()
   const router = useRouter()
@@ -98,6 +109,8 @@ export default function CustomerDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState('overview')
+  const [campaignActivity, setCampaignActivity] = useState<CampaignActivity[]>([])
+  const [loadingCampaigns, setLoadingCampaigns] = useState(false)
   const [selectedLead, setSelectedLead] = useState<any>(null)
   const [showLeadModal, setShowLeadModal] = useState(false)
 
@@ -107,6 +120,7 @@ export default function CustomerDetailPage() {
   useEffect(() => {
     if (customerId) {
       fetchCustomerDetails()
+      fetchCampaignActivity()
     }
   }, [customerId])
 
@@ -131,6 +145,26 @@ export default function CustomerDetailPage() {
       setError('Failed to fetch customer details')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchCampaignActivity = async () => {
+    try {
+      setLoadingCampaigns(true)
+      console.log('🔍 Fetching campaign activity for customer:', customerId)
+      const response = await fetch(`/api/customers/${customerId}/campaigns`)
+      const data = await response.json()
+
+      if (data.success) {
+        console.log('✅ Campaign activity loaded:', data.campaigns)
+        setCampaignActivity(data.campaigns)
+      } else {
+        console.log('❌ Failed to load campaigns:', data.error)
+      }
+    } catch (err) {
+      console.error('🚨 Campaign fetch error:', err)
+    } finally {
+      setLoadingCampaigns(false)
     }
   }
 
@@ -491,6 +525,76 @@ export default function CustomerDetailPage() {
               <div className="text-sm text-muted-foreground uppercase tracking-wide mt-2">Conversions</div>
             </div>
           </div>
+        </div>
+
+        {/* Campaign Activity */}
+        <div className="premium-card p-6">
+          <h2 className="text-xl font-semibold text-foreground mb-6 flex items-center gap-2">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+            Campaign Activity
+            <span className="text-sm text-muted-foreground ml-2">
+              ({loadingCampaigns ? '...' : campaignActivity.length} {campaignActivity.length === 1 ? 'campaign' : 'campaigns'})
+            </span>
+          </h2>
+
+          {loadingCampaigns ? (
+            <div className="text-center py-8">
+              <div className="animate-pulse space-y-4">
+                <div className="h-16 bg-white/5 rounded-lg"></div>
+                <div className="h-16 bg-white/5 rounded-lg"></div>
+              </div>
+            </div>
+          ) : campaignActivity.length > 0 ? (
+            <div className="space-y-4">
+              {campaignActivity.map((campaign, index) => (
+                <div key={index} className="bg-white/5 border border-white/10 rounded-lg p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-foreground mb-2">{campaign.campaign}</h3>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3">
+                        <div>
+                          <div className="text-xs text-muted-foreground uppercase tracking-wide">Clicks</div>
+                          <div className="text-xl font-bold text-foreground mt-1">{campaign.clicks}</div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-muted-foreground uppercase tracking-wide">Leads</div>
+                          <div className="text-xl font-bold text-foreground mt-1">{campaign.leads}</div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-muted-foreground uppercase tracking-wide">Events</div>
+                          <div className="text-xl font-bold text-foreground mt-1">{campaign.events}</div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-muted-foreground uppercase tracking-wide">Conversions</div>
+                          <div className="text-xl font-bold text-primary mt-1">{campaign.conversions}</div>
+                        </div>
+                      </div>
+                      {campaign.totalValue > 0 && (
+                        <div className="mt-3 pt-3 border-t border-white/10">
+                          <div className="text-xs text-muted-foreground uppercase tracking-wide">Total Value</div>
+                          <div className="text-lg font-bold text-green-400 mt-1">${campaign.totalValue.toFixed(2)}</div>
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-right ml-4">
+                      <div className="text-xs text-muted-foreground">First Seen</div>
+                      <div className="text-sm font-medium text-foreground">{new Date(campaign.firstSeen).toLocaleDateString()}</div>
+                      <div className="text-xs text-muted-foreground mt-2">Last Seen</div>
+                      <div className="text-sm font-medium text-foreground">{new Date(campaign.lastSeen).toLocaleDateString()}</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <div className="text-6xl mb-4">🎯</div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">No Campaign Activity</h3>
+              <p className="text-muted-foreground">This customer hasn't been associated with any campaigns yet.</p>
+            </div>
+          )}
         </div>
 
         {/* Journey Timeline with SVG icons and yellow circles */}

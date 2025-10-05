@@ -934,11 +934,12 @@ export default function InfluencersPage() {
                   </div>
 
                   {/* View Button */}
-                  <button
+                  <Link
+                    href={`/dashboard/influencers/${influencer.id}`}
                     className="w-full px-2 sm:px-3 lg:px-4 py-1 sm:py-1.5 text-[10px] sm:text-xs font-bold rounded-md lg:rounded-lg bg-primary text-black hover:bg-primary/90 transition-colors flex items-center justify-center"
                   >
                     VIEW
-                  </button>
+                  </Link>
 
                   {/* Manage Button */}
                   <button
@@ -1166,12 +1167,13 @@ export default function InfluencersPage() {
                           </div>
 
                           {/* View Button */}
-                          <button
+                          <Link
+                            href={`/dashboard/influencers/${influencer.id}`}
                             className="w-10 sm:w-16 px-1 sm:px-3 py-1 sm:py-1.5 text-[9px] sm:text-xs font-bold rounded-lg bg-primary text-black hover:bg-primary/90 transition-colors flex items-center justify-center"
                           >
                             <span className="hidden sm:inline">VIEW</span>
                             <span className="sm:hidden">V</span>
-                          </button>
+                          </Link>
 
                           {/* Manage Button */}
                           <button

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { cache } from '@/lib/cache'
 
 const updateInfluencerSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -19,6 +20,237 @@ const updateInfluencerSchema = z.object({
   assignedCampaignIds: z.array(z.string()).optional()
 })
 
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const influencerId = params.id
+
+    // Check cache
+    const cacheKey = `influencer-details:${influencerId}`
+    const cached = cache.get(cacheKey)
+    if (cached) {
+      return NextResponse.json(cached)
+    }
+
+    // Get influencer
+    const influencer = await prisma.influencer.findUnique({
+      where: { id: influencerId },
+      include: {
+        campaignInfluencers: {
+          include: {
+            campaign: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                createdAt: true
+              }
+            }
+          }
+        }
+      }
+    })
+
+    if (!influencer) {
+      return NextResponse.json({
+        success: false,
+        error: 'Influencer not found'
+      }, { status: 404 })
+    }
+
+    // Get all clicks for this influencer (via LinkInfluencer relationship)
+    const linkInfluencers = await prisma.linkInfluencer.findMany({
+      where: { influencerId },
+      select: { linkId: true }
+    })
+
+    const linkIds = linkInfluencers.map(li => li.linkId)
+
+    // Get clicks from these links
+    const clicks = await prisma.click.findMany({
+      where: {
+        id: { in: linkIds }
+      },
+      include: {
+        customer: {
+          select: {
+            id: true,
+            masterEmail: true,
+            masterPhone: true,
+            firstName: true,
+            lastName: true,
+            country: true,
+            city: true
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 100
+    })
+
+    // Get all leads associated with this influencer's campaigns
+    const campaignSlugs = influencer.campaignInfluencers.map(ci => ci.campaign.slug)
+
+    const leads = await prisma.lead.findMany({
+      where: {
+        campaign: { in: campaignSlugs }
+      },
+      include: {
+        customer: {
+          select: {
+            id: true,
+            masterEmail: true,
+            masterPhone: true,
+            firstName: true,
+            lastName: true,
+            country: true,
+            city: true
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 100
+    })
+
+    // Get all events/conversions
+    const events = await prisma.event.findMany({
+      where: {
+        campaign: { in: campaignSlugs }
+      },
+      include: {
+        customer: {
+          select: {
+            id: true,
+            masterEmail: true,
+            masterPhone: true,
+            firstName: true,
+            lastName: true,
+            country: true,
+            city: true
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 100
+    })
+
+    // Get unique customers
+    const customerIds = new Set<string>()
+    clicks.forEach(click => { if (click.customerId) customerIds.add(click.customerId) })
+    leads.forEach(lead => { if (lead.customerId) customerIds.add(lead.customerId) })
+    events.forEach(event => { if (event.customerId) customerIds.add(event.customerId) })
+
+    const customers = await prisma.customer.findMany({
+      where: {
+        id: { in: Array.from(customerIds) }
+      },
+      select: {
+        id: true,
+        masterEmail: true,
+        masterPhone: true,
+        firstName: true,
+        lastName: true,
+        country: true,
+        city: true,
+        createdAt: true,
+        _count: {
+          select: {
+            clicks: true,
+            leads: true,
+            events: true
+          }
+        }
+      },
+      take: 100
+    })
+
+    // Calculate campaign stats for this influencer
+    const campaignsWithStats = await Promise.all(
+      influencer.campaignInfluencers.map(async (ci) => {
+        // Get full campaign data with logoUrl
+        const fullCampaign = await prisma.campaign.findUnique({
+          where: { id: ci.campaign.id },
+          select: { logoUrl: true }
+        })
+
+        const [clickCount, leadCount, eventCount] = await Promise.all([
+          prisma.click.count({ where: { campaign: ci.campaign.slug } }),
+          prisma.lead.count({ where: { campaign: ci.campaign.slug } }),
+          prisma.event.count({ where: { campaign: ci.campaign.slug } })
+        ])
+
+        return {
+          id: ci.campaign.id,
+          name: ci.campaign.name,
+          slug: ci.campaign.slug,
+          logoUrl: fullCampaign?.logoUrl || null,
+          isActive: ci.isActive,
+          totalClicks: clickCount,
+          totalLeads: leadCount,
+          totalRegs: eventCount,
+          createdAt: ci.campaign.createdAt
+        }
+      })
+    )
+
+    // Count different event types
+    const registrations = await prisma.event.count({
+      where: {
+        campaign: { in: campaignSlugs },
+        eventType: { in: ['registration', 'signup', 'register'] }
+      }
+    })
+
+    const ftd = await prisma.event.count({
+      where: {
+        campaign: { in: campaignSlugs },
+        OR: [
+          { eventType: { in: ['deposit', 'ftd', 'first_deposit'] } },
+          { eventName: { in: ['deposit', 'ftd', 'first_deposit'] } }
+        ]
+      }
+    })
+
+    const result = {
+      success: true,
+      influencer: {
+        ...influencer,
+        profileImage: (influencer as any).profileImage || null,
+        engagementRate: influencer.engagementRate ? Number(influencer.engagementRate) : 0,
+        commissionRate: influencer.commissionRate ? Number(influencer.commissionRate) : null,
+        totalClicks: clicks.length,
+        totalLeads: leads.length,
+        totalRegs: registrations,
+        totalFtd: ftd,
+        campaigns: campaignsWithStats
+      },
+      clicks,
+      leads,
+      events,
+      customers,
+      summary: {
+        totalClicks: clicks.length,
+        totalLeads: leads.length,
+        totalEvents: events.length,
+        totalRegistrations: registrations,
+        totalFtd: ftd,
+        uniqueCustomers: customers.length,
+        totalCampaigns: campaignsWithStats.length
+      }
+    }
+
+    cache.set(cacheKey, result, 180) // 3 minute TTL
+    return NextResponse.json(result)
+
+  } catch (error: any) {
+    console.error('❌ Get influencer details error:', error)
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to fetch influencer details',
+      details: error?.message
+    }, { status: 500 })
+  }
+}
+
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const { id } = params
@@ -32,6 +264,9 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     const body = await request.json()
     console.log('📊 [API] Updating influencer:', id, JSON.stringify(body, null, 2))
+
+    // Clear cache when updating
+    cache.delete(`influencer-details:${id}`)
 
     // Validate input data
     const validatedData = updateInfluencerSchema.parse(body)
