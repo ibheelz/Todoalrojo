@@ -119,7 +119,7 @@ export async function GET(request: NextRequest) {
       totalConditions: Object.keys(whereConditions).length
     })
 
-    // Get events with pagination
+    // Get events with pagination and influencer data via clickId
     const events = await prisma.event.findMany({
       where: whereConditions,
       include: {
@@ -129,7 +129,17 @@ export async function GET(request: NextRequest) {
             masterEmail: true,
             firstName: true,
             lastName: true,
-            profileImage: true
+            profileImage: true,
+            clicks: {
+              where: {
+                clickId: { not: null }
+              },
+              select: {
+                clickId: true
+              },
+              take: 1,
+              orderBy: { createdAt: 'desc' }
+            }
           }
         }
       },
@@ -137,6 +147,48 @@ export async function GET(request: NextRequest) {
       skip: offset,
       take: limit
     })
+
+    // Enrich events with influencer data by looking up clicks
+    const enrichedEvents = await Promise.all(
+      events.map(async (event) => {
+        let influencer = null
+
+        if (event.clickId) {
+          // Try to find the click and its associated influencer
+          const click = await prisma.click.findUnique({
+            where: { clickId: event.clickId },
+            select: { id: true }
+          })
+
+          if (click) {
+            // Look for link influencer association
+            const linkInfluencer = await prisma.linkInfluencer.findFirst({
+              where: { linkId: click.id },
+              include: {
+                influencer: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    socialHandle: true,
+                    profileImage: true
+                  }
+                }
+              }
+            })
+
+            if (linkInfluencer) {
+              influencer = linkInfluencer.influencer
+            }
+          }
+        }
+
+        return {
+          ...event,
+          influencer
+        }
+      })
+    )
 
     console.log('📊 Conversions data loaded:', {
       totalEvents: events.length,
@@ -225,7 +277,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      events,
+      events: enrichedEvents,
       summary
     })
 

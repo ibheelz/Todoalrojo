@@ -17,6 +17,13 @@ interface Conversion {
     lastName?: string
     email?: string
   }
+  influencer?: {
+    id: string
+    name: string
+    email?: string
+    socialHandle?: string
+    profileImage?: string
+  } | null
 }
 
 interface ConversionSummary {
@@ -39,6 +46,7 @@ export default function ConversionsPage() {
   const [showCustomDatePicker, setShowCustomDatePicker] = useState(false)
   const [selectedEventType, setSelectedEventType] = useState('all')
   const [selectedCampaign, setSelectedCampaign] = useState('all')
+  const [selectedConversion, setSelectedConversion] = useState<Conversion | null>(null)
 
   const eventTypes = [
     'all', 'registration', 'signup', 'register', 'deposit', 'ftd', 'first_deposit',
@@ -537,10 +545,11 @@ export default function ConversionsPage() {
             <div className="overflow-x-auto">
               <div className="min-w-[800px]">
                 {/* Table Header */}
-                <div className="grid grid-cols-6 gap-4 p-4 border-b border-white/10 text-sm font-medium text-white/60">
+                <div className="grid grid-cols-7 gap-4 p-4 border-b border-white/10 text-sm font-medium text-white/60">
+                  <div>Customer</div>
                   <div>Conversion Type</div>
                   <div>Campaign</div>
-                  <div>Customer</div>
+                  <div>Influencer</div>
                   <div>Value</div>
                   <div>Date</div>
                   <div>Actions</div>
@@ -549,15 +558,7 @@ export default function ConversionsPage() {
                 {/* Table Body */}
                 <div className="divide-y divide-white/10">
                   {filteredConversions.map((conversion) => (
-                    <div key={conversion.id} className="grid grid-cols-6 gap-4 p-4 hover:bg-white/5 transition-colors">
-                      <div className="flex items-center">
-                        <span className="inline-block px-3 py-1 text-xs rounded-full bg-primary/20 text-primary border border-primary/30 font-medium">
-                          {conversion.eventType}
-                        </span>
-                      </div>
-                      <div className="flex items-center text-white">
-                        {conversion.campaign}
-                      </div>
+                    <div key={conversion.id} className="grid grid-cols-7 gap-4 p-4 hover:bg-white/5 transition-colors">
                       <div className="flex items-center gap-3 text-white">
                         <Avatar
                           firstName={conversion.customer?.firstName}
@@ -573,6 +574,29 @@ export default function ConversionsPage() {
                           }
                         </span>
                       </div>
+                      <div className="flex items-center">
+                        <span className="inline-block px-3 py-1 text-xs rounded-full bg-primary/20 text-primary border border-primary/30 font-medium">
+                          {conversion.eventType}
+                        </span>
+                      </div>
+                      <div className="flex items-center text-white">
+                        {conversion.campaign}
+                      </div>
+                      <div className="flex items-center gap-2 text-white">
+                        {conversion.influencer ? (
+                          <>
+                            <Avatar
+                              firstName={conversion.influencer.name}
+                              email={conversion.influencer.email}
+                              userId={conversion.influencer.id}
+                              size="sm"
+                            />
+                            <span className="text-sm">{conversion.influencer.name}</span>
+                          </>
+                        ) : (
+                          <span className="text-white/40 text-sm">-</span>
+                        )}
+                      </div>
                       <div className="flex items-center text-white font-medium">
                         {formatCurrency(conversion.value)}
                       </div>
@@ -580,7 +604,11 @@ export default function ConversionsPage() {
                         {formatDate(conversion.createdAt)}
                       </div>
                       <div className="flex items-center">
-                        <button className="text-white/40 hover:text-primary transition-colors p-2">
+                        <button
+                          onClick={() => setSelectedConversion(conversion)}
+                          className="text-white/40 hover:text-primary transition-colors p-2"
+                          title="View details"
+                        >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -595,6 +623,141 @@ export default function ConversionsPage() {
           )}
         </div>
       </div>
+
+      {/* Conversion Details Modal */}
+      {selectedConversion && (
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onClick={() => setSelectedConversion(null)}
+        >
+          <div
+            className="premium-card max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6 border-b border-white/10 flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-white">Conversion Details</h2>
+              <button
+                onClick={() => setSelectedConversion(null)}
+                className="text-white/40 hover:text-white transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Customer Section */}
+              <div>
+                <h3 className="text-sm font-medium text-white/60 mb-3">Customer</h3>
+                <div className="flex items-center gap-3">
+                  <Avatar
+                    firstName={selectedConversion.customer?.firstName}
+                    lastName={selectedConversion.customer?.lastName}
+                    email={selectedConversion.customer?.email}
+                    userId={selectedConversion.customerId}
+                    size="md"
+                  />
+                  <div>
+                    <p className="font-medium text-white">
+                      {selectedConversion.customer?.firstName && selectedConversion.customer?.lastName
+                        ? `${selectedConversion.customer.firstName} ${selectedConversion.customer.lastName}`
+                        : selectedConversion.customer?.email || 'Unknown'
+                      }
+                    </p>
+                    {selectedConversion.customer?.email && (
+                      <p className="text-sm text-white/60">{selectedConversion.customer.email}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Influencer Section */}
+              {selectedConversion.influencer && (
+                <div>
+                  <h3 className="text-sm font-medium text-white/60 mb-3">Influencer</h3>
+                  <div className="flex items-center gap-3">
+                    <Avatar
+                      firstName={selectedConversion.influencer.name}
+                      email={selectedConversion.influencer.email}
+                      userId={selectedConversion.influencer.id}
+                      size="md"
+                    />
+                    <div>
+                      <p className="font-medium text-white">{selectedConversion.influencer.name}</p>
+                      {selectedConversion.influencer.email && (
+                        <p className="text-sm text-white/60">{selectedConversion.influencer.email}</p>
+                      )}
+                      {selectedConversion.influencer.socialHandle && (
+                        <p className="text-sm text-white/60">@{selectedConversion.influencer.socialHandle}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Conversion Details */}
+              <div>
+                <h3 className="text-sm font-medium text-white/60 mb-3">Conversion Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-white/60">Type</p>
+                    <p className="text-white font-medium mt-1">{selectedConversion.eventType}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-white/60">Campaign</p>
+                    <p className="text-white font-medium mt-1">{selectedConversion.campaign || '-'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-white/60">Value</p>
+                    <p className="text-white font-medium mt-1">{formatCurrency(selectedConversion.value)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-white/60">Date</p>
+                    <p className="text-white font-medium mt-1">{formatDate(selectedConversion.createdAt)}</p>
+                  </div>
+                  {selectedConversion.eventName && (
+                    <div className="col-span-2">
+                      <p className="text-sm text-white/60">Event Name</p>
+                      <p className="text-white font-medium mt-1">{selectedConversion.eventName}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Metadata */}
+              {selectedConversion.metadata && Object.keys(selectedConversion.metadata).length > 0 && (
+                <div>
+                  <h3 className="text-sm font-medium text-white/60 mb-3">Additional Data</h3>
+                  <div className="bg-white/5 rounded-lg p-4">
+                    <pre className="text-sm text-white/80 whitespace-pre-wrap overflow-x-auto">
+                      {JSON.stringify(selectedConversion.metadata, null, 2)}
+                    </pre>
+                  </div>
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="flex gap-3 pt-4 border-t border-white/10">
+                <a
+                  href={`/dashboard/customers/${selectedConversion.customerId}`}
+                  className="flex-1 premium-button text-center"
+                >
+                  View Customer
+                </a>
+                {selectedConversion.influencer && (
+                  <a
+                    href={`/dashboard/influencers`}
+                    className="flex-1 premium-button text-center"
+                  >
+                    View Influencer
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
