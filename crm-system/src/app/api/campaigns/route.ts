@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import OperatorService from '@/lib/operator-service'
 
 export const dynamic = 'force-dynamic'
 
@@ -307,6 +308,51 @@ export async function POST(request: NextRequest) {
       }
     })
 
+    // Auto-create operator from brand
+    let operator = null
+    if (validatedData.brandId) {
+      try {
+        // Check if operator already exists for this brand
+        const existingOperator = await OperatorService.getOperator(validatedData.brandId)
+
+        if (!existingOperator) {
+          // Create new operator for this brand
+          operator = await OperatorService.createOperator({
+            clientId: validatedData.clientId || 'default-client',
+            name: validatedData.name, // Use campaign name as operator name
+            slug: validatedData.brandId, // Use brandId as slug
+            brand: validatedData.name,
+            emailDomain: `${validatedData.slug}.com`,
+            emailFromName: validatedData.name,
+            emailFromAddress: `noreply@${validatedData.slug}.com`,
+            logoUrl: validatedData.logoUrl,
+            smsEnabled: true,
+            smsProvider: 'laaffic',
+            smsSender: validatedData.name.substring(0, 11).toUpperCase(), // SMS sender max 11 chars
+            protectHighValue: true,
+            recycleAfterDays: 30,
+            minStageForRecycle: -1,
+            maxStageForRecycle: 1,
+          })
+
+          console.log('🏢 Auto-created operator for brand:', {
+            operatorId: operator.id,
+            brandId: validatedData.brandId,
+            name: validatedData.name,
+          })
+        } else {
+          operator = existingOperator
+          console.log('🏢 Using existing operator for brand:', {
+            operatorId: existingOperator.id,
+            brandId: validatedData.brandId,
+          })
+        }
+      } catch (error) {
+        console.error('Failed to auto-create operator:', error)
+        // Continue even if operator creation fails
+      }
+    }
+
     // Create influencer relationships if provided
     if (validatedData.influencerIds && validatedData.influencerIds.length > 0) {
       const influencerRelationships = validatedData.influencerIds.map(influencerId => ({
@@ -324,6 +370,7 @@ export async function POST(request: NextRequest) {
       id: campaign.id,
       name: campaign.name,
       influencerIds: validatedData.influencerIds,
+      operatorId: operator?.id,
       timestamp: new Date().toISOString()
     })
 
