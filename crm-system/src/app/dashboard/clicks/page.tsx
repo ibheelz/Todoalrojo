@@ -333,59 +333,32 @@ export default function ClicksPage() {
           </div>
 
           {/* Filters */}
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4" ref={dropdownRef}>
-            {/* Search */}
-            <div className="flex-1 max-w-sm">
-              <input
-                type="text"
-                placeholder="Search by campaign, source, or IP..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-4 py-2 bg-muted/10 border border-muted/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-              />
-            </div>
+          <div className="premium-card">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Search */}
+              <div>
+                <label className="block text-sm font-medium text-white/80 mb-2">Search</label>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search by campaign, source, or IP..."
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/40 focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors backdrop-blur-sm"
+                />
+              </div>
 
-            {/* Filter Button */}
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2 bg-muted/10 border border-muted/20 rounded-xl text-white hover:bg-muted/20 transition-all"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.414A1 1 0 013 6.707V4z" />
-              </svg>
-              Filters
-            </button>
-
-            {/* Clear Filters Button */}
-            {(dateFilter !== 'today' || selectedCampaign !== 'all' || selectedSource !== 'all' || searchQuery) && (
-              <button
-                onClick={clearFilters}
-                className="flex items-center gap-2 px-4 py-2 bg-red-500/20 border border-red-500/30 rounded-xl text-red-300 hover:bg-red-500/30 transition-all"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                Clear
-              </button>
-            )}
-          </div>
-
-          {/* Filter Dropdown */}
-          {showFilters && (
-            <div className="bg-muted/10 border border-muted/20 rounded-xl p-4 space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {/* Date Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-white/80 mb-2">Date Range</label>
-                  <select
-                    value={dateFilter}
-                    onChange={(e) => {
-                      setDateFilter(e.target.value)
-                      if (e.target.value === 'custom') {
-                        setShowCustomDatePicker(true)
+              {/* Date Filter */}
+              <div>
+                <label className="block text-sm font-medium text-white/80 mb-2">Date Range</label>
+                <select
+                  value={dateFilter}
+                  onChange={(e) => {
+                    setDateFilter(e.target.value)
+                    if (e.target.value === 'custom') {
+                      setShowCustomDatePicker(true)
                       }
                     }}
-                    className="w-full px-3 py-2 bg-muted/10 border border-muted/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors backdrop-blur-sm"
                   >
                     {[
                       { value: 'today', label: 'Today' },
@@ -395,7 +368,7 @@ export default function ClicksPage() {
                       { value: 'last90days', label: 'Last 90 Days' },
                       { value: 'custom', label: 'Custom Range' }
                     ].map(option => (
-                      <option key={option.value} value={option.value}>
+                      <option key={option.value} value={option.value} className="bg-background">
                         {option.label}
                       </option>
                     ))}
@@ -408,11 +381,11 @@ export default function ClicksPage() {
                   <select
                     value={selectedCampaign}
                     onChange={(e) => setSelectedCampaign(e.target.value)}
-                    className="w-full px-3 py-2 bg-muted/10 border border-muted/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors backdrop-blur-sm"
                   >
-                    <option value="all">All Campaigns</option>
+                    <option value="all" className="bg-background">All Campaigns</option>
                     {summary?.campaigns.map(campaign => (
-                      <option key={campaign.name} value={campaign.name}>
+                      <option key={campaign.name} value={campaign.name} className="bg-background">
                         {campaign.name} ({campaign.count})
                       </option>
                     ))}
@@ -425,21 +398,31 @@ export default function ClicksPage() {
                   <select
                     value={selectedSource}
                     onChange={(e) => setSelectedSource(e.target.value)}
-                    className="w-full px-3 py-2 bg-muted/10 border border-muted/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors backdrop-blur-sm"
                   >
-                    <option value="all">All Sources</option>
+                    <option value="all" className="bg-background">All Sources</option>
                     {summary?.sources.map(source => (
-                      <option key={source.name} value={source.name}>
+                      <option key={source.name} value={source.name} className="bg-background">
                         {source.name} ({source.count})
                       </option>
                     ))}
                   </select>
                 </div>
+
+                {/* Clear Filters Button */}
+                <div className="flex items-end">
+                  <button
+                    onClick={clearFilters}
+                    className="w-full px-4 py-3 border border-white/20 text-white/80 rounded-xl hover:bg-white/5 transition-colors backdrop-blur-sm"
+                  >
+                    Clear Filters
+                  </button>
+                </div>
               </div>
 
               {/* Custom Date Picker */}
               {showCustomDatePicker && (
-                <div className="border-t border-muted/20 pt-4 mt-4">
+                <div className="border-t border-white/10 pt-4 mt-4">
                   <div className="flex flex-col sm:flex-row gap-3">
                     <div className="flex-1">
                       <label className="block text-sm font-medium text-white/80 mb-2">From Date</label>
@@ -447,7 +430,7 @@ export default function ClicksPage() {
                         type="date"
                         value={customDateRange.from}
                         onChange={(e) => setCustomDateRange(prev => ({ ...prev, from: e.target.value }))}
-                        className="w-full px-3 py-2 bg-muted/10 border border-muted/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors backdrop-blur-sm"
                       />
                     </div>
                     <div className="flex-1">
@@ -456,14 +439,14 @@ export default function ClicksPage() {
                         type="date"
                         value={customDateRange.to}
                         onChange={(e) => setCustomDateRange(prev => ({ ...prev, to: e.target.value }))}
-                        className="w-full px-3 py-2 bg-muted/10 border border-muted/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors backdrop-blur-sm"
                       />
                     </div>
                     <div className="flex items-end">
                       <button
                         onClick={handleApplyCustomDateRange}
                         disabled={!customDateRange.from || !customDateRange.to}
-                        className="px-4 py-2 bg-primary text-black rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                        className="px-4 py-3 bg-primary text-black rounded-xl font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                       >
                         Apply
                       </button>
@@ -472,7 +455,7 @@ export default function ClicksPage() {
                 </div>
               )}
             </div>
-          )}
+          </div>
         </div>
 
         {/* Summary Stats */}
