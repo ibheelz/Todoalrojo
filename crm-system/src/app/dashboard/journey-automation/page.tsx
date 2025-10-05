@@ -9,7 +9,7 @@ import {
   Mail, MessageSquare, Users, TrendingUp, Clock,
   Play, Pause, RefreshCw, Search, Calendar, CheckCircle,
   XCircle, AlertCircle, Send, Zap, Target, Gift, Sparkles,
-  ArrowRight, Activity
+  ArrowRight, Activity, Eye, Trash2, Database, TestTube, FileText
 } from 'lucide-react'
 
 interface JourneyStat {
@@ -19,43 +19,52 @@ interface JourneyStat {
   messageStats: { status: string; channel: string; count: number }[]
 }
 
-interface JourneyState {
+interface JourneyMessage {
   id: string
-  customerId: string
-  operatorId: string
-  stage: number
-  depositCount: number
-  totalDepositValue: string
-  emailCount: number
-  smsCount: number
-  lastEmailAt: string | null
-  lastSmsAt: string | null
-  unsubEmail: boolean
-  unsubSms: boolean
-  unsubGlobal: boolean
-  currentJourney: string | null
-  journeyStartedAt: string | null
-  customer: {
-    id: string
-    masterEmail: string | null
-    masterPhone: string | null
-    firstName: string | null
-    lastName: string | null
+  messageType: string
+  channel: string
+  journeyType: string
+  dayNumber: number
+  stepNumber: number
+  subject?: string
+  content: string
+  scheduledFor: string
+  sentAt?: string
+  status: string
+  failedReason?: string
+  journeyState: {
+    customer: {
+      masterEmail: string
+      masterPhone: string
+      firstName: string
+      lastName: string
+    }
   }
-  journeyMessages: any[]
 }
 
 export default function JourneyAutomationPage() {
   const [stats, setStats] = useState<JourneyStat | null>(null)
   const [messageStatus, setMessageStatus] = useState<any>(null)
+  const [messages, setMessages] = useState<JourneyMessage[]>([])
+  const [selectedMessage, setSelectedMessage] = useState<JourneyMessage | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [messageFilter, setMessageFilter] = useState<'all' | 'pending' | 'sent' | 'failed'>('all')
+  const [showMessageModal, setShowMessageModal] = useState(false)
 
   useEffect(() => {
-    loadStats()
-    loadMessageStatus()
+    loadAll()
   }, [])
+
+  const loadAll = async () => {
+    await Promise.all([
+      loadStats(),
+      loadMessageStatus(),
+      loadMessages()
+    ])
+  }
 
   const loadStats = async () => {
     try {
@@ -83,6 +92,16 @@ export default function JourneyAutomationPage() {
     }
   }
 
+  const loadMessages = async () => {
+    try {
+      const response = await fetch('/api/journey/messages')
+      const data = await response.json()
+      setMessages(data.messages || [])
+    } catch (error) {
+      console.error('Failed to load messages:', error)
+    }
+  }
+
   const handleProcessMessages = async () => {
     setIsProcessing(true)
     try {
@@ -90,20 +109,79 @@ export default function JourneyAutomationPage() {
         method: 'POST'
       })
       const data = await response.json()
-      alert(`Processed ${data.sent} messages (${data.failed} failed)`)
-      await loadMessageStatus()
-      await loadStats()
+
+      const message = `✅ Message Processing Complete\n\n` +
+        `📤 Sent: ${data.sent} messages\n` +
+        `❌ Failed: ${data.failed} messages\n` +
+        `⏭️ Skipped: ${data.skipped} messages`
+
+      alert(message)
+      await loadAll()
     } catch (error) {
       console.error('Failed to process messages:', error)
-      alert('Failed to process messages')
+      alert('❌ Failed to process messages')
     } finally {
       setIsProcessing(false)
+    }
+  }
+
+  const handleGenerateTestData = async (type: string) => {
+    setIsGenerating(true)
+    try {
+      const response = await fetch(`/api/journey/test-data?action=${type}`, {
+        method: 'POST'
+      })
+      const data = await response.json()
+
+      if (data.success) {
+        alert(`✅ Test Data Generated!\n\n${data.results.customers.length} customers created with journeys`)
+        await loadAll()
+      } else {
+        alert(`❌ Failed: ${data.error}`)
+      }
+    } catch (error: any) {
+      console.error('Failed to generate test data:', error)
+      alert(`❌ Error: ${error.message}`)
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
+  const handleCleanTestData = async () => {
+    if (!confirm('⚠️ This will delete ALL test data. Continue?')) return
+
+    setIsGenerating(true)
+    try {
+      const response = await fetch('/api/journey/test-data?action=clean', {
+        method: 'POST'
+      })
+      const data = await response.json()
+
+      if (data.success) {
+        const msg = `✅ Test Data Cleaned!\n\n` +
+          `🗑️ Deleted:\n` +
+          `- ${data.deleted.customers} customers\n` +
+          `- ${data.deleted.states} journey states\n` +
+          `- ${data.deleted.messages} messages\n` +
+          `- ${data.deleted.identifiers} identifiers`
+        alert(msg)
+        await loadAll()
+      }
+    } catch (error: any) {
+      alert(`❌ Error: ${error.message}`)
+    } finally {
+      setIsGenerating(false)
     }
   }
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return
     window.location.href = `/dashboard/customers?search=${encodeURIComponent(searchQuery)}`
+  }
+
+  const viewMessage = (message: JourneyMessage) => {
+    setSelectedMessage(message)
+    setShowMessageModal(true)
   }
 
   const getStageLabel = (stage: number) => {
@@ -136,6 +214,19 @@ export default function JourneyAutomationPage() {
     }
   }
 
+  const filteredMessages = messages.filter(msg => {
+    if (messageFilter === 'all') return true
+    if (messageFilter === 'pending') return msg.status === 'PENDING' || msg.status === 'SCHEDULED'
+    if (messageFilter === 'sent') return msg.status === 'SENT'
+    if (messageFilter === 'failed') return msg.status === 'FAILED'
+    return true
+  })
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr)
+    return date.toLocaleString()
+  }
+
   return (
     <div className="space-y-6 fade-in">
       {/* Header */}
@@ -148,18 +239,71 @@ export default function JourneyAutomationPage() {
             Automated email & SMS campaigns driving acquisition and retention
           </p>
         </div>
-        <Button
-          onClick={handleProcessMessages}
-          disabled={isProcessing}
-          className="bg-primary hover:bg-primary/90 text-black font-bold shadow-lg"
-          size="lg"
-        >
-          <RefreshCw className={`h-4 w-4 mr-2 ${isProcessing ? 'animate-spin' : ''}`} />
-          {isProcessing ? 'Processing...' : 'Process Messages'}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={handleProcessMessages}
+            disabled={isProcessing}
+            className="bg-primary hover:bg-primary/90 text-black font-bold shadow-lg"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isProcessing ? 'animate-spin' : ''}`} />
+            {isProcessing ? 'Processing...' : 'Process Messages'}
+          </Button>
+        </div>
       </div>
 
-      {/* Stats Overview - Premium Cards */}
+      {/* Test Data Controls */}
+      <div className="premium-card">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-3 rounded-xl bg-violet-500/10">
+            <TestTube className="h-6 w-6 text-violet-500" />
+          </div>
+          <div>
+            <h3 className="text-lg font-black text-foreground">Test Data Generator</h3>
+            <p className="text-xs text-muted-foreground">Generate sample customers and journeys for testing</p>
+          </div>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+          <Button
+            onClick={() => handleGenerateTestData('full')}
+            disabled={isGenerating}
+            variant="outline"
+            className="justify-start font-bold hover:bg-violet-500/10 hover:text-violet-500 hover:border-violet-500/30"
+          >
+            <Database className="h-4 w-4 mr-2" />
+            Full Test Set
+          </Button>
+          <Button
+            onClick={() => handleGenerateTestData('acquisition')}
+            disabled={isGenerating}
+            variant="outline"
+            className="justify-start font-bold hover:bg-blue-500/10 hover:text-blue-500 hover:border-blue-500/30"
+          >
+            <Target className="h-4 w-4 mr-2" />
+            Acquisition Only
+          </Button>
+          <Button
+            onClick={() => handleGenerateTestData('retention')}
+            disabled={isGenerating}
+            variant="outline"
+            className="justify-start font-bold hover:bg-emerald-500/10 hover:text-emerald-500 hover:border-emerald-500/30"
+          >
+            <TrendingUp className="h-4 w-4 mr-2" />
+            Retention Only
+          </Button>
+          <Button
+            onClick={handleCleanTestData}
+            disabled={isGenerating}
+            variant="outline"
+            className="justify-start font-bold hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/30"
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Clean Test Data
+          </Button>
+        </div>
+      </div>
+
+      {/* Stats Overview */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {/* Total Journeys */}
         <div className="premium-card group hover:shadow-xl transition-all duration-300">
@@ -246,11 +390,142 @@ export default function JourneyAutomationPage() {
         </div>
       </div>
 
+      {/* Message History Table */}
+      <div className="premium-card">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-xl font-black text-foreground">Message Queue & History</h3>
+            <p className="text-xs text-muted-foreground mt-1">All scheduled and sent messages</p>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant={messageFilter === 'all' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setMessageFilter('all')}
+              className={messageFilter === 'all' ? 'bg-primary text-black' : ''}
+            >
+              All
+            </Button>
+            <Button
+              variant={messageFilter === 'pending' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setMessageFilter('pending')}
+              className={messageFilter === 'pending' ? 'bg-blue-500 text-white' : ''}
+            >
+              Pending
+            </Button>
+            <Button
+              variant={messageFilter === 'sent' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setMessageFilter('sent')}
+              className={messageFilter === 'sent' ? 'bg-emerald-500 text-white' : ''}
+            >
+              Sent
+            </Button>
+            <Button
+              variant={messageFilter === 'failed' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setMessageFilter('failed')}
+              className={messageFilter === 'failed' ? 'bg-red-500 text-white' : ''}
+            >
+              Failed
+            </Button>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-border/50">
+                <th className="text-left py-3 px-4 text-xs font-bold text-muted-foreground uppercase">Customer</th>
+                <th className="text-left py-3 px-4 text-xs font-bold text-muted-foreground uppercase">Type</th>
+                <th className="text-left py-3 px-4 text-xs font-bold text-muted-foreground uppercase">Channel</th>
+                <th className="text-left py-3 px-4 text-xs font-bold text-muted-foreground uppercase">Journey</th>
+                <th className="text-left py-3 px-4 text-xs font-bold text-muted-foreground uppercase">Day</th>
+                <th className="text-left py-3 px-4 text-xs font-bold text-muted-foreground uppercase">Scheduled</th>
+                <th className="text-left py-3 px-4 text-xs font-bold text-muted-foreground uppercase">Status</th>
+                <th className="text-left py-3 px-4 text-xs font-bold text-muted-foreground uppercase">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredMessages.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="text-center py-8 text-muted-foreground">
+                    No messages found. Generate test data to see messages.
+                  </td>
+                </tr>
+              ) : (
+                filteredMessages.map((msg) => (
+                  <tr key={msg.id} className="border-b border-border/30 hover:bg-muted/30 transition-colors">
+                    <td className="py-3 px-4">
+                      <div>
+                        <p className="text-sm font-medium text-foreground">
+                          {msg.journeyState.customer.firstName} {msg.journeyState.customer.lastName}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {msg.channel === 'EMAIL' ? msg.journeyState.customer.masterEmail : msg.journeyState.customer.masterPhone}
+                        </p>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4">
+                      <Badge variant="outline" className="text-xs">
+                        {msg.messageType.replace('_', ' ')}
+                      </Badge>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-2">
+                        {msg.channel === 'EMAIL' ? (
+                          <Mail className="h-4 w-4 text-blue-500" />
+                        ) : (
+                          <MessageSquare className="h-4 w-4 text-green-500" />
+                        )}
+                        <span className="text-sm font-medium">{msg.channel}</span>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4">
+                      <Badge variant="outline" className={msg.journeyType === 'ACQUISITION' ? 'border-blue-200 text-blue-700' : 'border-emerald-200 text-emerald-700'}>
+                        {msg.journeyType}
+                      </Badge>
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="text-sm">Day {msg.dayNumber}</span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="text-xs text-muted-foreground">{formatDate(msg.scheduledFor)}</span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <Badge
+                        variant="outline"
+                        className={
+                          msg.status === 'SENT' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' :
+                          msg.status === 'FAILED' ? 'border-red-200 bg-red-50 text-red-700' :
+                          'border-blue-200 bg-blue-50 text-blue-700'
+                        }
+                      >
+                        {msg.status}
+                      </Badge>
+                    </td>
+                    <td className="py-3 px-4">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => viewMessage(msg)}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       {/* Journey Types - Premium Side by Side */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Acquisition Journey */}
         <div className="premium-card hover:shadow-xl transition-all duration-300 relative overflow-hidden group">
-          {/* Gradient Background */}
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
           <div className="relative space-y-4">
@@ -312,7 +587,6 @@ export default function JourneyAutomationPage() {
 
         {/* Retention Journey */}
         <div className="premium-card hover:shadow-xl transition-all duration-300 relative overflow-hidden group">
-          {/* Gradient Background */}
           <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
           <div className="relative space-y-4">
@@ -402,7 +676,6 @@ export default function JourneyAutomationPage() {
                           {getStageLabel(item.stage)}
                         </span>
                       </div>
-                      {/* Progress bar */}
                       <div className="h-1.5 bg-muted rounded-full overflow-hidden mt-2">
                         <div
                           className="h-full bg-gradient-to-r from-primary to-primary/60 rounded-full transition-all duration-500"
@@ -427,7 +700,6 @@ export default function JourneyAutomationPage() {
       {/* Message Statistics */}
       {stats && stats.messageStats.length > 0 && (
         <div className="grid gap-6 lg:grid-cols-2">
-          {/* Email Stats */}
           <div className="premium-card">
             <div className="flex items-center gap-3 mb-6">
               <div className="p-3 rounded-xl bg-blue-500/10">
@@ -460,7 +732,6 @@ export default function JourneyAutomationPage() {
             </div>
           </div>
 
-          {/* SMS Stats */}
           <div className="premium-card">
             <div className="flex items-center gap-3 mb-6">
               <div className="p-3 rounded-xl bg-green-500/10">
@@ -541,11 +812,11 @@ export default function JourneyAutomationPage() {
             </Button>
             <Button
               variant="outline"
-              onClick={loadStats}
+              onClick={loadAll}
               className="justify-start font-bold hover:bg-primary/10 hover:text-primary hover:border-primary/30"
             >
               <RefreshCw className="h-4 w-4 mr-2" />
-              Refresh Stats
+              Refresh All
             </Button>
           </div>
         </div>
@@ -559,7 +830,7 @@ export default function JourneyAutomationPage() {
           </div>
           <h3 className="text-2xl font-black text-foreground mb-3">No Active Journeys Yet</h3>
           <p className="text-muted-foreground max-w-md mx-auto mb-8">
-            Journey automation will start automatically when new leads are captured or operator events are received.
+            Use the Test Data Generator above to create sample customers and journeys for testing.
           </p>
 
           <div className="inline-flex flex-col items-start gap-3 text-sm text-left bg-muted/30 p-6 rounded-xl max-w-md mx-auto mb-8">
@@ -578,13 +849,108 @@ export default function JourneyAutomationPage() {
           </div>
 
           <Button
-            onClick={() => window.location.href = '/dashboard/leads'}
+            onClick={() => handleGenerateTestData('full')}
             className="bg-primary hover:bg-primary/90 text-black font-bold"
             size="lg"
           >
-            View Leads
+            Generate Test Data
             <ArrowRight className="h-4 w-4 ml-2" />
           </Button>
+        </div>
+      )}
+
+      {/* Message Preview Modal */}
+      {showMessageModal && selectedMessage && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowMessageModal(false)}>
+          <div className="premium-card max-w-2xl w-full m-4 max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                {selectedMessage.channel === 'EMAIL' ? (
+                  <div className="p-3 rounded-xl bg-blue-500/10">
+                    <Mail className="h-6 w-6 text-blue-500" />
+                  </div>
+                ) : (
+                  <div className="p-3 rounded-xl bg-green-500/10">
+                    <MessageSquare className="h-6 w-6 text-green-500" />
+                  </div>
+                )}
+                <div>
+                  <h3 className="text-lg font-black text-foreground">Message Preview</h3>
+                  <p className="text-xs text-muted-foreground">{selectedMessage.channel} - {selectedMessage.messageType}</p>
+                </div>
+              </div>
+              <Button variant="ghost" onClick={() => setShowMessageModal(false)}>
+                <XCircle className="h-5 w-5" />
+              </Button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs font-bold text-muted-foreground uppercase mb-1">Customer</p>
+                  <p className="text-sm font-medium text-foreground">
+                    {selectedMessage.journeyState.customer.firstName} {selectedMessage.journeyState.customer.lastName}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {selectedMessage.channel === 'EMAIL'
+                      ? selectedMessage.journeyState.customer.masterEmail
+                      : selectedMessage.journeyState.customer.masterPhone}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-muted-foreground uppercase mb-1">Status</p>
+                  <Badge
+                    variant="outline"
+                    className={
+                      selectedMessage.status === 'SENT' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' :
+                      selectedMessage.status === 'FAILED' ? 'border-red-200 bg-red-50 text-red-700' :
+                      'border-blue-200 bg-blue-50 text-blue-700'
+                    }
+                  >
+                    {selectedMessage.status}
+                  </Badge>
+                </div>
+              </div>
+
+              {selectedMessage.subject && (
+                <div>
+                  <p className="text-xs font-bold text-muted-foreground uppercase mb-1">Subject</p>
+                  <p className="text-sm font-medium text-foreground">{selectedMessage.subject}</p>
+                </div>
+              )}
+
+              <div>
+                <p className="text-xs font-bold text-muted-foreground uppercase mb-1">Content</p>
+                <div className="bg-muted/30 p-4 rounded-lg">
+                  {selectedMessage.channel === 'EMAIL' ? (
+                    <div dangerouslySetInnerHTML={{ __html: selectedMessage.content }} className="text-sm" />
+                  ) : (
+                    <p className="text-sm whitespace-pre-wrap">{selectedMessage.content}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs font-bold text-muted-foreground uppercase mb-1">Scheduled For</p>
+                  <p className="text-sm text-foreground">{formatDate(selectedMessage.scheduledFor)}</p>
+                </div>
+                {selectedMessage.sentAt && (
+                  <div>
+                    <p className="text-xs font-bold text-muted-foreground uppercase mb-1">Sent At</p>
+                    <p className="text-sm text-foreground">{formatDate(selectedMessage.sentAt)}</p>
+                  </div>
+                )}
+              </div>
+
+              {selectedMessage.failedReason && (
+                <div>
+                  <p className="text-xs font-bold text-muted-foreground uppercase mb-1">Failure Reason</p>
+                  <p className="text-sm text-red-600">{selectedMessage.failedReason}</p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>

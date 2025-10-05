@@ -19,11 +19,12 @@ export class MessageProcessor {
 
     if (messages.length === 0) {
       console.log(`✅ No pending messages to process`);
-      return { processed: 0, sent: 0, failed: 0 };
+      return { processed: 0, sent: 0, failed: 0, skipped: 0 };
     }
 
     let sent = 0;
     let failed = 0;
+    let skipped = 0;
 
     for (const message of messages) {
       try {
@@ -33,7 +34,7 @@ export class MessageProcessor {
           const email = customer.masterEmail;
           if (!email) {
             console.log(`⚠️ Skipping message ${message.id} - no email for customer`);
-            failed++;
+            skipped++;
             continue;
           }
 
@@ -58,7 +59,7 @@ export class MessageProcessor {
           const phone = customer.masterPhone;
           if (!phone) {
             console.log(`⚠️ Skipping message ${message.id} - no phone for customer`);
-            failed++;
+            skipped++;
             continue;
           }
 
@@ -88,12 +89,13 @@ export class MessageProcessor {
       }
     }
 
-    console.log(`✅ Message processing complete: ${sent} sent, ${failed} failed`);
+    console.log(`✅ Message processing complete: ${sent} sent, ${failed} failed, ${skipped} skipped`);
 
     return {
       processed: messages.length,
       sent,
       failed,
+      skipped,
     };
   }
 
