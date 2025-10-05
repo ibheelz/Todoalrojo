@@ -80,6 +80,15 @@ class OperatorService {
   }
 
   /**
+   * Get all operators
+   */
+  static async getAllOperators() {
+    return await prisma.operator.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /**
    * Update operator status
    */
   static async updateOperatorStatus(operatorId: string, status: OperatorStatus) {

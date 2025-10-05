@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get all operators (admin only - add auth check here)
-    const operators = await OperatorService.getClientOperators('');
+    const operators = await OperatorService.getAllOperators();
     return NextResponse.json({ operators });
   } catch (error: any) {
     console.error('Failed to fetch operators:', error);
