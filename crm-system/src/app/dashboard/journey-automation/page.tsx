@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -9,7 +10,8 @@ import {
   Mail, MessageSquare, Users, TrendingUp, Clock,
   Play, Pause, RefreshCw, Search, Calendar, CheckCircle,
   XCircle, AlertCircle, Send, Zap, Target, Gift, Sparkles,
-  ArrowRight, Activity, Eye, Trash2, Database, TestTube, FileText
+  ArrowRight, Activity, Eye, Trash2, Database, TestTube, FileText,
+  ExternalLink, Building2
 } from 'lucide-react'
 
 interface JourneyStat {
@@ -33,7 +35,10 @@ interface JourneyMessage {
   status: string
   failedReason?: string
   journeyState: {
+    customerId: string
+    operatorId: string
     customer: {
+      id: string
       masterEmail: string
       masterPhone: string
       firstName: string
@@ -913,16 +918,28 @@ export default function JourneyAutomationPage() {
             <div className="space-y-4">
               {/* Customer Details Section */}
               <div className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 p-4 rounded-lg border border-purple-500/20">
-                <h4 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-                  <Users className="h-4 w-4 text-purple-400" />
-                  Customer Details
-                </h4>
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
+                    <Users className="h-4 w-4 text-purple-400" />
+                    Customer Details
+                  </h4>
+                  <Link
+                    href={`/dashboard/customers/${selectedMessage.journeyState.customer.id}`}
+                    className="text-xs text-purple-400 hover:text-purple-300 flex items-center gap-1 transition-colors"
+                  >
+                    View Profile
+                    <ExternalLink className="h-3 w-3" />
+                  </Link>
+                </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <p className="text-xs font-bold text-muted-foreground uppercase mb-1">Name</p>
-                    <p className="text-sm font-medium text-foreground">
+                    <Link
+                      href={`/dashboard/customers/${selectedMessage.journeyState.customer.id}`}
+                      className="text-sm font-medium text-foreground hover:text-purple-400 transition-colors"
+                    >
                       {selectedMessage.journeyState.customer.firstName} {selectedMessage.journeyState.customer.lastName}
-                    </p>
+                    </Link>
                   </div>
                   <div>
                     <p className="text-xs font-bold text-muted-foreground uppercase mb-1">Contact</p>
@@ -957,23 +974,42 @@ export default function JourneyAutomationPage() {
               {/* Campaign & Brand Details */}
               {selectedMessage.customerDetails && (selectedMessage.customerDetails.campaign || selectedMessage.customerDetails.operator) && (
                 <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 p-4 rounded-lg border border-green-500/20">
-                  <h4 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-                    <Target className="h-4 w-4 text-green-400" />
-                    Campaign & Brand
-                  </h4>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
+                      <Target className="h-4 w-4 text-green-400" />
+                      Campaign & Brand
+                    </h4>
+                    {selectedMessage.customerDetails.operator && (
+                      <Link
+                        href={`/dashboard/brands/${selectedMessage.journeyState.operatorId}`}
+                        className="text-xs text-green-400 hover:text-green-300 flex items-center gap-1 transition-colors"
+                      >
+                        View Brand
+                        <Building2 className="h-3 w-3" />
+                      </Link>
+                    )}
+                  </div>
                   <div className="grid grid-cols-2 gap-3">
                     {selectedMessage.customerDetails.campaign && (
                       <div>
                         <p className="text-xs font-bold text-muted-foreground uppercase mb-1">Campaign</p>
-                        <p className="text-sm font-medium text-foreground">{selectedMessage.customerDetails.campaign}</p>
+                        <Link
+                          href={`/dashboard/campaigns?search=${selectedMessage.customerDetails.campaign}`}
+                          className="text-sm font-medium text-foreground hover:text-green-400 transition-colors"
+                        >
+                          {selectedMessage.customerDetails.campaign}
+                        </Link>
                       </div>
                     )}
                     {selectedMessage.customerDetails.operator && (
                       <div>
                         <p className="text-xs font-bold text-muted-foreground uppercase mb-1">Brand</p>
-                        <p className="text-sm font-medium text-foreground">
+                        <Link
+                          href={`/dashboard/brands/${selectedMessage.journeyState.operatorId}`}
+                          className="text-sm font-medium text-foreground hover:text-green-400 transition-colors"
+                        >
                           {selectedMessage.customerDetails.operator.brand || selectedMessage.customerDetails.operator.name}
-                        </p>
+                        </Link>
                       </div>
                     )}
                     {selectedMessage.customerDetails.source && (
@@ -998,14 +1034,28 @@ export default function JourneyAutomationPage() {
               {/* Influencer Details */}
               {selectedMessage.customerDetails?.influencer && (
                 <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 p-4 rounded-lg border border-yellow-500/20">
-                  <h4 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-yellow-400" />
-                    Influencer Attribution
-                  </h4>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
+                      <Sparkles className="h-4 w-4 text-yellow-400" />
+                      Influencer Attribution
+                    </h4>
+                    <Link
+                      href={`/dashboard/influencers/${selectedMessage.customerDetails.influencer.id}`}
+                      className="text-xs text-yellow-400 hover:text-yellow-300 flex items-center gap-1 transition-colors"
+                    >
+                      View Influencer
+                      <ExternalLink className="h-3 w-3" />
+                    </Link>
+                  </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <p className="text-xs font-bold text-muted-foreground uppercase mb-1">Influencer</p>
-                      <p className="text-sm font-medium text-foreground">{selectedMessage.customerDetails.influencer.name}</p>
+                      <Link
+                        href={`/dashboard/influencers/${selectedMessage.customerDetails.influencer.id}`}
+                        className="text-sm font-medium text-foreground hover:text-yellow-400 transition-colors"
+                      >
+                        {selectedMessage.customerDetails.influencer.name}
+                      </Link>
                     </div>
                     {selectedMessage.customerDetails.influencer.platform && (
                       <div>

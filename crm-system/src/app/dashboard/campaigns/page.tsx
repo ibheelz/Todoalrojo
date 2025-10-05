@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useState, useRef } from 'react'
+import Link from 'next/link'
 import { PlusIcon, TargetIcon, WarningIcon, SearchIcon } from '@/components/ui/icons'
 import CampaignModal from '@/components/ui/campaign-modal'
 
@@ -1071,7 +1072,16 @@ export default function CampaignsPage() {
                         </div>
                       </td>
                       <td className="px-3 sm:px-4 py-3 sm:py-4">
-                        <div className="text-white/80 text-xs sm:text-sm truncate">{getInfluencerName(campaign.influencerId)}</div>
+                        {campaign.influencerId ? (
+                          <Link
+                            href={`/dashboard/influencers/${campaign.influencerId}`}
+                            className="text-white/80 hover:text-primary text-xs sm:text-sm truncate transition-colors"
+                          >
+                            {getInfluencerName(campaign.influencerId)}
+                          </Link>
+                        ) : (
+                          <div className="text-white/80 text-xs sm:text-sm truncate">{getInfluencerName(campaign.influencerId)}</div>
+                        )}
                       </td>
                       <td className="px-2 sm:px-4 py-3 sm:py-4">
                         <div className="text-primary font-semibold text-xs sm:text-sm">{campaign.stats.totalClicks.toLocaleString()}</div>

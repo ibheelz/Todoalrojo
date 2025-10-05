@@ -161,13 +161,22 @@ export default function BrandDetailPage() {
           </div>
         </div>
 
-        <button
-          onClick={fetchCustomers}
-          className="premium-button flex items-center gap-2"
-        >
-          <RefreshCw className="w-4 h-4" />
-          Refresh
-        </button>
+        <div className="flex gap-2">
+          <Link
+            href="/dashboard/journey-automation"
+            className="premium-button flex items-center gap-2"
+          >
+            <Mail className="w-4 h-4" />
+            Journey Automation
+          </Link>
+          <button
+            onClick={fetchCustomers}
+            className="premium-button flex items-center gap-2"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Refresh
+          </button>
+        </div>
       </div>
 
       {/* Brand Config */}

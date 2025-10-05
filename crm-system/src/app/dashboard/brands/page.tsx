@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Users, TrendingUp, DollarSign, Target, ChevronRight, Building2 } from 'lucide-react';
+import { Users, TrendingUp, DollarSign, Target, ChevronRight, Building2, Mail } from 'lucide-react';
 import Link from 'next/link';
 
 interface Operator {
@@ -132,11 +132,20 @@ export default function BrandSegmentationPage() {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-white">Brand Segmentation</h1>
-        <p className="text-gray-400 mt-1">
-          View customers segmented by brand/operator with isolated journeys
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-white">Brand Segmentation</h1>
+          <p className="text-gray-400 mt-1">
+            View customers segmented by brand/operator with isolated journeys
+          </p>
+        </div>
+        <Link
+          href="/dashboard/journey-automation"
+          className="premium-button flex items-center gap-2"
+        >
+          <Mail className="w-4 h-4" />
+          Journey Automation
+        </Link>
       </div>
 
       {/* Brand Cards Grid */}
