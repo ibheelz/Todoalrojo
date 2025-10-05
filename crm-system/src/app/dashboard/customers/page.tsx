@@ -1061,6 +1061,7 @@ export default function CustomersPage() {
                       <Avatar
                         firstName={customer.firstName}
                         lastName={customer.lastName}
+                        email={customer.masterEmail}
                         userId={customer.id}
                         size="sm"
                       />
@@ -1241,6 +1242,7 @@ export default function CustomersPage() {
                     <Avatar
                       firstName={customer.firstName}
                       lastName={customer.lastName}
+                      email={customer.masterEmail}
                       userId={customer.id}
                       size="md"
                       className="flex-shrink-0"
@@ -1366,6 +1368,7 @@ export default function CustomersPage() {
                     <Avatar
                       firstName={customer.firstName}
                       lastName={customer.lastName}
+                      email={customer.masterEmail}
                       userId={customer.id}
                       size="md"
                       className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12"

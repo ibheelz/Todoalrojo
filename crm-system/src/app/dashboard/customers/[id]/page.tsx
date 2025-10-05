@@ -362,6 +362,7 @@ export default function CustomerDetailPage() {
                 <Avatar
                   firstName={customer.firstName}
                   lastName={customer.lastName}
+                  email={customer.masterEmail}
                   userId={customer.id}
                   size="lg"
                 />

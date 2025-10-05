@@ -7,11 +7,12 @@ interface AvatarProps {
   firstName?: string
   lastName?: string
   userId?: string
+  email?: string
   size?: 'sm' | 'md' | 'lg'
   className?: string
 }
 
-export function Avatar({ firstName, lastName, userId, size = 'md', className }: AvatarProps) {
+export function Avatar({ firstName, lastName, userId, email, size = 'md', className }: AvatarProps) {
   const [imageLoaded, setImageLoaded] = useState(false)
   const [imageError, setImageError] = useState(false)
   const [imageUrl, setImageUrl] = useState<string>('')
@@ -25,9 +26,10 @@ export function Avatar({ firstName, lastName, userId, size = 'md', className }: 
 
   // Generate avatar using server-side proxy to avoid CORS issues
   useEffect(() => {
-    if (!firstName && !lastName && !userId) return
+    if (!firstName && !lastName && !userId && !email) return
 
-    const seed = userId || `${firstName || ''}-${lastName || ''}`.toLowerCase().replace(/\s+/g, '-')
+    // Use email as primary seed for consistency, fallback to userId, then name
+    const seed = email || userId || `${firstName || ''}-${lastName || ''}`.toLowerCase().replace(/\s+/g, '-')
     const sizeMap = { sm: 32, md: 40, lg: 48 }
     const avatarSize = sizeMap[size]
 
@@ -64,7 +66,7 @@ export function Avatar({ firstName, lastName, userId, size = 'md', className }: 
     return () => {
       clearTimeout(timeout)
     }
-  }, [firstName, lastName, userId, size])
+  }, [firstName, lastName, userId, email, size])
 
   // Size classes
   const sizeClasses = {
