@@ -626,27 +626,65 @@ export default function ConversionsPage() {
 
       {/* Conversion Details Modal */}
       {selectedConversion && (
-        <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-          onClick={() => setSelectedConversion(null)}
-        >
+        <>
+          {/* Full Screen Backdrop */}
           <div
-            className="premium-card max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="p-6 border-b border-white/10 flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-white">Conversion Details</h2>
-              <button
-                onClick={() => setSelectedConversion(null)}
-                className="text-white/40 hover:text-white transition-colors"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
+            className="fixed inset-0 bg-black/40 z-[24]"
+            style={{
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+            }}
+            onClick={() => setSelectedConversion(null)}
+          />
 
-            <div className="p-6 space-y-6">
+          {/* Modal Container */}
+          <div className="fixed top-0 bottom-0 right-0 z-[25] flex items-center justify-center p-4 left-16 lg:left-80">
+            <div
+              className="relative w-full max-w-2xl max-h-[90vh] overflow-hidden rounded-3xl"
+              style={{
+                background: 'rgba(0, 0, 0, 0.25)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header - Fixed */}
+              <div className="sticky top-0 z-10 px-6 py-4 border-b border-white/10" style={{
+                background: '#0f0f0f',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.15)'
+              }}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden">
+                      <div className="w-full h-full bg-yellow-400/20 rounded-xl flex items-center justify-center">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-yellow-400">
+                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                      </div>
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold text-yellow-400">Conversion Details</h2>
+                      <p className="text-sm text-white/60 mt-1">Complete conversion information</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setSelectedConversion(null)}
+                    className="w-8 h-8 bg-yellow-400 hover:bg-yellow-300 rounded-lg flex items-center justify-center transition-all duration-300 flex-shrink-0"
+                    title="Close modal"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-black">
+                      <line x1="18" y1="6" x2="6" y2="18"/>
+                      <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              {/* Scrollable Content */}
+              <div className="overflow-y-auto max-h-[calc(90vh-120px)] custom-scrollbar">
+                <div className="p-6 space-y-6 pb-16">
               {/* Customer Section */}
               <div>
                 <h3 className="text-sm font-medium text-white/60 mb-3">Customer</h3>
@@ -754,9 +792,11 @@ export default function ConversionsPage() {
                   </a>
                 )}
               </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   )
