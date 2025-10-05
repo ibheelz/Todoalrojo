@@ -260,6 +260,7 @@ model Client {
   canViewAnalytics Boolean  @default(true)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+  operators        Operator[]
 
   @@index([slug])
   @@index([email])
@@ -591,6 +592,8 @@ model JourneyTemplate {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
+  operator        Operator? @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+
   @@index([journeyType])
   @@index([operatorId])
   @@index([isActive])
@@ -633,4 +636,150 @@ enum PostbackType {
   FIRST_DEPOSIT
   DEPOSIT
   WITHDRAWAL
+}
+
+// Multi-Operator Management Models
+model Operator {
+  id                  String   @id @default(cuid())
+  clientId            String
+  name                String   // "Roobet", "Rushbet", etc.
+  slug                String   @unique
+  brand               String?  // Display name
+
+  // Contact & Branding
+  emailDomain         String?  // "roobet.com" for sender emails
+  emailFromName       String?  // "Roobet Casino"
+  emailFromAddress    String?  // "noreply@roobet.com"
+  logoUrl             String?
+  primaryColor        String?  // Brand color for emails
+
+  // SMS Configuration
+  smsEnabled          Boolean  @default(true)
+  smsSender           String?  // "ROOBET" or phone number
+  smsProvider         String   @default("laaffic") // "laaffic", "twilio"
+
+  // Operator Status
+  status              OperatorStatus @default(ACTIVE)
+
+  // Segmentation & Recycling Rules
+  protectHighValue    Boolean  @default(true) // Protect stage 3+ from cross-sell
+  recycleAfterDays    Int      @default(30)   // Days before eligible for another operator
+  minStageForRecycle  Int      @default(-1)   // Minimum stage to be recyclable
+  maxStageForRecycle  Int      @default(1)    // Maximum stage to be recyclable
+
+  // Quality Metrics (calculated)
+  totalLeads          Int      @default(0)
+  totalRegistrations  Int      @default(0)
+  totalFTD            Int      @default(0)
+  totalRevenue        Decimal  @default(0) @db.Decimal(12, 2)
+
+  // Rates (calculated)
+  regRate             Decimal? @db.Decimal(5, 4) // registrations / leads
+  ftdRate             Decimal? @db.Decimal(5, 4) // ftd / registrations
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  client              Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  journeyTemplates    JourneyTemplate[]
+  recyclingRules      OperatorRecyclingRule[]
+
+  @@index([clientId])
+  @@index([slug])
+  @@index([status])
+  @@map("operators")
+}
+
+model OperatorRecyclingRule {
+  id                    String   @id @default(cuid())
+  sourceOperatorId      String   // "Roobet"
+  targetOperatorId      String   // "Rushbet"
+
+  // Eligibility Rules
+  minDaysSinceLastDeposit Int    @default(30)  // Must be inactive for X days
+  maxStage                Int    @default(1)   // Max stage 1 (first deposit only)
+  minStage                Int    @default(-1)  // Min stage -1 (all)
+  excludeHighValue        Boolean @default(true) // Exclude stage 3+
+
+  // Limits
+  maxRecyclesPerUser      Int    @default(2)   // Max times a user can be recycled
+  cooldownDays            Int    @default(14)  // Days between recycles for same user
+
+  isActive                Boolean @default(true)
+  priority                Int    @default(0)   // Higher priority rules run first
+
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  sourceOperator          Operator @relation(fields: [sourceOperatorId], references: [id], onDelete: Cascade)
+
+  @@unique([sourceOperatorId, targetOperatorId])
+  @@index([sourceOperatorId])
+  @@index([targetOperatorId])
+  @@index([isActive])
+  @@map("operator_recycling_rules")
+}
+
+model CustomerRecyclingHistory {
+  id                String   @id @default(cuid())
+  customerId        String
+  fromOperatorId    String
+  toOperatorId      String
+
+  // Context at time of recycle
+  stageAtRecycle    Int
+  daysSinceDeposit  Int?
+  lastDepositAmount Decimal? @db.Decimal(10, 2)
+
+  // Outcome tracking
+  recycledAt        DateTime @default(now())
+  convertedAt       DateTime? // If they deposit with new operator
+  conversionValue   Decimal?  @db.Decimal(10, 2)
+
+  // Journey started
+  journeyStarted    Boolean  @default(false)
+  journeyType       String?  // "acquisition", "retention"
+
+  @@index([customerId])
+  @@index([fromOperatorId])
+  @@index([toOperatorId])
+  @@index([recycledAt])
+  @@map("customer_recycling_history")
+}
+
+model OperatorMetrics {
+  id              String   @id @default(cuid())
+  operatorId      String
+  date            DateTime @db.Date
+
+  // Daily metrics
+  leads           Int      @default(0)
+  registrations   Int      @default(0)
+  ftd             Int      @default(0)
+  deposits        Int      @default(0)
+  revenue         Decimal  @default(0) @db.Decimal(12, 2)
+
+  // Journey metrics
+  journeysStarted Int      @default(0)
+  messagesStart   Int      @default(0)
+  messagesFailed  Int      @default(0)
+
+  // Recycling metrics
+  recycledIn      Int      @default(0) // Players recycled TO this operator
+  recycledOut     Int      @default(0) // Players recycled FROM this operator
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([operatorId, date])
+  @@index([operatorId])
+  @@index([date])
+  @@map("operator_metrics")
+}
+
+enum OperatorStatus {
+  ACTIVE        // Actively acquiring and retaining players
+  PAUSED        // Temporarily paused, protect all players
+  INACTIVE      // No longer active, all players recyclable
+  TESTING       // Testing mode, limited campaigns
 }

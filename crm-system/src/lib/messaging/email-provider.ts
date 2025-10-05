@@ -8,6 +8,8 @@ export interface SendEmailInput {
   subject: string;
   html: string;
   from?: string;
+  fromName?: string;
+  operatorId?: string; // For operator-specific branding
 }
 
 export interface EmailResult {
@@ -22,13 +24,25 @@ export class EmailProvider {
    * In production, replace with actual ESP integration
    */
   static async send(input: SendEmailInput): Promise<EmailResult> {
-    const { to, subject, html, from = 'noreply@casino.com' } = input;
+    const { to, subject, html, from = 'noreply@casino.com', fromName = 'Casino', operatorId } = input;
 
     try {
+      // Get operator-specific branding if operatorId provided
+      let finalFrom = from;
+      let finalFromName = fromName;
+
+      if (operatorId) {
+        // In production, fetch operator branding from database
+        // const operator = await prisma.operator.findUnique({ where: { id: operatorId } });
+        // finalFrom = operator?.emailFromAddress || from;
+        // finalFromName = operator?.emailFromName || fromName;
+      }
+
       // Mock sending - log to console
       console.log(`📧 [EMAIL SENT]`);
       console.log(`   To: ${to}`);
-      console.log(`   From: ${from}`);
+      console.log(`   From: ${finalFromName} <${finalFrom}>`);
+      console.log(`   Operator: ${operatorId || 'default'}`);
       console.log(`   Subject: ${subject}`);
       console.log(`   Content length: ${html.length} characters`);
 

@@ -19,7 +19,7 @@ import {
   InfluencerIcon,
   LinksIcon
 } from '@/components/ui/icons'
-import { Mail } from 'lucide-react'
+import { Mail, Building2 } from 'lucide-react'
 import { Avatar } from '@/components/ui/avatar'
 
 interface DashboardLayoutProps {
@@ -29,6 +29,7 @@ interface DashboardLayoutProps {
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: AnalyticsIcon, description: 'Overview & Analytics' },
   { name: 'Campaigns', href: '/dashboard/campaigns', icon: CampaignIcon, description: 'Marketing Campaigns' },
+  { name: 'Operators', href: '/dashboard/operators', icon: Building2, description: 'Multi-Operator Management' },
   { name: 'Influencers', href: '/dashboard/influencers', icon: InfluencerIcon, description: 'Influencer Management' },
   { name: 'Customers', href: '/dashboard/customers', icon: UsersIcon, description: 'Customer Management' },
   { name: 'Lead Tracking', href: '/dashboard/leads', icon: TargetIcon, description: 'Lead Tracking' },

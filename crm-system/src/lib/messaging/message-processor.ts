@@ -29,6 +29,7 @@ export class MessageProcessor {
     for (const message of messages) {
       try {
         const customer = message.journeyState.customer;
+        const operatorId = message.journeyState.operatorId;
 
         if (message.channel === MessageChannel.EMAIL) {
           const email = customer.masterEmail;
@@ -42,13 +43,14 @@ export class MessageProcessor {
             to: email,
             subject: message.subject || 'Message from Casino',
             html: message.content,
+            operatorId, // Pass operator ID for branding
           });
 
           if (result.success) {
             await JourneyService.markMessageSent(
               message.id,
               result.messageId,
-              'mock-email-provider'
+              result.provider || 'email-provider'
             );
             sent++;
           } else {
@@ -66,13 +68,14 @@ export class MessageProcessor {
           const result = await SMSProvider.send({
             to: phone,
             message: message.content,
+            operatorId, // Pass operator ID for provider selection
           });
 
           if (result.success) {
             await JourneyService.markMessageSent(
               message.id,
               result.messageId,
-              'mock-sms-provider'
+              result.provider || 'sms-provider'
             );
             sent++;
           } else {

@@ -294,11 +294,11 @@ async function createFullTestData(timestamp: number) {
     },
   });
 
-  await JourneyService.handleUnsubscribe({
-    customerId: unsubCustomer.id,
-    operatorId: 'test-operator-1',
-    type: 'email',
-  });
+  await JourneyService.handleUnsubscribe(
+    unsubCustomer.id,
+    'test-operator-1',
+    'email'
+  );
 
   customers.push(unsubCustomer);
 
