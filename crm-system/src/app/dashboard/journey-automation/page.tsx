@@ -38,6 +38,32 @@ interface JourneyMessage {
       masterPhone: string
       firstName: string
       lastName: string
+      createdAt?: string
+      firstSeen?: string
+      source?: string
+      country?: string
+      city?: string
+    }
+  }
+  customerDetails?: {
+    registrationDate: string
+    firstSeen: string
+    source?: string
+    medium?: string
+    campaign?: string
+    clickId?: string
+    landingPage?: string
+    country?: string
+    city?: string
+    influencer?: {
+      id: string
+      name: string
+      platform?: string
+    }
+    operator?: {
+      name: string
+      brand?: string
+      slug: string
     }
   }
 }
@@ -885,18 +911,120 @@ export default function JourneyAutomationPage() {
             </div>
 
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-xs font-bold text-muted-foreground uppercase mb-1">Customer</p>
-                  <p className="text-sm font-medium text-foreground">
-                    {selectedMessage.journeyState.customer.firstName} {selectedMessage.journeyState.customer.lastName}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {selectedMessage.channel === 'EMAIL'
-                      ? selectedMessage.journeyState.customer.masterEmail
-                      : selectedMessage.journeyState.customer.masterPhone}
-                  </p>
+              {/* Customer Details Section */}
+              <div className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 p-4 rounded-lg border border-purple-500/20">
+                <h4 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                  <Users className="h-4 w-4 text-purple-400" />
+                  Customer Details
+                </h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-xs font-bold text-muted-foreground uppercase mb-1">Name</p>
+                    <p className="text-sm font-medium text-foreground">
+                      {selectedMessage.journeyState.customer.firstName} {selectedMessage.journeyState.customer.lastName}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-muted-foreground uppercase mb-1">Contact</p>
+                    <p className="text-xs text-muted-foreground">
+                      {selectedMessage.channel === 'EMAIL'
+                        ? selectedMessage.journeyState.customer.masterEmail
+                        : selectedMessage.journeyState.customer.masterPhone}
+                    </p>
+                  </div>
+                  {selectedMessage.customerDetails && (
+                    <>
+                      {selectedMessage.customerDetails.registrationDate && (
+                        <div>
+                          <p className="text-xs font-bold text-muted-foreground uppercase mb-1">Registered</p>
+                          <p className="text-xs text-foreground">{formatDate(selectedMessage.customerDetails.registrationDate)}</p>
+                        </div>
+                      )}
+                      {selectedMessage.customerDetails.country && (
+                        <div>
+                          <p className="text-xs font-bold text-muted-foreground uppercase mb-1">Location</p>
+                          <p className="text-xs text-foreground">
+                            {selectedMessage.customerDetails.city ? `${selectedMessage.customerDetails.city}, ` : ''}
+                            {selectedMessage.customerDetails.country}
+                          </p>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
+              </div>
+
+              {/* Campaign & Brand Details */}
+              {selectedMessage.customerDetails && (selectedMessage.customerDetails.campaign || selectedMessage.customerDetails.operator) && (
+                <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 p-4 rounded-lg border border-green-500/20">
+                  <h4 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                    <Target className="h-4 w-4 text-green-400" />
+                    Campaign & Brand
+                  </h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    {selectedMessage.customerDetails.campaign && (
+                      <div>
+                        <p className="text-xs font-bold text-muted-foreground uppercase mb-1">Campaign</p>
+                        <p className="text-sm font-medium text-foreground">{selectedMessage.customerDetails.campaign}</p>
+                      </div>
+                    )}
+                    {selectedMessage.customerDetails.operator && (
+                      <div>
+                        <p className="text-xs font-bold text-muted-foreground uppercase mb-1">Brand</p>
+                        <p className="text-sm font-medium text-foreground">
+                          {selectedMessage.customerDetails.operator.brand || selectedMessage.customerDetails.operator.name}
+                        </p>
+                      </div>
+                    )}
+                    {selectedMessage.customerDetails.source && (
+                      <div>
+                        <p className="text-xs font-bold text-muted-foreground uppercase mb-1">Source</p>
+                        <p className="text-xs text-foreground">
+                          {selectedMessage.customerDetails.source}
+                          {selectedMessage.customerDetails.medium && ` / ${selectedMessage.customerDetails.medium}`}
+                        </p>
+                      </div>
+                    )}
+                    {selectedMessage.customerDetails.clickId && (
+                      <div>
+                        <p className="text-xs font-bold text-muted-foreground uppercase mb-1">Click ID</p>
+                        <p className="text-xs text-foreground font-mono">{selectedMessage.customerDetails.clickId}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Influencer Details */}
+              {selectedMessage.customerDetails?.influencer && (
+                <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 p-4 rounded-lg border border-yellow-500/20">
+                  <h4 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-yellow-400" />
+                    Influencer Attribution
+                  </h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-xs font-bold text-muted-foreground uppercase mb-1">Influencer</p>
+                      <p className="text-sm font-medium text-foreground">{selectedMessage.customerDetails.influencer.name}</p>
+                    </div>
+                    {selectedMessage.customerDetails.influencer.platform && (
+                      <div>
+                        <p className="text-xs font-bold text-muted-foreground uppercase mb-1">Platform</p>
+                        <p className="text-xs text-foreground capitalize">{selectedMessage.customerDetails.influencer.platform}</p>
+                      </div>
+                    )}
+                  </div>
+                  {selectedMessage.customerDetails.landingPage && (
+                    <div className="mt-2">
+                      <p className="text-xs font-bold text-muted-foreground uppercase mb-1">Landing Page</p>
+                      <p className="text-xs text-foreground break-all">{selectedMessage.customerDetails.landingPage}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Message Status */}
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-xs font-bold text-muted-foreground uppercase mb-1">Status</p>
                   <Badge
@@ -908,6 +1036,12 @@ export default function JourneyAutomationPage() {
                     }
                   >
                     {selectedMessage.status}
+                  </Badge>
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-muted-foreground uppercase mb-1">Journey Type</p>
+                  <Badge variant="outline" className="border-purple-200 bg-purple-50 text-purple-700 capitalize">
+                    {selectedMessage.journeyType}
                   </Badge>
                 </div>
               </div>
