@@ -45,6 +45,7 @@ export default function BrandDetailPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [stageFilter, setStageFilter] = useState<number | 'all'>('all');
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
 
   useEffect(() => {
     if (operatorId) {
@@ -299,6 +300,9 @@ export default function BrandDetailPage() {
                   <th className="text-right py-3 px-4 text-sm font-medium text-gray-400">
                     Messages
                   </th>
+                  <th className="text-right py-3 px-4 text-sm font-medium text-gray-400">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/10">
@@ -364,6 +368,14 @@ export default function BrandDetailPage() {
                         </div>
                       </div>
                     </td>
+                    <td className="py-4 px-4 text-right">
+                      <button
+                        onClick={() => setSelectedCustomer(customer)}
+                        className="text-purple-400 hover:text-purple-300 transition-colors text-sm font-medium"
+                      >
+                        View Details
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -371,6 +383,189 @@ export default function BrandDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Customer Details Modal */}
+      {selectedCustomer && (
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onClick={() => setSelectedCustomer(null)}
+        >
+          <div
+            className="premium-card max-w-3xl w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="p-6 border-b border-white/10 flex items-center justify-between sticky top-0 bg-[#1a1a2e] z-10">
+              <div className="flex items-center gap-4">
+                <Avatar
+                  firstName={selectedCustomer.firstName}
+                  lastName={selectedCustomer.lastName}
+                  email={selectedCustomer.masterEmail}
+                  size="lg"
+                />
+                <div>
+                  <h2 className="text-xl font-semibold text-white">
+                    {selectedCustomer.firstName} {selectedCustomer.lastName}
+                  </h2>
+                  <p className="text-gray-400 text-sm">
+                    {selectedCustomer.masterEmail || selectedCustomer.masterPhone}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedCustomer(null)}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Journey Status */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-400 mb-3">Journey Status</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-white/5 rounded-lg p-4">
+                    <p className="text-sm text-gray-400 mb-1">Current Stage</p>
+                    {selectedCustomer.journeyState && (
+                      <span
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getStageColor(
+                          selectedCustomer.journeyState.stage
+                        )}`}
+                      >
+                        {getStageLabel(selectedCustomer.journeyState.stage)}
+                      </span>
+                    )}
+                  </div>
+                  <div className="bg-white/5 rounded-lg p-4">
+                    <p className="text-sm text-gray-400 mb-1">Active Journey</p>
+                    <p className="text-white font-medium capitalize">
+                      {selectedCustomer.journeyState?.currentJourney || 'None'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Deposit Information */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-400 mb-3">Deposit Information</h3>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="bg-white/5 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <DollarSign className="w-4 h-4 text-green-400" />
+                      <p className="text-sm text-gray-400">Total Deposits</p>
+                    </div>
+                    <p className="text-2xl font-bold text-white">
+                      {selectedCustomer.journeyState?.depositCount || 0}
+                    </p>
+                  </div>
+                  <div className="bg-white/5 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <TrendingUp className="w-4 h-4 text-purple-400" />
+                      <p className="text-sm text-gray-400">Total Value</p>
+                    </div>
+                    <p className="text-2xl font-bold text-white">
+                      ${parseFloat(selectedCustomer.journeyState?.totalDepositValue || '0').toFixed(2)}
+                    </p>
+                  </div>
+                  <div className="bg-white/5 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <TrendingUp className="w-4 h-4 text-blue-400" />
+                      <p className="text-sm text-gray-400">Avg. Deposit</p>
+                    </div>
+                    <p className="text-2xl font-bold text-white">
+                      ${selectedCustomer.journeyState?.depositCount
+                        ? (parseFloat(selectedCustomer.journeyState.totalDepositValue) / selectedCustomer.journeyState.depositCount).toFixed(2)
+                        : '0.00'
+                      }
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Communication Stats */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-400 mb-3">Communication History</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-white/5 rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <Mail className="w-5 h-5 text-blue-400" />
+                        <p className="text-sm text-gray-400">Email Messages</p>
+                      </div>
+                      <span className="text-2xl font-bold text-white">
+                        {selectedCustomer.journeyState?.emailCount || 0}
+                      </span>
+                    </div>
+                    {selectedCustomer.journeyState?.lastEmailAt && (
+                      <p className="text-xs text-gray-500">
+                        Last sent: {new Date(selectedCustomer.journeyState.lastEmailAt).toLocaleDateString()}
+                      </p>
+                    )}
+                  </div>
+                  <div className="bg-white/5 rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <MessageSquare className="w-5 h-5 text-green-400" />
+                        <p className="text-sm text-gray-400">SMS Messages</p>
+                      </div>
+                      <span className="text-2xl font-bold text-white">
+                        {selectedCustomer.journeyState?.smsCount || 0}
+                      </span>
+                    </div>
+                    {selectedCustomer.journeyState?.lastSmsAt && (
+                      <p className="text-xs text-gray-500">
+                        Last sent: {new Date(selectedCustomer.journeyState.lastSmsAt).toLocaleDateString()}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Customer Information */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-400 mb-3">Customer Information</h3>
+                <div className="bg-white/5 rounded-lg p-4 space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Customer ID</span>
+                    <span className="text-white font-mono text-sm">{selectedCustomer.id}</span>
+                  </div>
+                  {selectedCustomer.masterEmail && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Email</span>
+                      <span className="text-white">{selectedCustomer.masterEmail}</span>
+                    </div>
+                  )}
+                  {selectedCustomer.masterPhone && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Phone</span>
+                      <span className="text-white">{selectedCustomer.masterPhone}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-4 border-t border-white/10">
+                <Link
+                  href={`/dashboard/customers/${selectedCustomer.id}`}
+                  className="flex-1 premium-button text-center"
+                >
+                  View Full Profile
+                </Link>
+                <Link
+                  href="/dashboard/journey-automation"
+                  className="flex-1 premium-button text-center"
+                >
+                  Manage Journey
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
