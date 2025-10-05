@@ -356,105 +356,104 @@ export default function ClicksPage() {
                     setDateFilter(e.target.value)
                     if (e.target.value === 'custom') {
                       setShowCustomDatePicker(true)
-                      }
-                    }}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors backdrop-blur-sm"
-                  >
-                    {[
-                      { value: 'today', label: 'Today' },
-                      { value: 'yesterday', label: 'Yesterday' },
-                      { value: 'last7days', label: 'Last 7 Days' },
-                      { value: 'last30days', label: 'Last 30 Days' },
-                      { value: 'last90days', label: 'Last 90 Days' },
-                      { value: 'custom', label: 'Custom Range' }
-                    ].map(option => (
-                      <option key={option.value} value={option.value} className="bg-background">
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Campaign Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-white/80 mb-2">Campaign</label>
-                  <select
-                    value={selectedCampaign}
-                    onChange={(e) => setSelectedCampaign(e.target.value)}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors backdrop-blur-sm"
-                  >
-                    <option value="all" className="bg-background">All Campaigns</option>
-                    {summary?.campaigns.map(campaign => (
-                      <option key={campaign.name} value={campaign.name} className="bg-background">
-                        {campaign.name} ({campaign.count})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Source Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-white/80 mb-2">Source</label>
-                  <select
-                    value={selectedSource}
-                    onChange={(e) => setSelectedSource(e.target.value)}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors backdrop-blur-sm"
-                  >
-                    <option value="all" className="bg-background">All Sources</option>
-                    {summary?.sources.map(source => (
-                      <option key={source.name} value={source.name} className="bg-background">
-                        {source.name} ({source.count})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Clear Filters Button */}
-                <div className="flex items-end">
-                  <button
-                    onClick={clearFilters}
-                    className="w-full px-4 py-3 border border-white/20 text-white/80 rounded-xl hover:bg-white/5 transition-colors backdrop-blur-sm"
-                  >
-                    Clear Filters
-                  </button>
-                </div>
+                    }
+                  }}
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors backdrop-blur-sm"
+                >
+                  {[
+                    { value: 'today', label: 'Today' },
+                    { value: 'yesterday', label: 'Yesterday' },
+                    { value: 'last7days', label: 'Last 7 Days' },
+                    { value: 'last30days', label: 'Last 30 Days' },
+                    { value: 'last90days', label: 'Last 90 Days' },
+                    { value: 'custom', label: 'Custom Range' }
+                  ].map(option => (
+                    <option key={option.value} value={option.value} className="bg-background">
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              {/* Custom Date Picker */}
-              {showCustomDatePicker && (
-                <div className="border-t border-white/10 pt-4 mt-4">
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <div className="flex-1">
-                      <label className="block text-sm font-medium text-white/80 mb-2">From Date</label>
-                      <input
-                        type="date"
-                        value={customDateRange.from}
-                        onChange={(e) => setCustomDateRange(prev => ({ ...prev, from: e.target.value }))}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors backdrop-blur-sm"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <label className="block text-sm font-medium text-white/80 mb-2">To Date</label>
-                      <input
-                        type="date"
-                        value={customDateRange.to}
-                        onChange={(e) => setCustomDateRange(prev => ({ ...prev, to: e.target.value }))}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors backdrop-blur-sm"
-                      />
-                    </div>
-                    <div className="flex items-end">
-                      <button
-                        onClick={handleApplyCustomDateRange}
-                        disabled={!customDateRange.from || !customDateRange.to}
-                        className="px-4 py-3 bg-primary text-black rounded-xl font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                      >
-                        Apply
-                      </button>
-                    </div>
+              {/* Campaign Filter */}
+              <div>
+                <label className="block text-sm font-medium text-white/80 mb-2">Campaign</label>
+                <select
+                  value={selectedCampaign}
+                  onChange={(e) => setSelectedCampaign(e.target.value)}
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors backdrop-blur-sm"
+                >
+                  <option value="all" className="bg-background">All Campaigns</option>
+                  {summary?.campaigns.map(campaign => (
+                    <option key={campaign.name} value={campaign.name} className="bg-background">
+                      {campaign.name} ({campaign.count})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Source Filter */}
+              <div>
+                <label className="block text-sm font-medium text-white/80 mb-2">Source</label>
+                <select
+                  value={selectedSource}
+                  onChange={(e) => setSelectedSource(e.target.value)}
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors backdrop-blur-sm"
+                >
+                  <option value="all" className="bg-background">All Sources</option>
+                  {summary?.sources.map(source => (
+                    <option key={source.name} value={source.name} className="bg-background">
+                      {source.name} ({source.count})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Clear Filters Button */}
+              <div className="flex items-end">
+                <button
+                  onClick={clearFilters}
+                  className="w-full px-4 py-3 border border-white/20 text-white/80 rounded-xl hover:bg-white/5 transition-colors backdrop-blur-sm"
+                >
+                  Clear Filters
+                </button>
+              </div>
+            </div>
+
+            {/* Custom Date Picker */}
+            {showCustomDatePicker && (
+              <div className="border-t border-white/10 pt-4 mt-4">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-white/80 mb-2">From Date</label>
+                    <input
+                      type="date"
+                      value={customDateRange.from}
+                      onChange={(e) => setCustomDateRange(prev => ({ ...prev, from: e.target.value }))}
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors backdrop-blur-sm"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-white/80 mb-2">To Date</label>
+                    <input
+                      type="date"
+                      value={customDateRange.to}
+                      onChange={(e) => setCustomDateRange(prev => ({ ...prev, to: e.target.value }))}
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors backdrop-blur-sm"
+                    />
+                  </div>
+                  <div className="flex items-end">
+                    <button
+                      onClick={handleApplyCustomDateRange}
+                      disabled={!customDateRange.from || !customDateRange.to}
+                      className="px-4 py-3 bg-primary text-black rounded-xl font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    >
+                      Apply
+                    </button>
                   </div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
 
