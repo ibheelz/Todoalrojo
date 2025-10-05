@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { headers } from 'next/headers'
 import { incrementCampaignCounters, incrementInfluencerCountersByLinkId } from '@/lib/attribution'
+import { eventBus } from '@/lib/event-bus'
 
 interface Props {
   params: { shortCode: string }
@@ -186,6 +187,20 @@ export default async function ShortLinkRedirect({ params, searchParams }: Props)
         // Update campaign and influencer counters for consistency across pages
         await incrementCampaignCounters({ campaign: shortLink.campaign || undefined, clicks: 1 })
         await incrementInfluencerCountersByLinkId(shortLink.id, { clicks: 1 })
+
+        // Emit event to notify listening clients (SSE)
+        const clickEvent = {
+          type: 'click',
+          payload: {
+            campaign: shortLink.campaign,
+            shortCode: shortLink.shortCode,
+            clickId,
+            timestamp: new Date().toISOString()
+          }
+        }
+        console.log('🔔 [SHORT LINK] Emitting click event:', clickEvent)
+        eventBus.emit('stats', clickEvent)
+        console.log('✅ [SHORT LINK] Click event emitted successfully')
 
         // Try to find or create customer if possible
         if (ip && !deviceInfo.isBot) {

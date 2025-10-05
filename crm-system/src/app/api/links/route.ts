@@ -348,7 +348,7 @@ export async function GET(request: NextRequest) {
         ...link,
         influencerId: influencerIds[0] || null, // backward compatibility for UI that expects single
         influencerIds,
-        shortUrl: generateShortUrl(link.shortCode),
+        shortUrl: generateShortUrl(link.shortCode, link.customDomain),
         clickCount: link._count.clicks,
         customers,
         leads,

@@ -30,8 +30,12 @@ export async function GET(_req: NextRequest) {
         } catch {}
       }, 15000)
 
-      onStats = (evt: any) => send(evt)
+      onStats = (evt: any) => {
+        console.log('📡 [SSE] Sending event to client:', evt)
+        send(evt)
+      }
       eventBus.on('stats', onStats)
+      console.log('✅ [SSE] Client connected, listening for stats events')
     },
     cancel() {
       if (onStats) eventBus.off('stats', onStats)

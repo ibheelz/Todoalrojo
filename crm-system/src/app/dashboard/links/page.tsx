@@ -129,15 +129,26 @@ export default function LinksPage() {
     fetchInfluencers()
   }, [page, searchTerm, selectedCampaign])
 
+  // Polling fallback - refresh every 10 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      console.log('[LINKS PAGE] Auto-refreshing links...')
+      fetchLinks()
+    }, 10000) // 10 seconds
+
+    return () => clearInterval(interval)
+  }, [page, searchTerm, selectedCampaign])
+
   // Live updates via SSE: refresh on clicks/leads/ftd/resets
   useEffect(() => {
     const es = new EventSource('/api/events')
     const onStats = (e: MessageEvent) => {
       try {
         const evt = JSON.parse((e as MessageEvent).data)
-        // console.debug('[LINKS PAGE] SSE event', evt)
+        console.log('[LINKS PAGE] SSE event received:', evt)
         if (!evt || !evt.type) return
         if (['click', 'lead', 'ftd', 'resetInfluencer', 'resetCampaign'].includes(evt.type)) {
+          console.log('[LINKS PAGE] Triggering refresh for event type:', evt.type)
           fetchLinks()
           // Toasts
           if (evt.type === 'click') addToast('New click detected')
@@ -145,7 +156,9 @@ export default function LinksPage() {
           if (evt.type === 'ftd') addToast('New FTD conversion')
           if (evt.type === 'resetInfluencer' || evt.type === 'resetCampaign') addToast('Stats were reset')
         }
-      } catch {}
+      } catch (err) {
+        console.error('[LINKS PAGE] SSE error:', err)
+      }
     }
     // @ts-ignore - EventSource typings
     es.addEventListener('stats', onStats)
@@ -212,6 +225,12 @@ export default function LinksPage() {
       }
     } catch (error) {
       console.error('❌ Error fetching campaigns:', error)
+      setAlertState({
+        open: true,
+        title: 'Error Loading Campaigns',
+        message: 'Failed to load campaign data. Some features may not work correctly.',
+        variant: 'error'
+      })
     }
   }
 
@@ -285,6 +304,12 @@ export default function LinksPage() {
       }
     } catch (error) {
       console.error('❌ Error fetching links:', error)
+      setAlertState({
+        open: true,
+        title: 'Error Loading Links',
+        message: error instanceof Error ? error.message : 'Failed to load links. Please try refreshing the page.',
+        variant: 'error'
+      })
     } finally {
       setLoading(false)
     }
@@ -491,6 +516,20 @@ export default function LinksPage() {
               <p className="text-white/60 text-sm sm:text-base mt-1">Create and manage short links with detailed analytics</p>
             </div>
             <div className="flex items-center gap-4">
+              {/* Refresh Button */}
+              <button
+                onClick={() => {
+                  fetchLinks()
+                  addToast('Links refreshed')
+                }}
+                className="p-3 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm text-white/60 hover:text-white/80 hover:bg-white/10 transition-all duration-200"
+                title="Refresh links"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+                </svg>
+              </button>
+
               {/* View Mode Toggle - Hidden on smaller screens */}
               <div className="hidden xl:flex bg-white/5 rounded-xl p-1 border border-white/10 backdrop-blur-sm">
                 {/* Compact View */}

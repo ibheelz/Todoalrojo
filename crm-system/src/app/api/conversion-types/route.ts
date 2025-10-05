@@ -12,28 +12,24 @@ const createConversionTypeSchema = z.object({
 // GET - List all conversion types
 export async function GET() {
   try {
-    const conversionTypes = await prisma.conversionType.findMany({
-      where: { isActive: true },
-      orderBy: { name: 'asc' },
-      include: {
-        _count: {
-          select: {
-            events: true,
-            customerConversions: true
-          }
-        }
-      }
-    })
+    // Return default conversion types since ConversionType model doesn't exist yet
+    const defaultConversionTypes = [
+      { id: '1', name: 'FTD', description: 'First Time Deposit', isActive: true, createdAt: new Date(), updatedAt: new Date(), _count: { events: 0 } },
+      { id: '2', name: 'Registration', description: 'User Registration', isActive: true, createdAt: new Date(), updatedAt: new Date(), _count: { events: 0 } },
+      { id: '3', name: 'Deposit', description: 'Any Deposit', isActive: true, createdAt: new Date(), updatedAt: new Date(), _count: { events: 0 } },
+      { id: '4', name: 'Withdrawal', description: 'Withdrawal', isActive: true, createdAt: new Date(), updatedAt: new Date(), _count: { events: 0 } },
+    ]
 
     return NextResponse.json({
       success: true,
-      data: conversionTypes
+      data: defaultConversionTypes
     })
   } catch (error) {
     console.error('Error fetching conversion types:', error)
     return NextResponse.json({
       success: false,
-      error: 'Failed to fetch conversion types'
+      error: 'Failed to fetch conversion types',
+      details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 })
   }
 }
@@ -44,14 +40,11 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const validatedData = createConversionTypeSchema.parse(body)
 
-    const conversionType = await prisma.conversionType.create({
-      data: validatedData
-    })
-
+    // ConversionType model doesn't exist yet, return placeholder response
     return NextResponse.json({
-      success: true,
-      data: conversionType
-    })
+      success: false,
+      error: 'Conversion type creation not yet implemented - ConversionType model needs to be added to schema'
+    }, { status: 501 })
   } catch (error) {
     console.error('Error creating conversion type:', error)
 
@@ -63,16 +56,10 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    if (error instanceof Error && error.message.includes('Unique constraint')) {
-      return NextResponse.json({
-        success: false,
-        error: 'Conversion type with this name already exists'
-      }, { status: 400 })
-    }
-
     return NextResponse.json({
       success: false,
-      error: 'Failed to create conversion type'
+      error: 'Failed to create conversion type',
+      details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 })
   }
 }
