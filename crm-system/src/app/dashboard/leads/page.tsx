@@ -780,6 +780,7 @@ export default function LeadsPage() {
                           <Avatar
                             firstName={lead.firstName}
                             lastName={lead.lastName}
+                            email={lead.email}
                             userId={lead.customer?.id}
                             size="md"
                           />
@@ -893,6 +894,7 @@ export default function LeadsPage() {
                   <Avatar
                     firstName={lead.firstName}
                     lastName={lead.lastName}
+                    email={lead.email}
                     userId={lead.customer?.id}
                     size="sm"
                     className="sm:w-12 sm:h-12"
