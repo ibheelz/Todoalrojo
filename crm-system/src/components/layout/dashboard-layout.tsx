@@ -19,6 +19,7 @@ import {
   InfluencerIcon,
   LinksIcon
 } from '@/components/ui/icons'
+import { Mail } from 'lucide-react'
 import { Avatar } from '@/components/ui/avatar'
 
 interface DashboardLayoutProps {
@@ -31,6 +32,7 @@ const navigation = [
   { name: 'Influencers', href: '/dashboard/influencers', icon: InfluencerIcon, description: 'Influencer Management' },
   { name: 'Customers', href: '/dashboard/customers', icon: UsersIcon, description: 'Customer Management' },
   { name: 'Lead Tracking', href: '/dashboard/leads', icon: TargetIcon, description: 'Lead Tracking' },
+  { name: 'Journey Automation', href: '/dashboard/journey-automation', icon: Mail, description: 'Email & SMS Campaigns' },
   { name: 'Conversions', href: '/dashboard/events', icon: EventsIcon, description: 'Conversion Tracking' },
   { name: 'Links', href: '/dashboard/links', icon: LinksIcon, description: 'Link Management' },
   { name: 'Clicks', href: '/dashboard/clicks', icon: ClicksIcon, description: 'Click Tracking' },
