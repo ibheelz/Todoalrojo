@@ -191,40 +191,38 @@ export default function CustomerModal({
   if (!isOpen) return null
 
   return (
-    <div
-      className="fixed top-0 left-0 right-0 bottom-0 bg-black/80 backdrop-blur-[20px]"
-      style={{
-        zIndex: 999999,
-        position: 'fixed',
-        inset: 0
-      }}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) {
-          onClose()
-        }
-      }}
-    >
+    <>
+      {/* Full Screen Backdrop */}
+      <div
+        className="fixed inset-0 bg-black/40 z-[24]"
+        style={{
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+        }}
+        onClick={onClose}
+      />
+
+      {/* Modal Container */}
+      <div
+        className="fixed top-0 bottom-0 right-0 z-[25] flex items-center justify-center p-4 left-16 lg:left-80"
+      >
       {/* Mobile Modal (lg and below) */}
-      <div className="lg:hidden">
+      <div className="lg:hidden w-full">
         <div
-          className="fixed left-0 right-0 w-full transform transition-transform duration-300 ease-out rounded-xl sm:rounded-2xl md:rounded-3xl flex flex-col"
+          className="w-full transform transition-transform duration-300 ease-out rounded-3xl flex flex-col max-h-[90vh]"
           style={{
-            zIndex: 1000000,
-            top: isOpen ? '0rem' : '-100vh',
-            height: '100vh',
-            background: 'rgba(255, 255, 255, 0.08)',
+            background: 'rgba(0, 0, 0, 0.25)',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
             border: '1px solid rgba(255, 255, 255, 0.15)',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)'
           }}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Mobile Header - Fixed */}
-          <div className="flex-shrink-0 flex items-center justify-between p-1.5 xs:p-2 sm:p-3 border-b border-white/10" style={{
-            background: 'rgba(255, 255, 255, 0.08)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)'
+          <div className="sticky top-0 z-10 flex-shrink-0 flex items-center justify-between p-1.5 xs:p-2 sm:p-3 border-b border-white/10" style={{
+            background: '#0f0f0f',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.15)'
           }}>
             <div className="flex items-center gap-1.5 xs:gap-2 overflow-hidden">
               <div className="p-1 xs:p-1.5 rounded-lg bg-yellow-400/10 border border-yellow-400/20 flex-shrink-0">
@@ -234,16 +232,20 @@ export default function CustomerModal({
             </div>
             <button
               onClick={onClose}
-              className="p-1.5 xs:p-2 rounded-lg hover:bg-red-500/20 text-gray-400 hover:text-red-400 transition-colors border border-white/10 hover:border-red-400/50"
+              className="w-8 h-8 bg-yellow-400 hover:bg-yellow-300 rounded-lg flex items-center justify-center transition-all duration-300 flex-shrink-0"
+              title="Close modal"
               disabled={saving}
             >
-              <X className="w-4 h-4 xs:w-5 xs:h-5 text-red-400" />
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-black">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
             </button>
           </div>
 
           {/* Mobile Form - Scrollable */}
-          <div className="flex-1 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
-            <form id="mobile-customer-form" onSubmit={handleSubmit} className="p-2 xs:p-3 sm:p-4 pb-[102px] xs:pb-28 sm:pb-32">
+          <div className="overflow-y-auto max-h-[calc(90vh-120px)] custom-scrollbar">
+            <form id="mobile-customer-form" onSubmit={handleSubmit} className="p-6 space-y-6 pb-16">
             <div className="space-y-4 xs:space-y-5 sm:space-y-6">
               {/* Personal Information */}
               <div className="space-y-3 xs:space-y-4 pb-5 xs:pb-6 border-b border-white/10">
@@ -624,42 +626,45 @@ export default function CustomerModal({
 
           {/* Mobile Footer - Fixed */}
           <div
-            className="flex-shrink-0 flex items-center justify-end gap-1.5 xs:gap-2 p-1.5 xs:p-2 sm:p-3 border-t-2 border-yellow-400/30"
+            className="sticky bottom-0 z-10 flex items-center justify-end gap-3 px-6 py-4 border-t border-white/10"
             style={{
-              position: 'sticky',
-              bottom: 0,
-              background: 'rgba(255, 255, 255, 0.08)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              zIndex: 10,
-              minHeight: '50px'
+              background: '#0f0f0f',
+              borderTop: '1px solid rgba(255, 255, 255, 0.15)'
             }}
           >
             <button
               type="button"
               onClick={onClose}
-              className="px-3 xs:px-4 py-1.5 xs:py-2 text-white bg-gray-600 hover:bg-gray-500 rounded-lg font-medium transition-colors border border-gray-500 text-xs xs:text-sm"
+              className="px-5 py-2.5 rounded-xl text-white/70 hover:text-white transition-all duration-300 text-sm font-medium flex items-center space-x-2"
+              style={{
+                background: 'rgba(255, 255, 255, 0.08)',
+                border: '1px solid rgba(255, 255, 255, 0.15)'
+              }}
               disabled={saving}
             >
-              Cancel
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-yellow-400">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+              <span>Cancel</span>
             </button>
             <button
               type="submit"
               form="mobile-customer-form"
               disabled={saving}
-              className="flex items-center gap-1 xs:gap-2 px-4 xs:px-6 py-1.5 xs:py-2 bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg text-xs xs:text-sm"
+              className="px-6 py-2.5 rounded-xl bg-primary text-black font-semibold hover:bg-primary/90 transition-all duration-300 text-sm shadow-lg flex items-center space-x-2"
             >
               {saving ? (
                 <>
-                  <div className="w-3 h-3 xs:w-4 xs:h-4 border-2 border-gray-900/20 border-t-gray-900 rounded-full animate-spin" />
-                  <span className="hidden xs:inline">Saving...</span>
-                  <span className="xs:hidden">Save</span>
+                  <div className="w-4 h-4 border-2 border-gray-900/20 border-t-gray-900 rounded-full animate-spin" />
+                  <span>Saving...</span>
                 </>
               ) : (
                 <>
-                  <Save className="w-3 h-3 xs:w-4 xs:h-4 text-gray-900" />
-                  <span className="hidden xs:inline">Save Customer</span>
-                  <span className="xs:hidden">Save</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-black">
+                    <path d="M20 6L9 17l-5-5"/>
+                  </svg>
+                  <span>Save Customer</span>
                 </>
               )}
             </button>
@@ -668,43 +673,51 @@ export default function CustomerModal({
       </div>
 
       {/* Desktop Modal (lg and above) */}
-      <div className="hidden lg:flex items-center justify-center min-h-screen p-1 lg:p-2 xl:p-4 -mt-16">
+      <div className="hidden lg:block w-full max-w-5xl">
         <div
-          className="w-full max-w-5xl lg:max-w-6xl xl:max-w-7xl max-h-[96vh] lg:max-h-[92vh] flex flex-col transform transition-all duration-300 ease-out rounded-2xl"
+          className="relative w-full max-h-[90vh] overflow-hidden rounded-3xl"
           style={{
-            background: 'rgba(255, 255, 255, 0.08)',
+            background: 'rgba(0, 0, 0, 0.25)',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
             border: '1px solid rgba(255, 255, 255, 0.15)',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
-            transform: isOpen ? 'scale(1) opacity(1)' : 'scale(0.95) opacity(0)'
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)'
           }}
-          onClick={(e) => e.stopPropagation()}
         >
           {/* Desktop Header */}
-          <div className="flex-shrink-0 flex items-center justify-between p-2 lg:p-3 xl:p-4 border-b border-white/10" style={{
-            background: 'transparent',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)'
+          <div className="sticky top-0 z-10 px-6 py-4 border-b border-white/10" style={{
+            background: '#0f0f0f',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.15)'
           }}>
-            <div className="flex items-center gap-3">
-              <div className="p-1.5 rounded-lg bg-yellow-400/10 border border-yellow-400/20">
-                <User className="w-4 h-4 text-yellow-400" />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden">
+                  <div className="w-full h-full bg-yellow-400/20 rounded-xl flex items-center justify-center">
+                    <User className="w-5 h-5 text-yellow-400" />
+                  </div>
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-yellow-400">{title}</h2>
+                  <p className="text-sm text-white/60 mt-1">Manage customer information</p>
+                </div>
               </div>
-              <h2 className="text-lg lg:text-xl font-bold text-white">{title}</h2>
+              <button
+                onClick={onClose}
+                className="w-8 h-8 bg-yellow-400 hover:bg-yellow-300 rounded-lg flex items-center justify-center transition-all duration-300 flex-shrink-0"
+                title="Close modal"
+                disabled={saving}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-black">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
             </div>
-            <button
-              onClick={onClose}
-              className="p-2 rounded-lg hover:bg-red-500/20 text-gray-400 hover:text-red-400 transition-colors border border-white/10 hover:border-red-400/50"
-              disabled={saving}
-            >
-              <X className="w-5 h-5 text-red-400" />
-            </button>
           </div>
 
-          {/* Desktop Form */}
-          <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
-            <div className="flex-1 overflow-y-auto p-2 lg:p-3 xl:p-4">
+          {/* Scrollable Content */}
+          <div className="overflow-y-auto max-h-[calc(90vh-120px)] custom-scrollbar">
+            <form onSubmit={handleSubmit} className="p-6 space-y-6 pb-16">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 lg:gap-4 xl:gap-6">
                 {/* Column 1: Personal Information */}
                 <div className="space-y-3">
@@ -1071,26 +1084,35 @@ export default function CustomerModal({
                   </div>
                 </div>
               </div>
-            </div>
+            </form>
+          </div>
 
-            {/* Desktop Footer */}
-            <div className="flex-shrink-0 flex items-center justify-end gap-3 p-2 lg:p-3 xl:p-4 border-t border-white/10" style={{
-              background: 'transparent',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)'
-            }}>
+          {/* Footer - Fixed */}
+          <div className="sticky bottom-0 z-10 px-6 py-4 border-t border-white/10" style={{
+            background: '#0f0f0f',
+            borderTop: '1px solid rgba(255, 255, 255, 0.15)'
+          }}>
+            <div className="flex items-center justify-end space-x-3">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-gray-300 hover:text-white transition-colors text-sm"
+                className="px-5 py-2.5 rounded-xl text-white/70 hover:text-white transition-all duration-300 text-sm font-medium flex items-center space-x-2"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  border: '1px solid rgba(255, 255, 255, 0.15)'
+                }}
                 disabled={saving}
               >
-                Cancel
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-yellow-400">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+                <span>Cancel</span>
               </button>
               <button
                 type="submit"
                 disabled={saving}
-                className="flex items-center gap-2 px-6 py-2 bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                className="px-6 py-2.5 rounded-xl bg-primary text-black font-semibold hover:bg-primary/90 transition-all duration-300 text-sm shadow-lg flex items-center space-x-2"
               >
                 {saving ? (
                   <>
@@ -1099,15 +1121,18 @@ export default function CustomerModal({
                   </>
                 ) : (
                   <>
-                    <Save className="w-4 h-4 text-gray-900" />
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-black">
+                      <path d="M20 6L9 17l-5-5"/>
+                    </svg>
                     Save Customer
                   </>
                 )}
               </button>
             </div>
-          </form>
+          </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   )
 }

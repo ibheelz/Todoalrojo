@@ -910,29 +910,69 @@ export default function JourneyAutomationPage() {
 
       {/* Message Preview Modal */}
       {showMessageModal && selectedMessage && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowMessageModal(false)}>
-          <div className="premium-card max-w-2xl w-full m-4 max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                {selectedMessage.channel === 'EMAIL' ? (
-                  <div className="p-3 rounded-xl bg-blue-500/10">
-                    <Mail className="h-6 w-6 text-blue-500" />
+        <>
+          {/* Full Screen Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/40 z-[24]"
+            style={{
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+            }}
+            onClick={() => setShowMessageModal(false)}
+          />
+
+          {/* Modal Container */}
+          <div className="fixed top-0 bottom-0 right-0 z-[25] flex items-center justify-center p-4 left-16 lg:left-80">
+            <div
+              className="relative w-full max-w-2xl max-h-[90vh] overflow-hidden rounded-3xl"
+              style={{
+                background: 'rgba(0, 0, 0, 0.25)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header - Fixed */}
+              <div className="sticky top-0 z-10 px-6 py-4 border-b border-white/10" style={{
+                background: '#0f0f0f',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.15)'
+              }}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden">
+                      {selectedMessage.channel === 'EMAIL' ? (
+                        <div className="w-full h-full bg-blue-500/20 rounded-xl flex items-center justify-center">
+                          <Mail className="h-5 w-5 text-blue-400" />
+                        </div>
+                      ) : (
+                        <div className="w-full h-full bg-green-500/20 rounded-xl flex items-center justify-center">
+                          <MessageSquare className="h-5 w-5 text-green-400" />
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold text-yellow-400">Message Preview</h2>
+                      <p className="text-sm text-white/60 mt-1">{selectedMessage.channel} - {selectedMessage.messageType}</p>
+                    </div>
                   </div>
-                ) : (
-                  <div className="p-3 rounded-xl bg-green-500/10">
-                    <MessageSquare className="h-6 w-6 text-green-500" />
-                  </div>
-                )}
-                <div>
-                  <h3 className="text-lg font-black text-foreground">Message Preview</h3>
-                  <p className="text-xs text-muted-foreground">{selectedMessage.channel} - {selectedMessage.messageType}</p>
+                  <button
+                    onClick={() => setShowMessageModal(false)}
+                    className="w-8 h-8 bg-yellow-400 hover:bg-yellow-300 rounded-lg flex items-center justify-center transition-all duration-300 flex-shrink-0"
+                    title="Close modal"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-black">
+                      <line x1="18" y1="6" x2="6" y2="18"/>
+                      <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
                 </div>
               </div>
-              <Button variant="ghost" onClick={() => setShowMessageModal(false)}>
-                <XCircle className="h-5 w-5" />
-              </Button>
-            </div>
 
+              {/* Scrollable Content */}
+              <div className="overflow-y-auto max-h-[calc(90vh-120px)] custom-scrollbar">
+                <div className="p-6 space-y-6 pb-16">
             <div className="space-y-4">
               {/* Customer Details Section */}
               <div className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 p-4 rounded-lg border border-purple-500/20">
@@ -1156,8 +1196,29 @@ export default function JourneyAutomationPage() {
                 </div>
               )}
             </div>
+                </div>
+              </div>
+
+              {/* Footer - Fixed */}
+              <div className="sticky bottom-0 z-10 px-6 py-4 border-t border-white/10" style={{
+                background: '#0f0f0f',
+                borderTop: '1px solid rgba(255, 255, 255, 0.15)'
+              }}>
+                <div className="flex items-center justify-end">
+                  <button
+                    onClick={() => setShowMessageModal(false)}
+                    className="px-6 py-2.5 rounded-xl bg-primary text-black font-semibold hover:bg-primary/90 transition-all duration-300 text-sm shadow-lg flex items-center space-x-2"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-black">
+                      <path d="M20 6L9 17l-5-5"/>
+                    </svg>
+                    <span>Close</span>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   )

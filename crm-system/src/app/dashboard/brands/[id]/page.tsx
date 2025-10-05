@@ -447,43 +447,68 @@ export default function BrandDetailPage() {
 
       {/* Customer Details Modal */}
       {selectedCustomer && (
-        <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-          onClick={() => setSelectedCustomer(null)}
-        >
+        <>
+          {/* Full Screen Backdrop */}
           <div
-            className="premium-card max-w-3xl w-full max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Modal Header */}
-            <div className="p-6 border-b border-white/10 flex items-center justify-between sticky top-0 bg-[#1a1a2e] z-10">
-              <div className="flex items-center gap-4">
-                <Avatar
-                  firstName={selectedCustomer.firstName}
-                  lastName={selectedCustomer.lastName}
-                  email={selectedCustomer.masterEmail}
-                  size="lg"
-                />
-                <div>
-                  <h2 className="text-xl font-semibold text-white">
-                    {selectedCustomer.firstName} {selectedCustomer.lastName}
-                  </h2>
-                  <p className="text-gray-400 text-sm">
-                    {selectedCustomer.masterEmail || selectedCustomer.masterPhone}
-                  </p>
+            className="fixed inset-0 bg-black/40 z-[24]"
+            style={{
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+            }}
+            onClick={() => setSelectedCustomer(null)}
+          />
+
+          {/* Modal Container */}
+          <div className="fixed top-0 bottom-0 right-0 z-[25] flex items-center justify-center p-4 left-16 lg:left-80">
+            <div
+              className="relative w-full max-w-3xl max-h-[90vh] overflow-hidden rounded-3xl"
+              style={{
+                background: 'rgba(0, 0, 0, 0.25)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header - Fixed */}
+              <div className="sticky top-0 z-10 px-6 py-4 border-b border-white/10" style={{
+                background: '#0f0f0f',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.15)'
+              }}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <Avatar
+                      firstName={selectedCustomer.firstName}
+                      lastName={selectedCustomer.lastName}
+                      email={selectedCustomer.masterEmail}
+                      size="lg"
+                    />
+                    <div>
+                      <h2 className="text-xl font-bold text-yellow-400">
+                        {selectedCustomer.firstName} {selectedCustomer.lastName}
+                      </h2>
+                      <p className="text-sm text-white/60 mt-1">
+                        {selectedCustomer.masterEmail || selectedCustomer.masterPhone}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setSelectedCustomer(null)}
+                    className="w-8 h-8 bg-yellow-400 hover:bg-yellow-300 rounded-lg flex items-center justify-center transition-all duration-300 flex-shrink-0"
+                    title="Close modal"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-black">
+                      <line x1="18" y1="6" x2="6" y2="18"/>
+                      <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
                 </div>
               </div>
-              <button
-                onClick={() => setSelectedCustomer(null)}
-                className="text-gray-400 hover:text-white transition-colors"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
 
-            <div className="p-6 space-y-6">
+              {/* Scrollable Content */}
+              <div className="overflow-y-auto max-h-[calc(90vh-180px)] custom-scrollbar">
+                <div className="p-6 space-y-6">
               {/* Journey Status */}
               <div>
                 <h3 className="text-sm font-medium text-gray-400 mb-3">Journey Status</h3>
@@ -723,9 +748,11 @@ export default function BrandDetailPage() {
                   Manage Journey
                 </Link>
               </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
