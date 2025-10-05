@@ -340,6 +340,18 @@ async function main() {
     ],
   })
 
+  // Journey State - Link customer1 to Roobet operator
+  await prisma.customerJourneyState.create({
+    data: {
+      customerId: customer1.id,
+      operatorId: roobet.id,
+      stage: 1, // Has made 1 deposit
+      depositCount: 1,
+      totalDepositValue: 278.03,
+      lastDepositAt: new Date(),
+    },
+  })
+
   // CUSTOMER 2: Lead only (Maria Casino)
   const clickId2 = `CLK_${Date.now()}_002`
   const customer2 = await prisma.customer.create({
@@ -386,6 +398,17 @@ async function main() {
       country: 'Peru',
       city: 'Arequipa',
       brandId: roobet.id,
+    },
+  })
+
+  // Journey State - Link customer2 to Roobet operator (lead only, no deposit yet)
+  await prisma.customerJourneyState.create({
+    data: {
+      customerId: customer2.id,
+      operatorId: roobet.id,
+      stage: -1, // Not registered yet
+      depositCount: 0,
+      totalDepositValue: 0,
     },
   })
 
@@ -472,64 +495,105 @@ async function main() {
     ],
   })
 
-  // Update campaign stats
-  console.log('📊 Updating campaign statistics...')
-  await prisma.campaign.update({
-    where: { id: vipReloadCampaign.id },
+  // Journey State - Link customer3 to Rushbet operator
+  await prisma.customerJourneyState.create({
     data: {
-      totalClicks: 1,
-      totalLeads: 1,
-      totalEvents: 2,
-      totalRevenue: 278.03,
-      registrations: 1,
-      ftd: 1,
+      customerId: customer3.id,
+      operatorId: rushbet.id,
+      stage: 2, // Has made 2 deposits
+      depositCount: 2,
+      totalDepositValue: 450.0,
+      lastDepositAt: new Date(),
     },
   })
 
-  await prisma.campaign.update({
-    where: { id: summerPromoCampaign.id },
-    data: {
-      totalClicks: 1,
-      totalLeads: 1,
-      totalEvents: 0,
-      registrations: 0,
-      ftd: 0,
-    },
-  })
+  // Update campaign stats automatically
+  console.log('📊 Calculating and updating campaign statistics...')
 
-  await prisma.campaign.update({
-    where: { id: peruLaunchCampaign.id },
-    data: {
-      totalClicks: 1,
-      totalLeads: 1,
-      totalEvents: 3,
-      totalRevenue: 450.0,
-      registrations: 1,
-      ftd: 1,
-    },
-  })
+  for (const campaign of [vipReloadCampaign, summerPromoCampaign, peruLaunchCampaign]) {
+    const clicks = await prisma.click.count({ where: { campaign: campaign.slug } })
+    const leads = await prisma.lead.count({ where: { campaign: campaign.slug } })
+    const events = await prisma.event.findMany({ where: { campaign: campaign.slug } })
+    const registrations = events.filter(e => e.eventType === 'registration').length
+    const deposits = events.filter(e => e.eventType === 'deposit' && e.isRevenue)
+    const uniqueCustomersWithDeposits = new Set(deposits.map(e => e.customerId)).size
+    const revenue = deposits.reduce((sum, e) => sum + Number(e.value || 0), 0)
 
-  // Update influencer stats
-  console.log('🌟 Updating influencer statistics...')
-  await prisma.influencer.update({
-    where: { id: influencer1.id },
-    data: {
-      totalClicks: 2,
-      totalLeads: 2,
-      totalRegs: 2,
-      totalFtd: 2,
-    },
-  })
+    await prisma.campaign.update({
+      where: { id: campaign.id },
+      data: {
+        totalClicks: clicks,
+        totalLeads: leads,
+        totalEvents: events.length,
+        totalRevenue: revenue,
+        registrations,
+        ftd: uniqueCustomersWithDeposits,
+      },
+    })
+  }
 
-  await prisma.influencer.update({
-    where: { id: influencer2.id },
-    data: {
-      totalClicks: 1,
-      totalLeads: 1,
-      totalRegs: 0,
-      totalFtd: 0,
-    },
-  })
+  // Update influencer stats automatically
+  console.log('🌟 Calculating and updating influencer statistics...')
+
+  for (const influencer of [influencer1, influencer2]) {
+    // Get campaigns assigned to this influencer
+    const campaignInfluencers = await prisma.campaignInfluencer.findMany({
+      where: { influencerId: influencer.id },
+      include: { campaign: true },
+    })
+    const campaignSlugs = campaignInfluencers.map(ci => ci.campaign.slug)
+
+    // Calculate stats from clicks, leads, and events for these campaigns
+    const clicks = await prisma.click.count({
+      where: { campaign: { in: campaignSlugs } }
+    })
+    const leads = await prisma.lead.count({
+      where: { campaign: { in: campaignSlugs } }
+    })
+    const events = await prisma.event.findMany({
+      where: { campaign: { in: campaignSlugs } }
+    })
+    const registrations = events.filter(e => e.eventType === 'registration').length
+    const deposits = events.filter(e => e.eventType === 'deposit' && e.isRevenue)
+    const uniqueCustomersWithDeposits = new Set(deposits.map(e => e.customerId)).size
+
+    await prisma.influencer.update({
+      where: { id: influencer.id },
+      data: {
+        totalClicks: clicks,
+        totalLeads: leads,
+        totalRegs: registrations,
+        totalFtd: uniqueCustomersWithDeposits,
+      },
+    })
+  }
+
+  // Update operator stats automatically
+  console.log('🏢 Calculating and updating operator statistics...')
+
+  for (const operator of [roobet, rushbet]) {
+    // Calculate stats from leads and events with this brandId
+    const leads = await prisma.lead.count({
+      where: { brandId: operator.id }
+    })
+    const events = await prisma.event.findMany({
+      where: { brandId: operator.id }
+    })
+    const registrations = events.filter(e => e.eventType === 'registration').length
+    const deposits = events.filter(e => e.eventType === 'deposit' && e.isRevenue)
+    const uniqueCustomersWithDeposits = new Set(deposits.map(e => e.customerId)).size
+    const revenue = deposits.reduce((sum, e) => sum + Number(e.value || 0), 0)
+
+    await prisma.operator.update({
+      where: { id: operator.id },
+      data: {
+        totalLeads: leads,
+        totalRegistrations: registrations,
+        totalFTD: uniqueCustomersWithDeposits,
+        totalRevenue: revenue,
+      },
+    })
+  }
 
   console.log('✅ Comprehensive seed completed!')
   console.log(`
@@ -542,12 +606,14 @@ async function main() {
    - 3 Customers with complete attribution chains
    - 3 Click IDs: ${clickId1}, ${clickId2}, ${clickId3}
    - 3 Clicks, 3 Leads, 5 Events
+   - 3 Journey States (linking customers to operators)
 
 🔗 All data is properly linked:
    ✓ Clicks → Leads → Events via Click ID
    ✓ Campaigns ↔ Influencers via CampaignInfluencer
    ✓ Links ↔ Influencers via LinkInfluencer
-   ✓ Customers → Brands → Operators
+   ✓ Customers → Operators via CustomerJourneyState
+   ✓ Events → Brands via brandId
    ✓ Complete attribution chain maintained
   `)
 }

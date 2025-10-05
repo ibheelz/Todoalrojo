@@ -432,7 +432,7 @@ export default function ConversionsPage() {
 
         {/* Summary Stats */}
         {summary && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
             <div className="premium-card p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -447,19 +447,6 @@ export default function ConversionsPage() {
               </div>
             </div>
 
-            <div className="premium-card p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-white/60 text-sm font-medium">Total Value</p>
-                  <p className="text-2xl font-bold text-white mt-1">{formatCurrency(summary.totalValue)}</p>
-                </div>
-                <div className="w-12 h-12 bg-green-500/20 rounded-2xl flex items-center justify-center">
-                  <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                  </svg>
-                </div>
-              </div>
-            </div>
 
             <div className="premium-card p-6">
               <div className="flex items-center justify-between">
@@ -545,12 +532,11 @@ export default function ConversionsPage() {
             <div className="overflow-x-auto">
               <div className="min-w-[800px]">
                 {/* Table Header */}
-                <div className="grid grid-cols-7 gap-4 p-4 border-b border-white/10 text-sm font-medium text-white/60">
+                <div className="grid grid-cols-6 gap-4 p-4 border-b border-white/10 text-sm font-medium text-white/60">
                   <div>Customer</div>
                   <div>Conversion Type</div>
                   <div>Campaign</div>
                   <div>Influencer</div>
-                  <div>Value</div>
                   <div>Date</div>
                   <div>Actions</div>
                 </div>
@@ -558,7 +544,7 @@ export default function ConversionsPage() {
                 {/* Table Body */}
                 <div className="divide-y divide-white/10">
                   {filteredConversions.map((conversion) => (
-                    <div key={conversion.id} className="grid grid-cols-7 gap-4 p-4 hover:bg-white/5 transition-colors">
+                    <div key={conversion.id} className="grid grid-cols-6 gap-4 p-4 hover:bg-white/5 transition-colors">
                       <div className="flex items-center gap-3 text-white">
                         <Avatar
                           firstName={conversion.customer?.firstName}
@@ -596,9 +582,6 @@ export default function ConversionsPage() {
                         ) : (
                           <span className="text-white/40 text-sm">-</span>
                         )}
-                      </div>
-                      <div className="flex items-center text-white font-medium">
-                        {formatCurrency(conversion.value)}
                       </div>
                       <div className="flex items-center text-white/60 text-sm">
                         {formatDate(conversion.createdAt)}
@@ -745,10 +728,6 @@ export default function ConversionsPage() {
                   <div>
                     <p className="text-sm text-white/60">Campaign</p>
                     <p className="text-white font-medium mt-1">{selectedConversion.campaign || '-'}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-white/60">Value</p>
-                    <p className="text-white font-medium mt-1">{formatCurrency(selectedConversion.value)}</p>
                   </div>
                   <div>
                     <p className="text-sm text-white/60">Date</p>

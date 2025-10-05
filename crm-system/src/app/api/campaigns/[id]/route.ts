@@ -12,6 +12,8 @@ const updateCampaignSchema = z.object({
   clientId: z.string().optional(),
   brandId: z.string().optional(),
   logoUrl: z.string().optional(),
+  isActive: z.boolean().optional(),
+  status: z.enum(['active', 'paused', 'inactive']).optional(),
   conversionTypes: z.array(z.object({
     id: z.string(),
     name: z.string(),
@@ -157,6 +159,8 @@ export async function PUT(
       clientId?: string | null
       brandId?: string | null
       logoUrl?: string | null
+      isActive?: boolean
+      status?: string
       conversionTypes?: any
       registrations?: number | null
       ftd?: number | null
@@ -171,6 +175,8 @@ export async function PUT(
     if (validatedData.clientId !== undefined) updateData.clientId = validatedData.clientId
     if (validatedData.brandId !== undefined) updateData.brandId = validatedData.brandId
     if (validatedData.logoUrl !== undefined) updateData.logoUrl = validatedData.logoUrl
+    if (validatedData.isActive !== undefined) updateData.isActive = validatedData.isActive
+    if (validatedData.status !== undefined) updateData.status = validatedData.status
     if (validatedData.conversionTypes !== undefined) updateData.conversionTypes = validatedData.conversionTypes
 
     // Handle conversion configuration updates - only include fields that are being set

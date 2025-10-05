@@ -393,8 +393,8 @@ export default function CampaignDetailPage() {
 
                   {/* Quality Metrics */}
                   <div>
-                    <h3 className="text-lg font-semibold text-foreground mb-4">Quality & Revenue</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <h3 className="text-lg font-semibold text-foreground mb-4">Quality Metrics</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                       <div className="bg-white/5 border border-white/10 rounded-lg p-4">
                         <div className="text-xs text-muted-foreground uppercase tracking-wide">Conversion Rate</div>
                         <div className="text-xl font-bold text-foreground mt-2">{campaign.stats.conversionRate.toFixed(2)}%</div>
@@ -402,10 +402,6 @@ export default function CampaignDetailPage() {
                       <div className="bg-white/5 border border-white/10 rounded-lg p-4">
                         <div className="text-xs text-muted-foreground uppercase tracking-wide">Quality Score</div>
                         <div className="text-xl font-bold text-foreground mt-2">{campaign.stats.avgQualityScore.toFixed(1)}</div>
-                      </div>
-                      <div className="bg-white/5 border border-white/10 rounded-lg p-4">
-                        <div className="text-xs text-muted-foreground uppercase tracking-wide">Total Revenue</div>
-                        <div className="text-xl font-bold text-green-400 mt-2">${campaign.stats.totalRevenue.toLocaleString()}</div>
                       </div>
                       <div className="bg-white/5 border border-white/10 rounded-lg p-4">
                         <div className="text-xs text-muted-foreground uppercase tracking-wide">Fraud Rate</div>

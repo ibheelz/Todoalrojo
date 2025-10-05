@@ -200,7 +200,7 @@ export default function SignInPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="text-2xl opacity-40 group-hover:opacity-80 transition-all duration-300">
+                    <div className="text-2xl opacity-40  transition-all duration-300">
                       ⚡
                     </div>
                   </div>
@@ -234,7 +234,7 @@ export default function SignInPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="text-2xl opacity-40 group-hover:opacity-80 transition-all duration-300">
+                    <div className="text-2xl opacity-40  transition-all duration-300">
                       📊
                     </div>
                   </div>

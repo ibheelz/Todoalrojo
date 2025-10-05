@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, TrendingUp, Users, DollarSign, Target, Settings } from 'lucide-react';
+import { Plus, TrendingUp, Users, Target, Settings } from 'lucide-react';
 
 interface Operator {
   id: string;
@@ -24,6 +24,7 @@ export default function OperatorsPage() {
   const [operators, setOperators] = useState<Operator[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetchOperators();
@@ -40,6 +41,19 @@ export default function OperatorsPage() {
       setLoading(false);
     }
   };
+
+  // Filter operators based on search query
+  const filteredOperators = operators.filter((operator) => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      operator.name.toLowerCase().includes(query) ||
+      operator.slug.toLowerCase().includes(query) ||
+      operator.brand?.toLowerCase().includes(query) ||
+      operator.emailDomain?.toLowerCase().includes(query) ||
+      operator.status.toLowerCase().includes(query)
+    );
+  });
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -75,8 +89,25 @@ export default function OperatorsPage() {
         </button>
       </div>
 
+      {/* Search Bar */}
+      <div className="flex items-center gap-4 flex-wrap">
+        <div className="bg-white/10 border border-white/20 rounded-xl p-4 flex items-center space-x-3 flex-1 max-w-md">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary flex-shrink-0">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input
+            type="search"
+            placeholder="Search operators..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="flex-1 bg-transparent text-white placeholder-white/60 outline-none text-sm sm:text-base"
+          />
+        </div>
+      </div>
+
       {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="premium-card">
           <div className="flex items-center justify-between">
             <div>
@@ -117,22 +148,6 @@ export default function OperatorsPage() {
           </div>
         </div>
 
-        <div className="premium-card">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-400">Total Revenue</p>
-              <p className="text-2xl font-bold text-white mt-1">
-                $
-                {operators
-                  .reduce((sum, op) => sum + parseFloat(op.totalRevenue || '0'), 0)
-                  .toLocaleString()}
-              </p>
-            </div>
-            <div className="w-12 h-12 rounded-full bg-yellow-500/20 flex items-center justify-center">
-              <DollarSign className="w-6 h-6 text-yellow-400" />
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Operators Table */}
@@ -187,15 +202,12 @@ export default function OperatorsPage() {
                     FTD %
                   </th>
                   <th className="text-right py-3 px-4 text-sm font-medium text-gray-400">
-                    Revenue
-                  </th>
-                  <th className="text-right py-3 px-4 text-sm font-medium text-gray-400">
                     Actions
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/10">
-                {operators.map((operator) => (
+                {filteredOperators.map((operator) => (
                   <tr
                     key={operator.id}
                     className="hover:bg-white/5 transition-colors"
@@ -233,11 +245,6 @@ export default function OperatorsPage() {
                     <td className="py-4 px-4 text-right">
                       <span className="text-sm text-white">
                         {operator.ftdRate ? `${(parseFloat(operator.ftdRate) * 100).toFixed(1)}%` : '-'}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4 text-right">
-                      <span className="text-sm text-white">
-                        ${parseFloat(operator.totalRevenue || '0').toLocaleString()}
                       </span>
                     </td>
                     <td className="py-4 px-4 text-right">

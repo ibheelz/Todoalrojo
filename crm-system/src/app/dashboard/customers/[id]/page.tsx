@@ -571,12 +571,6 @@ export default function CustomerDetailPage() {
                           <div className="text-xl font-bold text-primary mt-1">{campaign.conversions}</div>
                         </div>
                       </div>
-                      {campaign.totalValue > 0 && (
-                        <div className="mt-3 pt-3 border-t border-white/10">
-                          <div className="text-xs text-muted-foreground uppercase tracking-wide">Total Value</div>
-                          <div className="text-lg font-bold text-green-400 mt-1">${campaign.totalValue.toFixed(2)}</div>
-                        </div>
-                      )}
                     </div>
                     <div className="text-right ml-4">
                       <div className="text-xs text-muted-foreground">First Seen</div>

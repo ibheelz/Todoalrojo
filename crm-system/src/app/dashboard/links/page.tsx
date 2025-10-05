@@ -22,6 +22,26 @@ interface ShortLink {
   createdAt: string
   clickCount: number
   influencerId?: string | null
+  // Relationship data
+  customers?: Array<{
+    id: string
+    firstName: string | null
+    lastName: string | null
+    masterEmail: string | null
+  }>
+  leads?: Array<{
+    id: string
+    email: string | null
+    firstName: string | null
+    lastName: string | null
+  }>
+  events?: Array<{
+    id: string
+    eventType: string
+    value: number | null
+  }>
+  totalRevenue?: number
+  conversionCount?: number
 }
 
 interface LinkSummary {
@@ -70,7 +90,19 @@ export default function LinksPage() {
     variant?: 'info' | 'success' | 'error' | 'warning'
     onConfirm?: () => void
   }>({ open: false, message: '' })
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    originalUrl: string
+    title: string
+    description: string
+    campaign: string
+    source: string
+    medium: string
+    customCode: string
+    influencerIds: string[]
+    isPublic: boolean
+    allowBots: boolean
+    trackClicks: boolean
+  }>({
     originalUrl: '',
     title: '',
     description: '',
@@ -151,27 +183,28 @@ export default function LinksPage() {
 
   // Get influencers for selected campaign
   const getAvailableInfluencers = () => {
-    if (!formData.campaign) return influencers
+    if (!formData.campaign) return []
 
-    // Find campaigns that match the selected campaign slug and get their influencers
+    // Find the selected campaign
     const selectedCampaign = campaigns.find(c => c.slug === formData.campaign)
-    if (!selectedCampaign) return influencers
+    if (!selectedCampaign) return []
 
-    // For now, return all influencers but we could filter based on campaign-influencer relationships
-    return influencers
+    // Return all active influencers - they can be assigned to any campaign
+    // The relationship will be tracked via LinkInfluencer table
+    return influencers.filter(inf => inf.status === 'active')
   }
 
   const fetchCampaigns = async () => {
     try {
-      console.log('📊 Fetching campaigns for links page...', { timestamp: new Date().toISOString() })
-      const response = await fetch('/api/campaigns', { cache: 'no-store' })
+      console.log('📊 Fetching active campaigns for links page...', { timestamp: new Date().toISOString() })
+      const response = await fetch('/api/campaigns?activeOnly=true', { cache: 'no-store' })
       const data = await response.json()
 
       if (data.success) {
-        // Filter only active campaigns
+        // Only show active campaigns
         const activeCampaigns = data.campaigns.filter((campaign: Campaign) => campaign.isActive)
         setCampaigns(activeCampaigns)
-        console.log('✅ Campaigns loaded for links:', {
+        console.log('✅ Active campaigns loaded for links:', {
           totalCampaigns: data.campaigns.length,
           activeCampaigns: activeCampaigns.length,
           campaigns: activeCampaigns.map(c => ({ id: c.id, name: c.name, slug: c.slug }))
@@ -301,6 +334,9 @@ export default function LinksPage() {
 
   const handleEdit = (link: ShortLink) => {
     setEditingLink(link)
+    // Get influencerIds array, fallback to single influencerId in array, or empty array
+    const influencerIdsArray = link.influencerId ? [link.influencerId] : []
+
     setFormData({
       originalUrl: link.originalUrl,
       title: link.title || '',
@@ -309,7 +345,7 @@ export default function LinksPage() {
       source: link.source || '',
       medium: link.medium || '',
       customCode: '',
-      influencerIds: link.influencerIds || [],
+      influencerIds: influencerIdsArray,
       isPublic: link.isPublic,
       allowBots: false,
       trackClicks: true
@@ -488,7 +524,15 @@ export default function LinksPage() {
               </div>
 
               <button
-                onClick={() => setShowCreateModal(true)}
+                onClick={() => {
+                  console.log('🔗 Opening Create Link Modal', {
+                    campaignsAvailable: campaigns.length,
+                    influencersAvailable: influencers.length,
+                    campaigns: campaigns.map(c => ({ name: c.name, slug: c.slug })),
+                    influencers: influencers.map(i => ({ name: i.name, status: i.status }))
+                  });
+                  setShowCreateModal(true);
+                }}
                 className="flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-300 h-[52px] flex-shrink-0"
                 style={{
                   background: 'linear-gradient(135deg, rgba(253, 198, 0, 0.9), rgba(253, 198, 0, 0.7))',
@@ -666,6 +710,8 @@ export default function LinksPage() {
                     <th className="text-left py-4 px-4 text-white/80 font-medium min-w-[150px]">Campaign</th>
                     <th className="text-left py-4 px-4 text-white/80 font-medium min-w-[150px]">Influencer</th>
                     <th className="text-left py-4 px-4 text-white/80 font-medium min-w-[100px]">Clicks</th>
+                    <th className="text-left py-4 px-4 text-white/80 font-medium min-w-[120px]">Customers/Leads</th>
+                    <th className="text-left py-4 px-4 text-white/80 font-medium min-w-[100px]">Conversions</th>
                     <th className="text-left py-4 px-4 text-white/80 font-medium min-w-[80px]">Status</th>
                     <th className="text-left py-4 px-4 text-white/80 font-medium min-w-[100px]">Created</th>
                     <th className="text-right py-4 px-4 text-white/80 font-medium min-w-[120px]">Actions</th>
@@ -701,7 +747,7 @@ export default function LinksPage() {
                       <td className="py-4 px-4">
                         {link.campaign ? (
                           <span className="inline-block px-2 py-1 text-xs rounded-md bg-blue-500/20 text-blue-400 border border-blue-500/30">
-                            {link.campaign}
+                            {getCampaignName(link.campaign)}
                           </span>
                         ) : (
                           <span className="text-white/40 text-sm">—</span>
@@ -719,6 +765,16 @@ export default function LinksPage() {
                             ({link.uniqueClicks} unique)
                           </span>
                         </div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="flex items-center gap-2">
+                          <span className="text-green-400 font-medium">{link.customers?.length || 0}</span>
+                          <span className="text-white/40">/</span>
+                          <span className="text-blue-400 font-medium">{link.leads?.length || 0}</span>
+                        </div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className="text-purple-400 font-medium">{link.conversionCount || 0} FTD</span>
                       </td>
                       <td className="py-4 px-4">
                         <span className={`inline-block px-2 py-1 text-xs rounded-md ${
@@ -847,7 +903,7 @@ export default function LinksPage() {
                     <div className="flex items-center gap-2">
                       <span className="text-white/60 text-xs">Campaign:</span>
                       <span className="inline-block px-2 py-1 text-xs rounded-md bg-blue-500/20 text-blue-400 border border-blue-500/30">
-                        {link.campaign}
+                        {getCampaignName(link.campaign)}
                       </span>
                     </div>
                   )}
@@ -859,6 +915,28 @@ export default function LinksPage() {
                       </span>
                     </div>
                   )}
+                </div>
+
+                {/* Relationship Stats */}
+                <div className="grid grid-cols-3 gap-2 mb-4 p-3 bg-white/5 rounded-lg border border-white/10">
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-green-400">
+                      {link.customers?.length || 0}
+                    </div>
+                    <div className="text-[10px] text-white/60 uppercase tracking-wide">Customers</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-blue-400">
+                      {link.leads?.length || 0}
+                    </div>
+                    <div className="text-[10px] text-white/60 uppercase tracking-wide">Leads</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-purple-400">
+                      {link.conversionCount || 0}
+                    </div>
+                    <div className="text-[10px] text-white/60 uppercase tracking-wide">FTDs</div>
+                  </div>
                 </div>
 
                 {/* Actions */}
@@ -1026,9 +1104,10 @@ export default function LinksPage() {
 
                   <div>
                     <label className="block text-sm font-medium text-white/80 mb-2">
-                      Campaign
+                      Campaign *
                     </label>
                     <select
+                      required
                       value={formData.campaign}
                       onChange={(e) => {
                         const newCampaign = e.target.value
@@ -1040,17 +1119,25 @@ export default function LinksPage() {
                         })
                         console.log('📊 Campaign selected for link:', {
                           campaign: newCampaign,
-                          availableInfluencers: getAvailableInfluencers().length
+                          availableInfluencers: getAvailableInfluencers().length,
+                          totalCampaigns: campaigns.length
                         })
                       }}
                       className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors backdrop-blur-sm"
+                      style={{ colorScheme: 'dark' }}
                     >
-                      <option value="" className="bg-background">Select a campaign...</option>
-                      {campaigns.map((campaign) => (
-                        <option key={campaign.id} value={campaign.slug} className="bg-background">
-                          {campaign.name}
-                        </option>
-                      ))}
+                      <option value="" style={{ backgroundColor: '#0a0a0a', color: '#ffffff' }}>Select a campaign... ({campaigns.length} available)</option>
+                      {campaigns.length === 0 && (
+                        <option disabled style={{ backgroundColor: '#0a0a0a', color: '#ff6b6b' }}>No campaigns available</option>
+                      )}
+                      {campaigns.map((campaign, idx) => {
+                        console.log(`Campaign ${idx}:`, campaign);
+                        return (
+                          <option key={campaign.id} value={campaign.slug} style={{ backgroundColor: '#0a0a0a', color: '#ffffff' }}>
+                            {campaign.name}
+                          </option>
+                        );
+                      })}
                     </select>
                   </div>
 
@@ -1077,10 +1164,13 @@ export default function LinksPage() {
                       )}
                     </label>
                     <div className="space-y-3 max-h-48 overflow-y-auto">
-                      {getAvailableInfluencers().length === 0 && (
-                        <p className="text-sm text-white/60 italic">No influencers available</p>
+                      {!formData.campaign && (
+                        <p className="text-sm text-yellow-400 italic">⚠️ Please select a campaign first</p>
                       )}
-                      {getAvailableInfluencers().map((influencer) => (
+                      {formData.campaign && getAvailableInfluencers().length === 0 && (
+                        <p className="text-sm text-white/60 italic">No influencers available (Total in system: {influencers.length})</p>
+                      )}
+                      {formData.campaign && getAvailableInfluencers().map((influencer) => (
                         <label
                           key={influencer.id}
                           className="flex items-center space-x-3 p-3 rounded-xl hover:bg-white/5 transition-all duration-300 cursor-pointer"

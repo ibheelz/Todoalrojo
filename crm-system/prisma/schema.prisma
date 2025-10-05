@@ -233,6 +233,7 @@ model Campaign {
   resetAt               DateTime?
   conversionTypes       Json?
   isActive              Boolean              @default(true)
+  status                String               @default("active")
   totalClicks           Int                  @default(0)
   totalLeads            Int                  @default(0)
   totalEvents           Int                  @default(0)
@@ -251,6 +252,7 @@ model Campaign {
   @@index([slug])
   @@index([clientId])
   @@index([isActive])
+  @@index([status])
   @@map("campaigns")
 }
 

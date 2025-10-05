@@ -196,7 +196,7 @@ export default function ConversionTypesPage() {
                     </p>
                   )}
                 </div>
-                <div className="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex items-center space-x-2 opacity-0  transition-opacity">
                   <button
                     onClick={() => handleEdit(conversionType)}
                     className="p-2 text-white/40 hover:text-primary transition-colors"

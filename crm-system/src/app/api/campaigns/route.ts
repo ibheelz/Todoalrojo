@@ -93,10 +93,14 @@ export async function GET(request: NextRequest) {
           clientId: true,
           brandId: true,
           logoUrl: true,
+          isActive: true,
+          status: true,
           conversionTypes: true,
           createdAt: true,
           updatedAt: true,
           resetAt: true,
+          registrations: true,
+          ftd: true,
           approvedRegistrations: true,
           qualifiedDeposits: true,
           campaignInfluencers: {
@@ -163,19 +167,23 @@ export async function GET(request: NextRequest) {
               },
               _count: true
             }),
-            // FTD (First Time Deposit events)
-            prisma.event.aggregate({
+            // FTD events (we'll count unique customers below)
+            prisma.event.findMany({
               where: {
                 campaign: campaign.slug,
                 OR: [
                   { eventType: { in: ['deposit', 'ftd', 'first_deposit'] } },
                   { eventName: { in: ['deposit', 'ftd', 'first_deposit'] } }
                 ],
+                isRevenue: true,
                 ...createdFilter
               },
-              _count: true
+              select: { customerId: true }
             })
           ])
+
+          // Count unique customers with deposits (FTD)
+          const ftd = new Set(ftdStats.map(e => e.customerId)).size
 
           // Get unique customers for this campaign
           const uniqueCustomers = await prisma.customer.count({
@@ -211,7 +219,6 @@ export async function GET(request: NextRequest) {
           const totalLeads = leadStats._count || 0
           const totalEvents = eventStats._count || 0
           const registrations = registrationStats._count || 0
-          const ftd = ftdStats._count || 0
 
           const conversionRate = totalClicks > 0 ? (totalLeads / totalClicks) * 100 : 0
           const duplicateRate = totalLeads > 0 ? (duplicateLeads / totalLeads) * 100 : 0
@@ -262,9 +269,15 @@ export async function GET(request: NextRequest) {
           clientId: true,
           brandId: true,
           logoUrl: true,
+          isActive: true,
+          status: true,
           conversionTypes: true,
           createdAt: true,
           updatedAt: true,
+          registrations: true,
+          ftd: true,
+          approvedRegistrations: true,
+          qualifiedDeposits: true,
           campaignInfluencers: {
             select: {
               influencer: {

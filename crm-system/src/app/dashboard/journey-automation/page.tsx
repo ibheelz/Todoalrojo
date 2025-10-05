@@ -292,58 +292,6 @@ export default function JourneyAutomationPage() {
         </div>
       </div>
 
-      {/* Test Data Controls */}
-      <div className="premium-card">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-3 rounded-xl bg-violet-500/10">
-            <TestTube className="h-6 w-6 text-violet-500" />
-          </div>
-          <div>
-            <h3 className="text-lg font-black text-foreground">Test Data Generator</h3>
-            <p className="text-xs text-muted-foreground">Generate sample customers and journeys for testing</p>
-          </div>
-        </div>
-
-        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-          <Button
-            onClick={() => handleGenerateTestData('full')}
-            disabled={isGenerating}
-            variant="outline"
-            className="justify-start font-bold hover:bg-violet-500/10 hover:text-violet-500 hover:border-violet-500/30"
-          >
-            <Database className="h-4 w-4 mr-2" />
-            Full Test Set
-          </Button>
-          <Button
-            onClick={() => handleGenerateTestData('acquisition')}
-            disabled={isGenerating}
-            variant="outline"
-            className="justify-start font-bold hover:bg-blue-500/10 hover:text-blue-500 hover:border-blue-500/30"
-          >
-            <Target className="h-4 w-4 mr-2" />
-            Acquisition Only
-          </Button>
-          <Button
-            onClick={() => handleGenerateTestData('retention')}
-            disabled={isGenerating}
-            variant="outline"
-            className="justify-start font-bold hover:bg-emerald-500/10 hover:text-emerald-500 hover:border-emerald-500/30"
-          >
-            <TrendingUp className="h-4 w-4 mr-2" />
-            Retention Only
-          </Button>
-          <Button
-            onClick={handleCleanTestData}
-            disabled={isGenerating}
-            variant="outline"
-            className="justify-start font-bold hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/30"
-          >
-            <Trash2 className="h-4 w-4 mr-2" />
-            Clean Test Data
-          </Button>
-        </div>
-      </div>
-
       {/* Stats Overview */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {/* Total Journeys */}
@@ -575,7 +523,7 @@ export default function JourneyAutomationPage() {
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Acquisition Journey */}
         <div className="premium-card hover:shadow-xl transition-all duration-300 relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-transparent opacity-0  transition-opacity duration-500" />
 
           <div className="relative space-y-4">
             <div className="flex items-start justify-between">
@@ -636,7 +584,7 @@ export default function JourneyAutomationPage() {
 
         {/* Retention Journey */}
         <div className="premium-card hover:shadow-xl transition-all duration-300 relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-transparent opacity-0  transition-opacity duration-500" />
 
           <div className="relative space-y-4">
             <div className="flex items-start justify-between">
@@ -815,62 +763,6 @@ export default function JourneyAutomationPage() {
         </div>
       )}
 
-      {/* Quick Actions */}
-      <div className="premium-card">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 rounded-xl bg-primary/10">
-            <Zap className="h-6 w-6 text-primary" />
-          </div>
-          <div>
-            <h3 className="text-lg font-black text-foreground">Quick Actions</h3>
-            <p className="text-xs text-muted-foreground">Search and navigate</p>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <div className="flex gap-3">
-            <Input
-              placeholder="Search by email, phone, or customer ID..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              className="flex-1 bg-background"
-            />
-            <Button onClick={handleSearch} className="bg-primary hover:bg-primary/90 text-black font-bold">
-              <Search className="h-4 w-4 mr-2" />
-              Search
-            </Button>
-          </div>
-
-          <div className="grid gap-3 md:grid-cols-3">
-            <Button
-              variant="outline"
-              onClick={() => window.location.href = '/dashboard/customers'}
-              className="justify-start font-bold hover:bg-primary/10 hover:text-primary hover:border-primary/30"
-            >
-              <Users className="h-4 w-4 mr-2" />
-              View All Customers
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => window.location.href = '/dashboard/campaigns'}
-              className="justify-start font-bold hover:bg-primary/10 hover:text-primary hover:border-primary/30"
-            >
-              <TrendingUp className="h-4 w-4 mr-2" />
-              View Campaigns
-            </Button>
-            <Button
-              variant="outline"
-              onClick={loadAll}
-              className="justify-start font-bold hover:bg-primary/10 hover:text-primary hover:border-primary/30"
-            >
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Refresh All
-            </Button>
-          </div>
-        </div>
-      </div>
-
       {/* Empty State */}
       {stats?.totalJourneys === 0 && (
         <div className="premium-card text-center py-12">
@@ -879,10 +771,10 @@ export default function JourneyAutomationPage() {
           </div>
           <h3 className="text-2xl font-black text-foreground mb-3">No Active Journeys Yet</h3>
           <p className="text-muted-foreground max-w-md mx-auto mb-8">
-            Use the Test Data Generator above to create sample customers and journeys for testing.
+            Journeys will appear here when customers are captured via landing pages or receive operator postbacks.
           </p>
 
-          <div className="inline-flex flex-col items-start gap-3 text-sm text-left bg-muted/30 p-6 rounded-xl max-w-md mx-auto mb-8">
+          <div className="inline-flex flex-col items-start gap-3 text-sm text-left bg-muted/30 p-6 rounded-xl max-w-md mx-auto">
             <div className="flex items-center gap-3">
               <CheckCircle className="h-5 w-5 text-emerald-500 flex-shrink-0" />
               <span className="text-foreground">New leads captured via landing pages</span>
@@ -896,15 +788,6 @@ export default function JourneyAutomationPage() {
               <span className="text-foreground">Manual journey start via API</span>
             </div>
           </div>
-
-          <Button
-            onClick={() => handleGenerateTestData('full')}
-            className="bg-primary hover:bg-primary/90 text-black font-bold"
-            size="lg"
-          >
-            Generate Test Data
-            <ArrowRight className="h-4 w-4 ml-2" />
-          </Button>
         </div>
       )}
 

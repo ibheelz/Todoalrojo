@@ -145,7 +145,7 @@ export default function UsersPage() {
                 <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center font-black text-lg shadow-lg">
                   <UsersIcon size={24} />
                 </div>
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div className="opacity-0  transition-opacity duration-300">
                   <div className="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center text-primary-foreground font-bold">
                     →
                   </div>

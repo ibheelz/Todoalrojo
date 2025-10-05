@@ -585,37 +585,91 @@ export default function InfluencerDetailPage() {
               <Link
                 key={customer.id}
                 href={`/dashboard/customers/${customer.id}`}
-                className="p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors block"
+                className="group relative"
               >
-                <div className="flex items-start gap-3 mb-3">
-                  <img
-                    src={getAvatarUrl(customer.id)}
-                    alt={customer.firstName || 'User'}
-                    className="w-12 h-12 rounded-full bg-white/10 flex-shrink-0"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-white font-medium truncate">
-                      {`${customer.firstName || ''} ${customer.lastName || ''}`.trim() || 'Anonymous'}
-                    </h3>
-                    <p className="text-sm text-gray-400 truncate">{customer.masterEmail || customer.masterPhone || 'No contact'}</p>
+                {/* Card with glassmorphism effect */}
+                <div
+                  className="relative overflow-hidden rounded-2xl transition-all duration-300"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    backdropFilter: 'blur(10px)',
+                  }}
+                >
+                  <div className="relative p-5">
+                    {/* Header with avatar and name */}
+                    <div className="flex items-start gap-4 mb-4">
+                      {/* Avatar */}
+                      <div className="relative">
+                        <img
+                          src={getAvatarUrl(customer.id)}
+                          alt={customer.firstName || 'User'}
+                          className="w-14 h-14 rounded-full ring-2 ring-white/10 transition-all duration-300"
+                        />
+                      </div>
+
+                      {/* Name and contact */}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-base font-semibold text-white truncate group-hover:text-primary transition-colors duration-300">
+                          {`${customer.firstName || ''} ${customer.lastName || ''}`.trim() || 'Anonymous'}
+                        </h3>
+                        <p className="text-sm text-gray-400 truncate mt-0.5">
+                          {customer.masterEmail || customer.masterPhone || 'No contact'}
+                        </p>
+                      </div>
+
+                      {/* Arrow indicator */}
+                      <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-primary transition-colors duration-300 flex-shrink-0 mt-1" />
+                    </div>
+
+                    {/* Stats row */}
+                    <div className="flex items-center gap-3 mb-3">
+                      <div
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg"
+                        style={{
+                          background: 'rgba(253, 198, 0, 0.08)',
+                          border: '1px solid rgba(253, 198, 0, 0.15)',
+                        }}
+                      >
+                        <MousePointerClick className="w-3.5 h-3.5 text-primary" />
+                        <span className="text-xs font-medium text-primary">{customer._count.clicks}</span>
+                      </div>
+
+                      <div
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg"
+                        style={{
+                          background: 'rgba(59, 130, 246, 0.08)',
+                          border: '1px solid rgba(59, 130, 246, 0.15)',
+                        }}
+                      >
+                        <UserPlus className="w-3.5 h-3.5 text-blue-400" />
+                        <span className="text-xs font-medium text-blue-400">{customer._count.leads}</span>
+                      </div>
+
+                      <div
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg"
+                        style={{
+                          background: 'rgba(168, 85, 247, 0.08)',
+                          border: '1px solid rgba(168, 85, 247, 0.15)',
+                        }}
+                      >
+                        <Zap className="w-3.5 h-3.5 text-purple-400" />
+                        <span className="text-xs font-medium text-purple-400">{customer._count.events}</span>
+                      </div>
+                    </div>
+
+                    {/* Location */}
+                    {(customer.city || customer.country) && (
+                      <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                        <Globe className="w-3.5 h-3.5" />
+                        <span>
+                          {customer.city && customer.country
+                            ? `${customer.city}, ${customer.country}`
+                            : customer.country || customer.city || 'Location unknown'}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                </div>
-                <div className="flex items-center gap-4 text-xs text-gray-400">
-                  <div className="flex items-center gap-1">
-                    <MousePointerClick className="w-3 h-3" />
-                    {customer._count.clicks}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <UserPlus className="w-3 h-3" />
-                    {customer._count.leads}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Zap className="w-3 h-3" />
-                    {customer._count.events}
-                  </div>
-                </div>
-                <div className="mt-2 text-xs text-gray-500">
-                  {customer.city && customer.country ? `${customer.city}, ${customer.country}` : customer.country || 'Location unknown'}
                 </div>
               </Link>
             ))}

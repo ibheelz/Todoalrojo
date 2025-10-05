@@ -9,7 +9,7 @@ const createLinkSchema = z.object({
   originalUrl: z.string().url('Invalid URL format'),
   title: z.string().optional(),
   description: z.string().optional(),
-  campaign: z.string().optional(),
+  campaign: z.string().min(1, 'Campaign is required'),
   source: z.string().optional(),
   medium: z.string().optional(),
   content: z.string().optional(),
@@ -72,18 +72,41 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Validate campaign and influencer relationship if both are provided
-    if (validatedData.campaign && validatedData.influencerId) {
-      const campaign = await prisma.campaign.findFirst({
-        where: { slug: validatedData.campaign },
-        select: { id: true, slug: true }
-      })
+    // Validate campaign exists and is active
+    const campaign = await prisma.campaign.findFirst({
+      where: {
+        slug: validatedData.campaign,
+        isActive: true
+      },
+      select: { id: true, slug: true, name: true }
+    })
 
-      if (campaign) {
+    if (!campaign) {
+      return NextResponse.json({
+        success: false,
+        error: 'Campaign not found or is not active. Please select an active campaign.'
+      }, { status: 400 })
+    }
+
+    console.log('✅ Campaign validated:', {
+      campaignId: campaign.id,
+      campaignSlug: campaign.slug,
+      campaignName: campaign.name
+    })
+
+    // Get influencer IDs to validate
+    const influencerIds = (validatedData.influencerIds && validatedData.influencerIds.length > 0)
+      ? validatedData.influencerIds
+      : (validatedData.influencerId ? [validatedData.influencerId] : [])
+
+    // Validate campaign-influencer relationships if influencers are provided
+    if (influencerIds.length > 0) {
+      for (const influencerId of influencerIds) {
         const relation = await prisma.campaignInfluencer.findFirst({
           where: {
             campaignId: campaign.id,
-            influencerId: validatedData.influencerId
+            influencerId: influencerId,
+            isActive: true
           },
           select: { id: true }
         })
@@ -91,19 +114,15 @@ export async function POST(request: NextRequest) {
         if (!relation) {
           console.log('⚠️ Warning: Link created with campaign and influencer that are not connected:', {
             campaign: validatedData.campaign,
-            influencerId: validatedData.influencerId
+            influencerId
           })
         } else {
           console.log('✅ Campaign-Influencer relationship validated:', {
             campaignId: campaign.id,
             campaignSlug: campaign.slug,
-            influencerId: validatedData.influencerId
+            influencerId
           })
         }
-      } else {
-        console.log('⚠️ Warning: Campaign not found for provided slug during link creation:', {
-          campaign: validatedData.campaign
-        })
       }
     }
 
@@ -128,11 +147,7 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // If influencer relationships were provided, attach via the junction table
-    const influencerIds = (validatedData.influencerIds && validatedData.influencerIds.length > 0)
-      ? validatedData.influencerIds
-      : (validatedData.influencerId ? [validatedData.influencerId] : [])
-
+    // Attach influencer relationships via the junction table
     if (influencerIds.length > 0) {
       try {
         await prisma.linkInfluencer.createMany({
@@ -142,6 +157,10 @@ export async function POST(request: NextRequest) {
             assignedBy: 'system'
           })),
           skipDuplicates: true
+        })
+        console.log('✅ Link-Influencer relationships created:', {
+          linkId: shortLink.id,
+          influencerCount: influencerIds.length
         })
       } catch (e) {
         console.log('⚠️ Warning: Failed to attach influencer to link (non-fatal):', {
@@ -270,17 +289,74 @@ export async function GET(request: NextRequest) {
       orderBy: { _count: { campaign: 'desc' } }
     })
 
-    // Enhance links with short URLs
-    const enhancedLinks = links.map(link => {
+    // For each link, get leads and events data
+    const enhancedLinks = await Promise.all(links.map(async (link) => {
       const influencerIds = (link as any).linkInfluencers?.map((li: any) => li.influencerId) || []
+
+      // Get clickIds for this link from LinkClick table
+      const linkClicks = await prisma.linkClick.findMany({
+        where: { linkId: link.id },
+        select: { clickId: true, customerId: true }
+      })
+      const clickIds = linkClicks.map(c => c.clickId).filter(Boolean) as string[]
+      const customerIds = [...new Set(linkClicks.map(c => c.customerId).filter(Boolean))] as string[]
+
+      // Get unique customers for this link
+      const customers = customerIds.length > 0 ? await prisma.customer.findMany({
+        where: { id: { in: customerIds } },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          masterEmail: true
+        }
+      }) : []
+
+      // Get leads from those clicks
+      const leads = await prisma.lead.findMany({
+        where: {
+          clickId: { in: clickIds }
+        },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true
+        },
+        distinct: ['email']
+      })
+
+      // Get events from those clicks
+      const events = await prisma.event.findMany({
+        where: {
+          clickId: { in: clickIds }
+        },
+        select: {
+          id: true,
+          eventType: true,
+          value: true
+        }
+      })
+
+      // Calculate total revenue from events
+      const totalRevenue = events.reduce((sum, event) => sum + (Number(event.value) || 0), 0)
+
+      // Count conversions (FTD events)
+      const conversionCount = events.filter(e => e.eventType === 'ftd').length
+
       return {
         ...link,
         influencerId: influencerIds[0] || null, // backward compatibility for UI that expects single
         influencerIds,
         shortUrl: generateShortUrl(link.shortCode),
-        clickCount: link._count.clicks
+        clickCount: link._count.clicks,
+        customers,
+        leads,
+        events,
+        totalRevenue,
+        conversionCount
       }
-    })
+    }))
 
     const summary = {
       totalLinks: summaryStats._count || 0,

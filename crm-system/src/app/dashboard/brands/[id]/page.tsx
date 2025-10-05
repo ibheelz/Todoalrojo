@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Users, Mail, MessageSquare, TrendingUp, DollarSign, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Users, Mail, MessageSquare, TrendingUp, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { Avatar } from '@/components/ui/avatar';
 
@@ -74,6 +74,18 @@ export default function BrandDetailPage() {
   const [campaignActivity, setCampaignActivity] = useState<CampaignActivity[]>([]);
   const [brandActivity, setBrandActivity] = useState<BrandActivity[]>([]);
   const [loadingActivity, setLoadingActivity] = useState(false);
+
+  // Read stage from URL query params
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const stageParam = searchParams.get('stage');
+    if (stageParam) {
+      const stage = parseInt(stageParam);
+      if (!isNaN(stage)) {
+        setStageFilter(stage);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (operatorId) {
@@ -356,9 +368,6 @@ export default function BrandDetailPage() {
                     Deposits
                   </th>
                   <th className="text-right py-3 px-4 text-sm font-medium text-gray-400">
-                    Value
-                  </th>
-                  <th className="text-right py-3 px-4 text-sm font-medium text-gray-400">
                     Messages
                   </th>
                   <th className="text-right py-3 px-4 text-sm font-medium text-gray-400">
@@ -406,11 +415,6 @@ export default function BrandDetailPage() {
                     <td className="py-4 px-4 text-right">
                       <span className="text-sm text-white">
                         {customer.journeyState?.depositCount || 0}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4 text-right">
-                      <span className="text-sm text-white">
-                        ${parseFloat(customer.journeyState?.totalDepositValue || '0').toFixed(2)}
                       </span>
                     </td>
                     <td className="py-4 px-4 text-right">
@@ -537,35 +541,14 @@ export default function BrandDetailPage() {
               {/* Deposit Information */}
               <div>
                 <h3 className="text-sm font-medium text-gray-400 mb-3">Deposit Information</h3>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 gap-4">
                   <div className="bg-white/5 rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <DollarSign className="w-4 h-4 text-green-400" />
+                      <TrendingUp className="w-4 h-4 text-green-400" />
                       <p className="text-sm text-gray-400">Total Deposits</p>
                     </div>
                     <p className="text-2xl font-bold text-white">
                       {selectedCustomer.journeyState?.depositCount || 0}
-                    </p>
-                  </div>
-                  <div className="bg-white/5 rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <TrendingUp className="w-4 h-4 text-purple-400" />
-                      <p className="text-sm text-gray-400">Total Value</p>
-                    </div>
-                    <p className="text-2xl font-bold text-white">
-                      ${parseFloat(selectedCustomer.journeyState?.totalDepositValue || '0').toFixed(2)}
-                    </p>
-                  </div>
-                  <div className="bg-white/5 rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <TrendingUp className="w-4 h-4 text-blue-400" />
-                      <p className="text-sm text-gray-400">Avg. Deposit</p>
-                    </div>
-                    <p className="text-2xl font-bold text-white">
-                      ${selectedCustomer.journeyState?.depositCount
-                        ? (parseFloat(selectedCustomer.journeyState.totalDepositValue) / selectedCustomer.journeyState.depositCount).toFixed(2)
-                        : '0.00'
-                      }
                     </p>
                   </div>
                 </div>
@@ -631,7 +614,7 @@ export default function BrandDetailPage() {
                                 {new Date(campaign.lastSeen).toLocaleDateString()}
                               </span>
                             </div>
-                            <div className="grid grid-cols-4 gap-3 text-sm">
+                            <div className="grid grid-cols-3 gap-3 text-sm">
                               <div>
                                 <p className="text-gray-400 text-xs">Clicks</p>
                                 <p className="text-white font-medium">{campaign.clicks}</p>
@@ -643,10 +626,6 @@ export default function BrandDetailPage() {
                               <div>
                                 <p className="text-gray-400 text-xs">Events</p>
                                 <p className="text-white font-medium">{campaign.events}</p>
-                              </div>
-                              <div>
-                                <p className="text-gray-400 text-xs">Value</p>
-                                <p className="text-white font-medium">${campaign.totalValue.toFixed(2)}</p>
                               </div>
                             </div>
                           </div>
@@ -688,7 +667,7 @@ export default function BrandDetailPage() {
                               <div className="text-sm">
                                 <p className="text-gray-400 text-xs">Deposits</p>
                                 <p className="text-white font-medium">
-                                  {brand.depositCount} (${brand.totalDepositValue.toFixed(2)})
+                                  {brand.depositCount}
                                 </p>
                               </div>
                             </div>

@@ -17,9 +17,6 @@ interface CampaignStats {
   duplicateRate: number
   fraudRate: number
   avgQualityScore: number
-  totalLeadValue: number
-  totalEventValue: number
-  totalRevenue: number
 }
 
 type CampaignStatus = 'active' | 'paused' | 'inactive'
@@ -132,9 +129,6 @@ export default function CampaignsPage() {
           totalClicks: 0,
           totalLeads: 0,
           totalEvents: 0,
-          totalLeadValue: 0,
-          totalEventValue: 0,
-          totalRevenue: 0,
           conversionRate: 0,
           duplicateRate: 0,
           fraudRate: 0,
@@ -266,11 +260,31 @@ export default function CampaignsPage() {
       const data = await response.json()
 
       if (data.success) {
-        // Convert isActive boolean to status for backwards compatibility
+        // 🔍 DEBUGGING: Log raw API response
+        console.log('🔍 [CAMPAIGNS DEBUG] Raw API response:', {
+          campaignCount: data.campaigns.length,
+          firstCampaign: data.campaigns[0] ? {
+            name: data.campaigns[0].name,
+            isActive: data.campaigns[0].isActive,
+            status: data.campaigns[0].status,
+            statusType: typeof data.campaigns[0].status
+          } : null
+        })
+
+        // Use status from API directly, fallback to isActive conversion for backward compatibility
         const campaignsWithStatus = data.campaigns.map((campaign: any) => ({
           ...campaign,
-          status: campaign.isActive ? 'active' : 'paused' as CampaignStatus
+          status: campaign.status || (campaign.isActive ? 'active' : 'paused') as CampaignStatus
         }))
+
+        // 🔍 DEBUGGING: Log conversion results
+        console.log('🔍 [CAMPAIGNS DEBUG] After status conversion:', {
+          firstCampaign: campaignsWithStatus[0] ? {
+            name: campaignsWithStatus[0].name,
+            isActive: campaignsWithStatus[0].isActive,
+            status: campaignsWithStatus[0].status
+          } : null
+        })
 
         // 🔍 DEBUGGING: Log conversion type data for each campaign
         console.log('🔍 [CAMPAIGNS DEBUG] Fetched campaigns with conversion types:')
@@ -319,26 +333,36 @@ export default function CampaignsPage() {
 
   const updateCampaignStatus = async (campaignId: string, newStatus: CampaignStatus) => {
     try {
-      // Optimistically update the UI
-      setCampaigns(prev => prev.map(campaign =>
-        campaign.id === campaignId
-          ? { ...campaign, status: newStatus }
-          : campaign
-      ))
-
       // Close dropdown
       setDropdownOpen(null)
 
-      // Here you would make an API call to update the campaign status
-      // const response = await fetch(`/api/campaigns/${campaignId}`, {
-      //   method: 'PATCH',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ status: newStatus })
-      // })
+      // Convert status to isActive boolean
+      const isActive = newStatus === 'active'
 
-      console.log(`Campaign ${campaignId} status updated to ${newStatus}`)
+      // Make API call to update the campaign status - send both status and isActive
+      const response = await fetch(`/api/campaigns/${campaignId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus, isActive })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        // Update the UI with the actual response
+        setCampaigns(prev => prev.map(campaign =>
+          campaign.id === campaignId
+            ? { ...campaign, status: newStatus, isActive }
+            : campaign
+        ))
+        console.log(`✅ Campaign ${campaignId} status updated to ${newStatus}`)
+      } else {
+        console.error('❌ Failed to update campaign status:', data.error)
+        alert(`Failed to update campaign status: ${data.error}`)
+      }
     } catch (err) {
       console.error('Failed to update campaign status:', err)
+      alert('Failed to update campaign status. Please try again.')
       // Revert optimistic update on error
       fetchCampaigns()
     }

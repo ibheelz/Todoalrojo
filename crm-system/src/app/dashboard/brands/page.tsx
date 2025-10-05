@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Users, TrendingUp, DollarSign, Target, ChevronRight, Building2, Mail } from 'lucide-react';
+import { Users, TrendingUp, Target, ChevronRight, Building2, Mail } from 'lucide-react';
 import Link from 'next/link';
 
 interface Operator {
@@ -33,6 +33,7 @@ export default function BrandSegmentationPage() {
   const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
   const [brandStats, setBrandStats] = useState<Record<string, BrandStats>>({});
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetchOperators();
@@ -56,6 +57,18 @@ export default function BrandSegmentationPage() {
       setLoading(false);
     }
   };
+
+  // Filter operators based on search query
+  const filteredOperators = operators.filter((operator) => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      operator.name.toLowerCase().includes(query) ||
+      operator.slug.toLowerCase().includes(query) ||
+      operator.brand?.toLowerCase().includes(query) ||
+      operator.status.toLowerCase().includes(query)
+    );
+  });
 
   const fetchBrandStats = async (operatorId: string) => {
     try {
@@ -148,6 +161,48 @@ export default function BrandSegmentationPage() {
         </Link>
       </div>
 
+      {/* Search Bar */}
+      <div className="flex items-center gap-4 flex-wrap">
+        <div className="bg-white/10 border border-white/20 rounded-xl p-4 flex items-center space-x-3 flex-1 max-w-md">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary flex-shrink-0">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input
+            type="search"
+            placeholder="Search brands..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="flex-1 bg-transparent text-white placeholder-white/60 outline-none text-sm sm:text-base"
+          />
+        </div>
+      </div>
+
+      {/* Quick Stats Overview */}
+      {operators.length > 0 && (
+        <div className="premium-card">
+          <h2 className="text-xl font-bold text-white mb-4">All Brands Overview</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <p className="text-sm text-gray-400">Total Brands</p>
+              <p className="text-2xl font-bold text-white mt-1">{operators.length}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-400">Total Leads</p>
+              <p className="text-2xl font-bold text-white mt-1">
+                {operators.reduce((sum, op) => sum + op.totalLeads, 0).toLocaleString()}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-400">Total FTDs</p>
+              <p className="text-2xl font-bold text-white mt-1">
+                {operators.reduce((sum, op) => sum + op.totalFTD, 0).toLocaleString()}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Brand Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {operators.length === 0 ? (
@@ -165,15 +220,11 @@ export default function BrandSegmentationPage() {
             </Link>
           </div>
         ) : (
-          operators.map((operator) => (
+          filteredOperators.map((operator) => (
             <Link
               key={operator.id}
               href={`/dashboard/brands/${operator.id}`}
-              className="premium-card hover:scale-105 transition-all duration-300 cursor-pointer group"
-              style={{
-                borderColor: operator.primaryColor || '#8B5CF6',
-                borderWidth: '2px',
-              }}
+              className="premium-card transition-all duration-300 cursor-pointer group"
             >
               {/* Brand Header */}
               <div className="flex items-start justify-between mb-4">
@@ -208,7 +259,7 @@ export default function BrandSegmentationPage() {
               </div>
 
               {/* Stats Grid */}
-              <div className="grid grid-cols-2 gap-3 mb-4">
+              <div className="grid grid-cols-3 gap-3 mb-4">
                 <div className="bg-white/5 rounded-lg p-3">
                   <div className="flex items-center gap-2 mb-1">
                     <Users className="w-4 h-4 text-blue-400" />
@@ -242,16 +293,6 @@ export default function BrandSegmentationPage() {
                       : '0%'}
                   </p>
                 </div>
-
-                <div className="bg-white/5 rounded-lg p-3">
-                  <div className="flex items-center gap-2 mb-1">
-                    <DollarSign className="w-4 h-4 text-purple-400" />
-                    <span className="text-xs text-gray-400">Revenue</span>
-                  </div>
-                  <p className="text-lg font-bold text-white">
-                    ${parseFloat(operator.totalRevenue || '0').toLocaleString()}
-                  </p>
-                </div>
               </div>
 
               {/* Stage Distribution Preview */}
@@ -260,14 +301,15 @@ export default function BrandSegmentationPage() {
                   <p className="text-xs text-gray-400 mb-2">Customer Stages</p>
                   <div className="flex gap-2 flex-wrap">
                     {brandStats[operator.id].stageDistribution.slice(0, 3).map((stage) => (
-                      <span
+                      <Link
                         key={stage.stage}
-                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getStageColor(
+                        href={`/dashboard/brands/${operator.id}?stage=${stage.stage}`}
+                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border cursor-pointer hover:opacity-80 transition-opacity ${getStageColor(
                           stage.stage
                         )}`}
                       >
                         {getStageLabel(stage.stage)}: {stage.count}
-                      </span>
+                      </Link>
                     ))}
                   </div>
                 </div>
@@ -282,40 +324,6 @@ export default function BrandSegmentationPage() {
           ))
         )}
       </div>
-
-      {/* Quick Stats Overview */}
-      {operators.length > 0 && (
-        <div className="premium-card">
-          <h2 className="text-xl font-bold text-white mb-4">All Brands Overview</h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <p className="text-sm text-gray-400">Total Brands</p>
-              <p className="text-2xl font-bold text-white mt-1">{operators.length}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-400">Total Leads</p>
-              <p className="text-2xl font-bold text-white mt-1">
-                {operators.reduce((sum, op) => sum + op.totalLeads, 0).toLocaleString()}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-400">Total FTDs</p>
-              <p className="text-2xl font-bold text-white mt-1">
-                {operators.reduce((sum, op) => sum + op.totalFTD, 0).toLocaleString()}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-400">Total Revenue</p>
-              <p className="text-2xl font-bold text-white mt-1">
-                $
-                {operators
-                  .reduce((sum, op) => sum + parseFloat(op.totalRevenue || '0'), 0)
-                  .toLocaleString()}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

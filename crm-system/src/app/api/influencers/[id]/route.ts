@@ -57,18 +57,13 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       }, { status: 404 })
     }
 
-    // Get all clicks for this influencer (via LinkInfluencer relationship)
-    const linkInfluencers = await prisma.linkInfluencer.findMany({
-      where: { influencerId },
-      select: { linkId: true }
-    })
+    // Get all campaigns for this influencer
+    const campaignSlugs = influencer.campaignInfluencers.map(ci => ci.campaign.slug)
 
-    const linkIds = linkInfluencers.map(li => li.linkId)
-
-    // Get clicks from these links
+    // Get all clicks for this influencer's campaigns
     const clicks = await prisma.click.findMany({
       where: {
-        id: { in: linkIds }
+        campaign: { in: campaignSlugs }
       },
       include: {
         customer: {
@@ -88,7 +83,6 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     })
 
     // Get all leads associated with this influencer's campaigns
-    const campaignSlugs = influencer.campaignInfluencers.map(ci => ci.campaign.slug)
 
     const leads = await prisma.lead.findMany({
       where: {
@@ -172,10 +166,16 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
           select: { logoUrl: true }
         })
 
-        const [clickCount, leadCount, eventCount] = await Promise.all([
+        const [clickCount, leadCount, eventCount, regCount] = await Promise.all([
           prisma.click.count({ where: { campaign: ci.campaign.slug } }),
           prisma.lead.count({ where: { campaign: ci.campaign.slug } }),
-          prisma.event.count({ where: { campaign: ci.campaign.slug } })
+          prisma.event.count({ where: { campaign: ci.campaign.slug } }),
+          prisma.event.count({
+            where: {
+              campaign: ci.campaign.slug,
+              eventType: { in: ['registration', 'signup', 'register'] }
+            }
+          })
         ])
 
         return {
@@ -186,7 +186,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
           isActive: ci.isActive,
           totalClicks: clickCount,
           totalLeads: leadCount,
-          totalRegs: eventCount,
+          totalRegs: regCount,
           createdAt: ci.campaign.createdAt
         }
       })
@@ -200,15 +200,19 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       }
     })
 
-    const ftd = await prisma.event.count({
+    // Count unique customers with deposits (FTD)
+    const depositEvents = await prisma.event.findMany({
       where: {
         campaign: { in: campaignSlugs },
         OR: [
           { eventType: { in: ['deposit', 'ftd', 'first_deposit'] } },
           { eventName: { in: ['deposit', 'ftd', 'first_deposit'] } }
-        ]
-      }
+        ],
+        isRevenue: true
+      },
+      select: { customerId: true }
     })
+    const ftd = new Set(depositEvents.map(e => e.customerId)).size
 
     const result = {
       success: true,

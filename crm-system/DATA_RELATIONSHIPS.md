@@ -7,10 +7,12 @@ This document explains how all data in the CRM system is linked together and how
 ### Core Data Flow
 ```
 Click ID → Customer → Lead → Event (Registration/Deposit)
-    ↓
+    ↓              ↓
 Campaign ← Influencer → Short Link
+    ↓              ↓
+Brand/Operator ← CustomerJourneyState
     ↓
-Brand/Operator → Client
+Client
 ```
 
 ## 📊 Test Data Overview
@@ -158,6 +160,7 @@ All updates should cascade properly:
    - Campaign total revenue/events
    - Influencer stats (if attributed)
    - Brand/Operator stats
+   - CustomerJourneyState (stage, deposit count, total value)
 
 2. **Campaign-Influencer Assignment** → Updates:
    - Influencer's campaign list
@@ -166,6 +169,11 @@ All updates should cascade properly:
 3. **Link-Influencer Assignment** → Updates:
    - Short link tracking
    - Influencer attribution for clicks
+
+4. **Customer Journey State** → Links:
+   - Customer to specific Operator/Brand
+   - Tracks deposit stage (-1: not registered, 0: registered no deposit, 1+: deposits)
+   - Enables operator-specific customer queries
 
 ## 🚀 Running the Seed
 
