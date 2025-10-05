@@ -776,17 +776,20 @@ export default function ConversionsPage() {
               )}
 
               {/* Actions */}
-              <div className="flex gap-3 pt-4 border-t border-white/10">
+              <div className="sticky bottom-0 z-10 px-6 py-4 border-t border-white/10 flex gap-3" style={{
+                background: '#0f0f0f',
+                borderTop: '1px solid rgba(255, 255, 255, 0.15)'
+              }}>
                 <a
                   href={`/dashboard/customers/${selectedConversion.customerId}`}
-                  className="flex-1 premium-button text-center"
+                  className="flex-1 px-6 py-2.5 rounded-xl bg-primary text-black font-semibold hover:bg-primary/90 transition-all duration-300 text-sm shadow-lg text-center"
                 >
                   View Customer
                 </a>
                 {selectedConversion.influencer && (
                   <a
                     href={`/dashboard/influencers`}
-                    className="flex-1 premium-button text-center"
+                    className="flex-1 px-6 py-2.5 rounded-xl bg-primary text-black font-semibold hover:bg-primary/90 transition-all duration-300 text-sm shadow-lg text-center"
                   >
                     View Influencer
                   </a>
