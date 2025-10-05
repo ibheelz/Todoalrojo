@@ -36,6 +36,31 @@ interface Customer {
   };
 }
 
+interface CampaignActivity {
+  campaign: string;
+  clicks: number;
+  leads: number;
+  events: number;
+  conversions: number;
+  totalValue: number;
+  firstSeen: string;
+  lastSeen: string;
+}
+
+interface BrandActivity {
+  operatorId: string;
+  operatorName: string;
+  brand: string | null;
+  stage: number;
+  currentJourney: string | null;
+  depositCount: number;
+  totalDepositValue: number;
+  emailCount: number;
+  smsCount: number;
+  lastEmailAt: string | null;
+  lastSmsAt: string | null;
+}
+
 export default function BrandDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -46,6 +71,9 @@ export default function BrandDetailPage() {
   const [loading, setLoading] = useState(true);
   const [stageFilter, setStageFilter] = useState<number | 'all'>('all');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [campaignActivity, setCampaignActivity] = useState<CampaignActivity[]>([]);
+  const [brandActivity, setBrandActivity] = useState<BrandActivity[]>([]);
+  const [loadingActivity, setLoadingActivity] = useState(false);
 
   useEffect(() => {
     if (operatorId) {
@@ -53,6 +81,12 @@ export default function BrandDetailPage() {
       fetchCustomers();
     }
   }, [operatorId, stageFilter]);
+
+  useEffect(() => {
+    if (selectedCustomer) {
+      fetchCustomerActivity(selectedCustomer.id);
+    }
+  }, [selectedCustomer]);
 
   const fetchOperator = async () => {
     try {
@@ -83,6 +117,33 @@ export default function BrandDetailPage() {
       setCustomers([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCustomerActivity = async (customerId: string) => {
+    try {
+      setLoadingActivity(true);
+      const response = await fetch(`/api/customers/${customerId}/campaigns`);
+      const data = await response.json();
+
+      if (data.success) {
+        setCampaignActivity(data.campaigns || []);
+        setBrandActivity(data.brands || []);
+        console.log('✅ Loaded customer activity:', {
+          campaigns: data.campaigns.length,
+          brands: data.brands.length
+        });
+      } else {
+        console.error('Failed to fetch customer activity:', data.error);
+        setCampaignActivity([]);
+        setBrandActivity([]);
+      }
+    } catch (error) {
+      console.error('Failed to fetch customer activity:', error);
+      setCampaignActivity([]);
+      setBrandActivity([]);
+    } finally {
+      setLoadingActivity(false);
     }
   };
 
@@ -523,6 +584,106 @@ export default function BrandDetailPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Campaign Activity */}
+              {loadingActivity ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+                </div>
+              ) : (
+                <>
+                  {campaignActivity.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-400 mb-3">
+                        Campaign Activity ({campaignActivity.length} campaigns)
+                      </h3>
+                      <div className="space-y-3">
+                        {campaignActivity.map((campaign, index) => (
+                          <div key={index} className="bg-white/5 rounded-lg p-4">
+                            <div className="flex items-center justify-between mb-3">
+                              <h4 className="font-medium text-white">{campaign.campaign}</h4>
+                              <span className="text-xs text-gray-400">
+                                {new Date(campaign.lastSeen).toLocaleDateString()}
+                              </span>
+                            </div>
+                            <div className="grid grid-cols-4 gap-3 text-sm">
+                              <div>
+                                <p className="text-gray-400 text-xs">Clicks</p>
+                                <p className="text-white font-medium">{campaign.clicks}</p>
+                              </div>
+                              <div>
+                                <p className="text-gray-400 text-xs">Leads</p>
+                                <p className="text-white font-medium">{campaign.leads}</p>
+                              </div>
+                              <div>
+                                <p className="text-gray-400 text-xs">Events</p>
+                                <p className="text-white font-medium">{campaign.events}</p>
+                              </div>
+                              <div>
+                                <p className="text-gray-400 text-xs">Value</p>
+                                <p className="text-white font-medium">${campaign.totalValue.toFixed(2)}</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {brandActivity.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-400 mb-3">
+                        Brand/Operator Activity ({brandActivity.length} brands)
+                      </h3>
+                      <div className="space-y-3">
+                        {brandActivity.map((brand, index) => (
+                          <div key={index} className="bg-white/5 rounded-lg p-4">
+                            <div className="flex items-center justify-between mb-3">
+                              <div>
+                                <h4 className="font-medium text-white">{brand.operatorName}</h4>
+                                {brand.brand && (
+                                  <p className="text-xs text-gray-400">{brand.brand}</p>
+                                )}
+                              </div>
+                              <span
+                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStageColor(
+                                  brand.stage
+                                )}`}
+                              >
+                                {getStageLabel(brand.stage)}
+                              </span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3 mb-3">
+                              <div className="text-sm">
+                                <p className="text-gray-400 text-xs">Journey</p>
+                                <p className="text-white font-medium capitalize">
+                                  {brand.currentJourney || 'None'}
+                                </p>
+                              </div>
+                              <div className="text-sm">
+                                <p className="text-gray-400 text-xs">Deposits</p>
+                                <p className="text-white font-medium">
+                                  {brand.depositCount} (${brand.totalDepositValue.toFixed(2)})
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-4 text-sm">
+                              <div className="flex items-center gap-1">
+                                <Mail className="w-3 h-3 text-blue-400" />
+                                <span className="text-white">{brand.emailCount}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <MessageSquare className="w-3 h-3 text-green-400" />
+                                <span className="text-white">{brand.smsCount}</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
 
               {/* Customer Information */}
               <div>
