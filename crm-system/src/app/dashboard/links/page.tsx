@@ -293,6 +293,17 @@ export default function LinksPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    // Validate required fields
+    if (!formData.title || formData.title.trim() === '') {
+      alert('Please enter a link title')
+      return
+    }
+
+    if (!formData.influencerIds || formData.influencerIds.length === 0) {
+      alert('Please select at least one influencer')
+      return
+    }
+
     try {
       const url = editingLink ? `/api/links/${editingLink.id}` : '/api/links'
       const method = editingLink ? 'PUT' : 'POST'
@@ -1077,7 +1088,7 @@ export default function LinksPage() {
 
                   <div>
                     <label className="block text-sm font-medium text-white/80 mb-2">
-                      Title
+                      Title *
                     </label>
                     <input
                       type="text"
@@ -1156,12 +1167,7 @@ export default function LinksPage() {
 
                   <div>
                     <label className="block text-sm font-medium text-white/80 mb-2">
-                      Influencer (Optional)
-                      {formData.campaign && (
-                        <span className="text-xs text-white/60 ml-2">
-                          • For campaign: {getCampaignName(formData.campaign)}
-                        </span>
-                      )}
+                      Influencer *
                     </label>
                     <div className="space-y-3 max-h-48 overflow-y-auto">
                       {!formData.campaign && (
