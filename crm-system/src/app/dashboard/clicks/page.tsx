@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { Avatar } from '@/components/ui/avatar'
 
 interface Click {
   id: string
@@ -510,25 +511,13 @@ export default function ClicksPage() {
                   <div className="flex justify-between items-start">
                     <div className="flex items-start gap-3">
                       {/* Customer Avatar */}
-                      <div className="w-10 h-10 rounded-full overflow-hidden bg-primary/20 flex-shrink-0 border-2 border-primary/30">
-                        <img
-                          src={generateCustomerAvatar(click.customer)}
-                          alt={getCustomerDisplayName(click.customer)}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            // Fallback to initials if dicebear fails
-                            const target = e.target as HTMLImageElement
-                            target.style.display = 'none'
-                          }}
-                        />
-                        {/* Fallback initials display */}
-                        <div className="w-full h-full flex items-center justify-center text-primary font-bold text-sm">
-                          {click.customer ?
-                            (click.customer.firstName?.[0] || '') + (click.customer.lastName?.[0] || '') :
-                            'AU'
-                          }
-                        </div>
-                      </div>
+                      <Avatar
+                        firstName={click.customer?.firstName}
+                        lastName={click.customer?.lastName}
+                        email={click.customer?.masterEmail}
+                        userId={click.customer?.id}
+                        size="md"
+                      />
 
                       <div>
                         <div className="font-semibold text-white flex items-center gap-2">
@@ -604,25 +593,13 @@ export default function ClicksPage() {
                       <td className="p-3">
                         <div className="flex items-center gap-3">
                           {/* Customer Avatar */}
-                          <div className="w-8 h-8 rounded-full overflow-hidden bg-primary/20 flex-shrink-0 border-2 border-primary/30">
-                            <img
-                              src={generateCustomerAvatar(click.customer)}
-                              alt={getCustomerDisplayName(click.customer)}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                // Fallback to initials if dicebear fails
-                                const target = e.target as HTMLImageElement
-                                target.style.display = 'none'
-                              }}
-                            />
-                            {/* Fallback initials display */}
-                            <div className="w-full h-full flex items-center justify-center text-primary font-bold text-xs">
-                              {click.customer ?
-                                (click.customer.firstName?.[0] || '') + (click.customer.lastName?.[0] || '') :
-                                'AU'
-                              }
-                            </div>
-                          </div>
+                          <Avatar
+                            firstName={click.customer?.firstName}
+                            lastName={click.customer?.lastName}
+                            email={click.customer?.masterEmail}
+                            userId={click.customer?.id}
+                            size="sm"
+                          />
 
                           <div>
                             <div className="font-medium text-white text-sm flex items-center gap-2">

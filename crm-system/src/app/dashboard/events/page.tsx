@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { Avatar } from '@/components/ui/avatar'
 
 interface Conversion {
   id: string
@@ -557,11 +558,20 @@ export default function ConversionsPage() {
                       <div className="flex items-center text-white">
                         {conversion.campaign}
                       </div>
-                      <div className="flex items-center text-white">
-                        {conversion.customer?.firstName && conversion.customer?.lastName
-                          ? `${conversion.customer.firstName} ${conversion.customer.lastName}`
-                          : conversion.customer?.email || 'Unknown'
-                        }
+                      <div className="flex items-center gap-3 text-white">
+                        <Avatar
+                          firstName={conversion.customer?.firstName}
+                          lastName={conversion.customer?.lastName}
+                          email={conversion.customer?.email}
+                          userId={conversion.customerId}
+                          size="sm"
+                        />
+                        <span>
+                          {conversion.customer?.firstName && conversion.customer?.lastName
+                            ? `${conversion.customer.firstName} ${conversion.customer.lastName}`
+                            : conversion.customer?.email || 'Unknown'
+                          }
+                        </span>
                       </div>
                       <div className="flex items-center text-white font-medium">
                         {formatCurrency(conversion.value)}
