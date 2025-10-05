@@ -271,6 +271,15 @@ export default function JourneyAutomationPage() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Link href="/dashboard/message-templates">
+            <Button
+              variant="outline"
+              className="border-white/20 hover:bg-white/10"
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              Message Templates
+            </Button>
+          </Link>
           <Button
             onClick={handleProcessMessages}
             disabled={isProcessing}

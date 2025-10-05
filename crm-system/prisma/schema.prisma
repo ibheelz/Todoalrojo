@@ -600,6 +600,34 @@ model JourneyTemplate {
   @@map("journey_templates")
 }
 
+model MessageTemplate {
+  id            String         @id @default(cuid())
+  operatorId    String         // Which brand/operator
+  journeyType   JourneyType    // ACQUISITION or RETENTION
+  messageType   MessageType    // WELCOME, BONUS_REMINDER, etc.
+  dayNumber     Int            // When to send (day 0, 1, 3, etc.)
+  channel       MessageChannel // EMAIL or SMS
+
+  // Content
+  subject       String?        // For emails
+  content       String         @db.Text // The actual message
+  ctaLink       String?        // Call-to-action link
+  ctaText       String?        // CTA button text
+
+  // Status
+  isActive      Boolean        @default(true)
+
+  // Metadata
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@unique([operatorId, journeyType, messageType, dayNumber, channel])
+  @@index([operatorId])
+  @@index([journeyType])
+  @@index([isActive])
+  @@map("message_templates")
+}
+
 enum MessageType {
   WELCOME
   BONUS_REMINDER
