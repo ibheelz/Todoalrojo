@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Users, Mail, MessageSquare, TrendingUp, DollarSign, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
+import { Avatar } from '@/components/ui/avatar';
 
 interface Operator {
   id: string;
@@ -294,13 +295,21 @@ export default function BrandDetailPage() {
                 {customers.map((customer) => (
                   <tr key={customer.id} className="hover:bg-white/5 transition-colors">
                     <td className="py-4 px-4">
-                      <div>
-                        <p className="font-medium text-white">
-                          {customer.firstName} {customer.lastName}
-                        </p>
-                        <p className="text-sm text-gray-400">
-                          {customer.masterEmail || customer.masterPhone}
-                        </p>
+                      <div className="flex items-center gap-3">
+                        <Avatar
+                          firstName={customer.firstName}
+                          lastName={customer.lastName}
+                          email={customer.masterEmail}
+                          size="sm"
+                        />
+                        <div>
+                          <p className="font-medium text-white">
+                            {customer.firstName} {customer.lastName}
+                          </p>
+                          <p className="text-sm text-gray-400">
+                            {customer.masterEmail || customer.masterPhone}
+                          </p>
+                        </div>
                       </div>
                     </td>
                     <td className="py-4 px-4">

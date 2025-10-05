@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Avatar } from '@/components/ui/avatar'
 import {
   Mail, MessageSquare, Users, TrendingUp, Clock,
   Play, Pause, RefreshCw, Search, Calendar, CheckCircle,
@@ -498,13 +499,21 @@ export default function JourneyAutomationPage() {
                 filteredMessages.map((msg) => (
                   <tr key={msg.id} className="border-b border-border/30 hover:bg-muted/30 transition-colors">
                     <td className="py-3 px-4">
-                      <div>
-                        <p className="text-sm font-medium text-foreground">
-                          {msg.journeyState.customer.firstName} {msg.journeyState.customer.lastName}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {msg.channel === 'EMAIL' ? msg.journeyState.customer.masterEmail : msg.journeyState.customer.masterPhone}
-                        </p>
+                      <div className="flex items-center gap-3">
+                        <Avatar
+                          firstName={msg.journeyState.customer.firstName}
+                          lastName={msg.journeyState.customer.lastName}
+                          email={msg.journeyState.customer.masterEmail}
+                          size="sm"
+                        />
+                        <div>
+                          <p className="text-sm font-medium text-foreground">
+                            {msg.journeyState.customer.firstName} {msg.journeyState.customer.lastName}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {msg.channel === 'EMAIL' ? msg.journeyState.customer.masterEmail : msg.journeyState.customer.masterPhone}
+                          </p>
+                        </div>
                       </div>
                     </td>
                     <td className="py-3 px-4">
@@ -940,24 +949,28 @@ export default function JourneyAutomationPage() {
                     <ExternalLink className="h-3 w-3" />
                   </Link>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <p className="text-xs font-bold text-muted-foreground uppercase mb-1">Name</p>
+                <div className="flex items-start gap-3 mb-3">
+                  <Avatar
+                    firstName={selectedMessage.journeyState.customer.firstName}
+                    lastName={selectedMessage.journeyState.customer.lastName}
+                    email={selectedMessage.journeyState.customer.masterEmail}
+                    size="lg"
+                  />
+                  <div className="flex-1">
                     <Link
                       href={`/dashboard/customers/${selectedMessage.journeyState.customer.id}`}
-                      className="text-sm font-medium text-foreground hover:text-purple-400 transition-colors"
+                      className="text-base font-semibold text-foreground hover:text-purple-400 transition-colors block"
                     >
                       {selectedMessage.journeyState.customer.firstName} {selectedMessage.journeyState.customer.lastName}
                     </Link>
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-muted-foreground uppercase mb-1">Contact</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground mt-1">
                       {selectedMessage.channel === 'EMAIL'
                         ? selectedMessage.journeyState.customer.masterEmail
                         : selectedMessage.journeyState.customer.masterPhone}
                     </p>
                   </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
                   {selectedMessage.customerDetails && (
                     <>
                       {selectedMessage.customerDetails.registrationDate && (
