@@ -130,7 +130,7 @@ export async function GET(request: NextRequest) {
           }
           const createdFilter = Object.keys(range).length > 0 ? { createdAt: range } : {}
 
-          const [clickStats, leadStats, eventStats, registrationStats, ftdStats] = await Promise.all([
+          const [clickStats, leadStats, eventStats, registrationStats, ftdStats, uniqueCustomers, duplicateLeads, fraudClicks] = await Promise.all([
             // Clicks
             prisma.click.aggregate({
               where: {
@@ -179,40 +179,37 @@ export async function GET(request: NextRequest) {
                 ...createdFilter
               },
               select: { customerId: true }
+            }),
+            // Get unique customers for this campaign (parallel)
+            prisma.customer.count({
+              where: {
+                OR: [
+                  { clicks: { some: { campaign: campaign.slug, ...createdFilter } } },
+                  { leads: { some: { campaign: campaign.slug, ...createdFilter } } },
+                  { events: { some: { campaign: campaign.slug, ...createdFilter } } }
+                ]
+              }
+            }),
+            // Get duplicates (parallel)
+            prisma.lead.count({
+              where: {
+                campaign: campaign.slug,
+                isDuplicate: true,
+                ...createdFilter
+              }
+            }),
+            // Get fraud flags (parallel)
+            prisma.click.count({
+              where: {
+                campaign: campaign.slug,
+                isFraud: true,
+                ...createdFilter
+              }
             })
           ])
 
           // Count unique customers with deposits (FTD)
           const ftd = new Set(ftdStats.map(e => e.customerId)).size
-
-          // Get unique customers for this campaign
-          const uniqueCustomers = await prisma.customer.count({
-            where: {
-              OR: [
-                { clicks: { some: { campaign: campaign.slug, ...createdFilter } } },
-                { leads: { some: { campaign: campaign.slug, ...createdFilter } } },
-                { events: { some: { campaign: campaign.slug, ...createdFilter } } }
-              ]
-            }
-          })
-
-          // Get duplicates
-          const duplicateLeads = await prisma.lead.count({
-            where: {
-              campaign: campaign.slug,
-              isDuplicate: true,
-              ...createdFilter
-            }
-          })
-
-          // Get fraud flags
-          const fraudClicks = await prisma.click.count({
-            where: {
-              campaign: campaign.slug,
-              isFraud: true,
-              ...createdFilter
-            }
-          })
 
           // Calculate rates
           const totalClicks = clickStats._count || 0

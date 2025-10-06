@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { QueryProvider } from '@/components/providers/query-provider'
 
 export const metadata: Metadata = {
   title: 'Miela CRM | TodoAlRojo',
@@ -18,9 +19,11 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body>
-        <div className="min-h-screen bg-background text-foreground">
-          {children}
-        </div>
+        <QueryProvider>
+          <div className="min-h-screen bg-background text-foreground">
+            {children}
+          </div>
+        </QueryProvider>
       </body>
     </html>
   )
