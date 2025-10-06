@@ -274,8 +274,34 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Forward to Redtrack (async, don't wait for response)
+    console.log('🔗 [POSTBACK API] Forwarding to Redtrack...')
+    let redtrackForwarded = false
+    try {
+      const redtrackUrl = 'https://track.todoalrojo.club/postback'
+      const redtrackData = new URLSearchParams({
+        clickid: validatedData.clickid,
+        status: validatedData.status || 'approved',
+        type: validatedData.type || 'Deposit'
+      }).toString()
+
+      // Fire and forget to Redtrack
+      fetch(`${redtrackUrl}?${redtrackData}`, {
+        method: 'GET',
+        headers: { 'User-Agent': 'CRM-Postback-Forwarder/1.0' }
+      }).then(() => {
+        console.log('✅ [POSTBACK API] Redtrack forward successful')
+      }).catch(err => console.log('⚠️ [POSTBACK API] Redtrack forward failed:', err.message))
+
+      redtrackForwarded = true
+      console.log('✅ [POSTBACK API] Redtrack forward initiated')
+    } catch (redtrackError) {
+      console.log('⚠️ [POSTBACK API] Redtrack forward error:', redtrackError)
+    }
+
     // Forward to Zapier webhook (async, don't wait for response)
     console.log('🔗 [POSTBACK API] Forwarding to Zapier webhook...')
+    let zapierForwarded = false
     try {
       const zapierUrl = 'https://hooks.zapier.com/hooks/catch/23120323/udholkd/'
       const zapierData = new URLSearchParams({
@@ -293,6 +319,7 @@ export async function POST(request: NextRequest) {
         headers: { 'User-Agent': 'CRM-Postback-Forwarder/1.0' }
       }).catch(err => console.log('⚠️ [POSTBACK API] Zapier forward failed:', err.message))
 
+      zapierForwarded = true
       console.log('✅ [POSTBACK API] Zapier forward initiated')
     } catch (zapierError) {
       console.log('⚠️ [POSTBACK API] Zapier forward error:', zapierError)
