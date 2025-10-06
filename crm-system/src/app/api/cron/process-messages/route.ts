@@ -129,10 +129,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get all PENDING messages scheduled for now or earlier
+    // Get all SCHEDULED messages scheduled for now or earlier
     const pendingMessages = await prisma.journeyMessage.findMany({
       where: {
-        status: 'PENDING',
+        status: 'SCHEDULED',
         scheduledFor: {
           lte: new Date()
         }
