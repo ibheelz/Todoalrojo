@@ -1,12 +1,3 @@
 {
-  "crons": [
-    {
-      "path": "/api/cron/process-messages",
-      "schedule": "*/5 * * * *"
-    },
-    {
-      "path": "/api/cron/sync-redtrack",
-      "schedule": "* * * * *"
-    }
-  ]
+  "crons": []
 }
