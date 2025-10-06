@@ -28,8 +28,11 @@ export async function GET() {
         customer: {
           select: {
             id: true,
-            email: true,
-            totalClicks: true
+            masterEmail: true,
+            masterPhone: true,
+            totalClicks: true,
+            country: true,
+            lastSeen: true
           }
         }
       }
