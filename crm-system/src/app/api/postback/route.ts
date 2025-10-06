@@ -215,6 +215,65 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Update journey stage if this is a deposit/FTD
+    const conversionTypeLower = (validatedData.type || 'conversion').toLowerCase()
+    if (conversionTypeLower.includes('deposit') || conversionTypeLower.includes('ftd')) {
+      console.log('🎯 [POSTBACK API] Detected deposit/FTD, updating journey stages...')
+
+      // Find all journey states for this customer
+      const journeyStates = await prisma.customerJourneyState.findMany({
+        where: { customerId: customer.id }
+      })
+
+      for (const journeyState of journeyStates) {
+        // Only update if in acquisition stage (-1 or 0)
+        if (journeyState.stage <= 0 && journeyState.currentJourney === 'acquisition') {
+          console.log(`🔄 [POSTBACK API] Updating journey for operator ${journeyState.operatorId}: stage ${journeyState.stage} → 1, acquisition → retention`)
+
+          // Update to retention journey, stage 1
+          await prisma.customerJourneyState.update({
+            where: { id: journeyState.id },
+            data: {
+              stage: 1,
+              currentJourney: 'retention',
+              depositCount: { increment: 1 },
+              totalDepositValue: { increment: validatedData.value || 0 },
+              lastDepositAt: new Date()
+            }
+          })
+
+          // Cancel pending acquisition messages
+          await prisma.journeyMessage.updateMany({
+            where: {
+              journeyStateId: journeyState.id,
+              status: { in: ['PENDING', 'SCHEDULED'] },
+              journeyType: 'ACQUISITION'
+            },
+            data: {
+              status: 'CANCELLED'
+            }
+          })
+
+          // Start retention journey (schedule retention messages)
+          try {
+            await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3005'}/api/journey/start`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                customerId: customer.id,
+                operatorId: journeyState.operatorId,
+                journeyType: 'retention',
+                operatorName: journeyState.operatorId.charAt(0).toUpperCase() + journeyState.operatorId.slice(1)
+              })
+            })
+            console.log(`✅ [POSTBACK API] Started retention journey for ${journeyState.operatorId}`)
+          } catch (err) {
+            console.error('⚠️ [POSTBACK API] Failed to start retention journey:', err)
+          }
+        }
+      }
+    }
+
     // Forward to Zapier webhook (async, don't wait for response)
     console.log('🔗 [POSTBACK API] Forwarding to Zapier webhook...')
     try {

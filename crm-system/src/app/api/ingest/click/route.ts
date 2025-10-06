@@ -31,6 +31,9 @@ const clickSchema = z.object({
   subId4: z.string().optional(),
   subId5: z.string().optional(),
 
+  // Operator/Brand
+  operatorId: z.string().optional(),
+
   // Technical
   userAgent: z.string().optional(),
   referrer: z.string().optional(),
@@ -160,10 +163,48 @@ export async function POST(request: NextRequest) {
     await incrementInfluencerCountersByClickId(validatedData.clickId, { clicks: 1 })
     emitStats({ type: 'click', payload: { campaign: validatedData.campaign, clickId: validatedData.clickId } })
 
+    // Auto-start acquisition journey if operatorId provided and customer has email/phone
+    let journeyStarted = false
+    if (validatedData.operatorId && user) {
+      // Check if journey already exists for this operator
+      const existingJourney = await prisma.customerJourneyState.findFirst({
+        where: {
+          customerId: user.id,
+          operatorId: validatedData.operatorId
+        }
+      })
+
+      // Only start if no journey exists yet
+      if (!existingJourney && (validatedData.email || validatedData.phone)) {
+        try {
+          // Start acquisition journey
+          const journeyResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3005'}/api/journey/start`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              customerId: user.id,
+              operatorId: validatedData.operatorId,
+              journeyType: 'acquisition',
+              operatorName: validatedData.operatorId.charAt(0).toUpperCase() + validatedData.operatorId.slice(1)
+            })
+          })
+
+          if (journeyResponse.ok) {
+            journeyStarted = true
+            console.log(`🚀 [CLICK API] Auto-started acquisition journey for customer ${user.id} on ${validatedData.operatorId}`)
+          }
+        } catch (journeyError) {
+          console.error('⚠️ [CLICK API] Failed to auto-start journey:', journeyError)
+          // Don't fail the whole request if journey fails
+        }
+      }
+    }
+
     return NextResponse.json({
       success: true,
       clickId: click.id,
       userId: user?.id,
+      journeyStarted,
       message: 'Click tracked successfully'
     })
 

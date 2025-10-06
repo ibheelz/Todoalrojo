@@ -1,44 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { EmailProvider } from '@/lib/messaging/email-provider';
+import { SMSProvider } from '@/lib/messaging/sms-provider';
 
-// Mock email sending
+// Real email sending via Postmark
 async function sendEmail(to: string, subject: string, content: string) {
-  console.log(`📧 [MOCK] Sending email to ${to}`);
-  console.log(`   Subject: ${subject}`);
-  console.log(`   Content: ${content.substring(0, 100)}...`);
+  const result = await EmailProvider.send({
+    to,
+    subject,
+    html: content,
+  });
 
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 100));
-
-  // 95% success rate
-  if (Math.random() > 0.95) {
-    throw new Error('Email delivery failed');
+  if (!result.success) {
+    throw new Error(result.error || 'Email delivery failed');
   }
 
   return {
     success: true,
-    messageId: `email_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-    provider: 'postmark-mock'
+    messageId: result.messageId,
+    provider: result.provider || 'postmark'
   };
 }
 
-// Mock SMS sending
+// Real SMS sending via Laaffic
 async function sendSMS(to: string, content: string) {
-  console.log(`📱 [MOCK] Sending SMS to ${to}`);
-  console.log(`   Content: ${content.substring(0, 100)}...`);
+  const result = await SMSProvider.send({
+    to,
+    message: content,
+  });
 
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 100));
-
-  // 95% success rate
-  if (Math.random() > 0.95) {
-    throw new Error('SMS delivery failed');
+  if (!result.success) {
+    throw new Error(result.error || 'SMS delivery failed');
   }
 
   return {
     success: true,
-    messageId: `sms_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-    provider: 'laaffic-mock'
+    messageId: result.messageId,
+    provider: result.provider || 'laaffic'
   };
 }
 

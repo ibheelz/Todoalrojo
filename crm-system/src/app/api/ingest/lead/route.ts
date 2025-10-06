@@ -38,6 +38,7 @@ const leadSchema = z.object({
   // Client/Brand
   clientId: z.string().optional(),
   brandId: z.string().optional(),
+  operatorId: z.string().optional(),
 
   // Value
   value: z.number().optional(),
@@ -286,6 +287,43 @@ export async function POST(request: NextRequest) {
     await incrementInfluencerCountersByClickId(validatedData.clickId, { leads: 1 })
     emitStats({ type: 'lead', payload: { campaign: validatedData.campaign, clickId: validatedData.clickId } })
 
+    // Auto-start acquisition journey if operatorId provided
+    let journeyStarted = false
+    if (validatedData.operatorId && user) {
+      // Check if journey already exists for this operator
+      const existingJourney = await prisma.customerJourneyState.findFirst({
+        where: {
+          customerId: user.id,
+          operatorId: validatedData.operatorId
+        }
+      })
+
+      // Only start if no journey exists yet
+      if (!existingJourney) {
+        try {
+          // Start acquisition journey
+          const journeyResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3005'}/api/journey/start`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              customerId: user.id,
+              operatorId: validatedData.operatorId,
+              journeyType: 'acquisition',
+              operatorName: validatedData.operatorId.charAt(0).toUpperCase() + validatedData.operatorId.slice(1)
+            })
+          })
+
+          if (journeyResponse.ok) {
+            journeyStarted = true
+            console.log(`🚀 [LEAD API] Auto-started acquisition journey for customer ${user.id} on ${validatedData.operatorId}`)
+          }
+        } catch (journeyError) {
+          console.error('⚠️ [LEAD API] Failed to auto-start journey:', journeyError)
+          // Don't fail the whole request if journey fails
+        }
+      }
+    }
+
     const processingTime = Date.now() - startTime
     console.log(`🎉 [LEAD API] Lead processing completed successfully in ${processingTime}ms`)
     console.log('📤 [LEAD API] Returning success response:', {
@@ -302,6 +340,7 @@ export async function POST(request: NextRequest) {
       customerId: user.id,
       isDuplicate,
       qualityScore,
+      journeyStarted,
       processingTime,
       message: 'Lead captured successfully'
     })

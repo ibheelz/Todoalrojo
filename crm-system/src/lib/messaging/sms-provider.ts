@@ -1,14 +1,14 @@
 /**
- * SMS Provider Integration
- * Supports multiple providers: Laaffic (for iGaming), Twilio, etc.
+ * SMS Provider Integration - PRODUCTION (Laaffic)
  */
+
+import axios from 'axios';
 
 export interface SendSMSInput {
   to: string;
   message: string;
   from?: string;
-  operatorId?: string; // For operator-specific provider
-  provider?: 'laaffic' | 'twilio' | 'mock';
+  operatorId?: string;
 }
 
 export interface SMSResult {
@@ -20,129 +20,82 @@ export interface SMSResult {
 
 export class SMSProvider {
   /**
-   * Send SMS via Laaffic (iGaming-friendly provider)
+   * Send SMS via Laaffic (Real Implementation)
    */
   static async sendViaLaaffic(input: SendSMSInput): Promise<SMSResult> {
     const { to, message, from } = input;
 
     try {
-      // Laaffic API integration placeholder
-      // const response = await fetch('https://api.laaffic.com/v1/sms', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Authorization': `Bearer ${process.env.LAAFFIC_API_KEY}`,
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({
-      //     to,
-      //     message,
-      //     from: from || process.env.LAAFFIC_SENDER_ID,
-      //   }),
-      // });
-      // const data = await response.json();
+      if (!process.env.LAAFFIC_API_KEY || !process.env.LAAFFIC_API_SECRET) {
+        throw new Error('Laaffic credentials not configured');
+      }
 
-      console.log(`📱 [LAAFFIC SMS]`);
+      const response = await axios.post(
+        'https://www.laaffic.com/api/sendsms.php',
+        {
+          user: process.env.LAAFFIC_API_KEY,
+          password: process.env.LAAFFIC_API_SECRET,
+          sender: from || process.env.LAAFFIC_SENDER_ID || 'CASINO',
+          SMSText: message,
+          GSM: to.replace('+', ''), // Remove + if present
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      console.log(`📱 [LAAFFIC SMS SENT]`);
       console.log(`   To: ${to}`);
-      console.log(`   From: ${from || 'CASINO'}`);
+      console.log(`   From: ${from || process.env.LAAFFIC_SENDER_ID || 'CASINO'}`);
       console.log(`   Message: ${message}`);
-      console.log(`   Provider: Laaffic (iGaming)`);
+      console.log(`   Response:`, response.data);
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Laaffic returns different response formats
+      const isSuccess = response.data && (
+        response.data.success === true ||
+        response.data.status === 'success' ||
+        response.status === 200
+      );
 
-      return {
-        success: true,
-        messageId: `laaffic-${Date.now()}-${Math.random().toString(36).substring(7)}`,
-        provider: 'laaffic',
-      };
+      if (isSuccess) {
+        return {
+          success: true,
+          messageId: response.data.messageId || response.data.id || `laaffic-${Date.now()}`,
+          provider: 'laaffic',
+        };
+      } else {
+        throw new Error(response.data.message || response.data.error || 'SMS send failed');
+      }
     } catch (error: any) {
-      console.error(`❌ Laaffic SMS error:`, error);
+      console.error(`❌ Laaffic SMS error:`, error.response?.data || error.message);
       return {
         success: false,
-        error: error.message,
+        error: error.response?.data?.message || error.message,
         provider: 'laaffic',
       };
     }
   }
 
   /**
-   * Send SMS via Twilio
-   */
-  static async sendViaTwilio(input: SendSMSInput): Promise<SMSResult> {
-    const { to, message, from } = input;
-
-    try {
-      // Twilio integration placeholder
-      // import twilio from 'twilio';
-      // const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-      // const result = await client.messages.create({
-      //   body: message,
-      //   to,
-      //   from: from || process.env.TWILIO_PHONE_NUMBER,
-      // });
-
-      console.log(`📱 [TWILIO SMS]`);
-      console.log(`   To: ${to}`);
-      console.log(`   From: ${from || '+1234567890'}`);
-      console.log(`   Message: ${message}`);
-      console.log(`   Provider: Twilio`);
-
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      return {
-        success: true,
-        messageId: `twilio-${Date.now()}-${Math.random().toString(36).substring(7)}`,
-        provider: 'twilio',
-      };
-    } catch (error: any) {
-      console.error(`❌ Twilio SMS error:`, error);
-      return {
-        success: false,
-        error: error.message,
-        provider: 'twilio',
-      };
-    }
-  }
-
-  /**
-   * Send an SMS (auto-selects provider based on operator config)
+   * Send an SMS (uses Laaffic)
    */
   static async send(input: SendSMSInput): Promise<SMSResult> {
-    const { to, message, from, operatorId, provider = 'laaffic' } = input;
+    const { to, message, from, operatorId } = input;
 
     try {
-      // Get operator-specific SMS configuration
-      let selectedProvider = provider;
-      let finalFrom = from;
-
-      if (operatorId) {
-        // In production, fetch operator SMS settings from database
-        // const operator = await prisma.operator.findUnique({ where: { id: operatorId } });
-        // selectedProvider = operator?.smsProvider || 'laaffic';
-        // finalFrom = operator?.smsSender || from;
+      // Always use Laaffic if configured
+      if (process.env.LAAFFIC_API_KEY) {
+        return await this.sendViaLaaffic(input);
       }
 
-      // Route to appropriate provider
-      switch (selectedProvider) {
-        case 'laaffic':
-          return await this.sendViaLaaffic({ to, message, from: finalFrom, operatorId });
-        case 'twilio':
-          return await this.sendViaTwilio({ to, message, from: finalFrom, operatorId });
-        default:
-          // Mock provider for testing
-          console.log(`📱 [MOCK SMS]`);
-          console.log(`   To: ${to}`);
-          console.log(`   From: ${finalFrom || 'CASINO'}`);
-          console.log(`   Message: ${message}`);
-          console.log(`   Provider: Mock`);
-
-          await new Promise(resolve => setTimeout(resolve, 100));
-
-          return {
-            success: true,
-            messageId: `mock-sms-${Date.now()}-${Math.random().toString(36).substring(7)}`,
-            provider: 'mock',
-          };
-      }
+      // Error if no provider configured
+      console.error('❌ No SMS provider configured');
+      return {
+        success: false,
+        error: 'No SMS provider configured',
+      };
     } catch (error: any) {
       console.error(`❌ SMS send error:`, error);
       return {
@@ -160,31 +113,11 @@ export class SMSProvider {
       messages.map(sms => this.send(sms))
     );
 
-    console.log(`📱 Bulk SMS sent: ${results.filter(r => r.success).length}/${results.length} successful`);
+    const successCount = results.filter(r => r.success).length;
+    console.log(`📱 Bulk SMS sent: ${successCount}/${results.length} successful`);
 
     return results;
   }
 }
-
-/**
- * Real SMS Provider Integration Examples:
- *
- * // Twilio
- * import twilio from 'twilio';
- * const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
- * const result = await client.messages.create({
- *   body: message,
- *   to,
- *   from: process.env.TWILIO_PHONE_NUMBER,
- * });
- *
- * // Laffic (or similar API)
- * import axios from 'axios';
- * const result = await axios.post('https://api.laffic.com/v1/sms', {
- *   to,
- *   message,
- *   apiKey: process.env.LAFFIC_API_KEY,
- * });
- */
 
 export default SMSProvider;

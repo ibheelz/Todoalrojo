@@ -1,7 +1,8 @@
 /**
- * Email Provider Integration
- * Mock implementation - replace with actual ESP (SendGrid, Mailgun, etc.)
+ * Email Provider Integration - PRODUCTION (Postmark)
  */
+
+import * as postmark from 'postmark';
 
 export interface SendEmailInput {
   to: string;
@@ -9,58 +10,80 @@ export interface SendEmailInput {
   html: string;
   from?: string;
   fromName?: string;
-  operatorId?: string; // For operator-specific branding
+  operatorId?: string;
 }
 
 export interface EmailResult {
   success: boolean;
   messageId?: string;
   error?: string;
+  provider?: string;
 }
 
 export class EmailProvider {
   /**
-   * Send an email (mock implementation)
-   * In production, replace with actual ESP integration
+   * Send an email via Postmark
    */
   static async send(input: SendEmailInput): Promise<EmailResult> {
-    const { to, subject, html, from = 'noreply@casino.com', fromName = 'Casino', operatorId } = input;
+    const { to, subject, html, from, fromName, operatorId } = input;
 
     try {
-      // Get operator-specific branding if operatorId provided
-      let finalFrom = from;
-      let finalFromName = fromName;
-
-      if (operatorId) {
-        // In production, fetch operator branding from database
-        // const operator = await prisma.operator.findUnique({ where: { id: operatorId } });
-        // finalFrom = operator?.emailFromAddress || from;
-        // finalFromName = operator?.emailFromName || fromName;
+      // Use Postmark if API key is configured
+      if (process.env.POSTMARK_API_KEY) {
+        return await this.sendViaPostmark(input);
       }
 
-      // Mock sending - log to console
-      console.log(`📧 [EMAIL SENT]`);
-      console.log(`   To: ${to}`);
-      console.log(`   From: ${finalFromName} <${finalFrom}>`);
-      console.log(`   Operator: ${operatorId || 'default'}`);
-      console.log(`   Subject: ${subject}`);
-      console.log(`   Content length: ${html.length} characters`);
-
-      // Simulate send delay
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      // Generate mock message ID
-      const messageId = `mock-email-${Date.now()}-${Math.random().toString(36).substring(7)}`;
-
+      // Fallback error if no provider configured
+      console.error('❌ No email provider configured');
       return {
-        success: true,
-        messageId,
+        success: false,
+        error: 'No email provider configured',
       };
     } catch (error: any) {
       console.error(`❌ Email send error:`, error);
       return {
         success: false,
         error: error.message,
+      };
+    }
+  }
+
+  /**
+   * Send via Postmark
+   */
+  private static async sendViaPostmark(input: SendEmailInput): Promise<EmailResult> {
+    const { to, subject, html, from, fromName } = input;
+
+    const client = new postmark.ServerClient(process.env.POSTMARK_API_KEY!);
+
+    try {
+      const finalFrom = from || process.env.DEFAULT_FROM_EMAIL || 'noreply@example.com';
+
+      const result = await client.sendEmail({
+        From: finalFrom,
+        To: to,
+        Subject: subject,
+        HtmlBody: html,
+        MessageStream: 'outbound',
+      });
+
+      console.log(`📧 [POSTMARK EMAIL SENT]`);
+      console.log(`   To: ${to}`);
+      console.log(`   From: ${finalFrom}`);
+      console.log(`   Subject: ${subject}`);
+      console.log(`   Message ID: ${result.MessageID}`);
+
+      return {
+        success: true,
+        messageId: result.MessageID,
+        provider: 'postmark',
+      };
+    } catch (error: any) {
+      console.error(`❌ Postmark error:`, error);
+      return {
+        success: false,
+        error: error.message,
+        provider: 'postmark',
       };
     }
   }
@@ -73,30 +96,11 @@ export class EmailProvider {
       emails.map(email => this.send(email))
     );
 
-    console.log(`📧 Bulk email sent: ${results.filter(r => r.success).length}/${results.length} successful`);
+    const successCount = results.filter(r => r.success).length;
+    console.log(`📧 Bulk email sent: ${successCount}/${results.length} successful`);
 
     return results;
   }
 }
-
-/**
- * Real ESP Integration Examples:
- *
- * // SendGrid
- * import sgMail from '@sendgrid/mail';
- * sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
- * const result = await sgMail.send({ to, from, subject, html });
- *
- * // Mailgun
- * import Mailgun from 'mailgun.js';
- * const mailgun = new Mailgun(FormData);
- * const mg = mailgun.client({ username: 'api', key: process.env.MAILGUN_API_KEY! });
- * const result = await mg.messages.create(domain, { to, from, subject, html });
- *
- * // Resend
- * import { Resend } from 'resend';
- * const resend = new Resend(process.env.RESEND_API_KEY);
- * const result = await resend.emails.send({ to, from, subject, html });
- */
 
 export default EmailProvider;
