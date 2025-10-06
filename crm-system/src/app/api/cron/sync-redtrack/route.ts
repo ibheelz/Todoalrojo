@@ -31,90 +31,94 @@ export async function GET(request: NextRequest) {
 
     console.log('📊 [REDTRACK SYNC] Starting click sync from Redtrack...');
 
-    // Calculate time range (last 2 minutes to ensure we don't miss any)
+    // Calculate time range (last 5 minutes to ensure we don't miss any)
     const endDate = new Date();
-    const startDate = new Date(endDate.getTime() - 2 * 60 * 1000); // 2 minutes ago
+    const startDate = new Date(endDate.getTime() - 5 * 60 * 1000); // 5 minutes ago
 
     const dateFrom = startDate.toISOString().split('T')[0]; // YYYY-MM-DD
     const dateTo = endDate.toISOString().split('T')[0];
 
-    // Try common Redtrack API endpoints
-    const possibleEndpoints = [
-      `https://api.redtrack.io/v1/reports/clicks?date_from=${dateFrom}&date_to=${dateTo}`,
-      `https://api.redtrack.io/v1/clicks?date_from=${dateFrom}&date_to=${dateTo}`,
-      `https://api.redtrack.io/reports/clicks?date_from=${dateFrom}&date_to=${dateTo}`,
-      `https://api.redtrack.io/clicks?from=${startDate.toISOString()}&to=${endDate.toISOString()}`,
-    ];
+    console.log(`📅 [REDTRACK SYNC] Fetching conversions from ${dateFrom} to ${dateTo}`);
 
-    let clicks: any[] = [];
-    let successfulEndpoint = '';
+    // Use the conversions endpoint to fetch conversion data
+    const endpoint = `https://api.redtrack.io/conversions?date_from=${dateFrom}&date_to=${dateTo}`;
 
-    // Try each endpoint until one works
-    for (const endpoint of possibleEndpoints) {
-      try {
-        console.log(`🔍 [REDTRACK SYNC] Trying endpoint: ${endpoint}`);
+    let conversions: any[] = [];
 
-        const response = await fetch(endpoint, {
-          headers: {
-            'Authorization': `Bearer ${REDTRACK_API_KEY}`,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
+    try {
+      console.log(`🔍 [REDTRACK SYNC] Fetching from: ${endpoint}`);
+
+      const response = await fetch(endpoint, {
+        headers: {
+          'Api-Key': REDTRACK_API_KEY, // Redtrack uses Api-Key header
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'No error text');
+        console.log(`❌ [REDTRACK SYNC] Failed with status ${response.status}: ${errorText}`);
+        return NextResponse.json({
+          success: true, // Don't fail the cron job
+          results: { total: 0, imported: 0, skipped: 0, errors: [] },
+          warning: `API returned ${response.status}: ${errorText}`,
+          message: 'API call failed, but continuing. Clicks should come via postback URL.',
+          timestamp: new Date().toISOString(),
         });
-
-        if (response.ok) {
-          const data = await response.json();
-          console.log(`✅ [REDTRACK SYNC] Success with endpoint: ${endpoint}`);
-          console.log(`📦 [REDTRACK SYNC] Response data:`, JSON.stringify(data).substring(0, 500));
-
-          // Handle different response structures
-          if (Array.isArray(data)) {
-            clicks = data;
-          } else if (data.data && Array.isArray(data.data)) {
-            clicks = data.data;
-          } else if (data.clicks && Array.isArray(data.clicks)) {
-            clicks = data.clicks;
-          } else if (data.rows && Array.isArray(data.rows)) {
-            clicks = data.rows;
-          }
-
-          successfulEndpoint = endpoint;
-          break;
-        } else {
-          console.log(`⚠️ [REDTRACK SYNC] Failed with status ${response.status}: ${await response.text().catch(() => 'No error text')}`);
-        }
-      } catch (error: any) {
-        console.log(`⚠️ [REDTRACK SYNC] Error with endpoint ${endpoint}:`, error.message);
       }
-    }
 
-    if (clicks.length === 0 && !successfulEndpoint) {
-      console.log('⚠️ [REDTRACK SYNC] Could not fetch clicks from any endpoint');
+      const data = await response.json();
+      console.log(`✅ [REDTRACK SYNC] Success!`);
+      console.log(`📦 [REDTRACK SYNC] Response:`, JSON.stringify(data).substring(0, 500));
+
+      // Handle Redtrack conversions response structure
+      if (data.items && Array.isArray(data.items)) {
+        conversions = data.items;
+      } else if (Array.isArray(data)) {
+        conversions = data;
+      } else if (data.data && Array.isArray(data.data)) {
+        conversions = data.data;
+      }
+
+    } catch (error: any) {
+      console.log(`❌ [REDTRACK SYNC] Request error:`, error.message);
       return NextResponse.json({
-        success: false,
-        error: 'Could not fetch clicks from Redtrack API',
-        message: 'All API endpoints failed. Check API key and endpoint URLs.',
-      }, { status: 500 });
+        success: true, // Don't fail the cron job
+        results: { total: 0, imported: 0, skipped: 0, errors: [] },
+        warning: error.message,
+        message: 'API request failed, but continuing. Clicks should come via postback URL.',
+        timestamp: new Date().toISOString(),
+      });
     }
 
-    console.log(`📊 [REDTRACK SYNC] Found ${clicks.length} clicks to process`);
+    if (conversions.length === 0) {
+      console.log('ℹ️ [REDTRACK SYNC] No new conversions found');
+      return NextResponse.json({
+        success: true,
+        results: { total: 0, imported: 0, skipped: 0, errors: [] },
+        message: 'No new conversions found. Clicks come via postback URL.',
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    console.log(`📊 [REDTRACK SYNC] Found ${conversions.length} conversions to process`);
 
     const results = {
-      total: clicks.length,
+      total: conversions.length,
       imported: 0,
       skipped: 0,
       errors: [] as string[],
     };
 
-    // Process each click
-    for (const click of clicks) {
+    // Process each conversion
+    for (const conversion of conversions) {
       try {
-        // Extract click data (flexible field mapping)
-        const clickId = click.click_id || click.clickId || click.id || click.subid1;
-        const ip = click.ip || click.ip_address || '0.0.0.0';
-        const campaign = click.campaign || click.campaign_name || click.campaignName;
-        const source = click.source || click.traffic_source || click.trafficSource;
-        const timestamp = click.timestamp || click.created_at || click.createdAt || click.date;
+        // Extract conversion data
+        const clickId = conversion.clickid || conversion.click_id || conversion.subid1 || conversion.sub1;
+        const conversionType = conversion.type || conversion.conversion_type || 'Conversion';
+        const value = conversion.revenue || conversion.payout || conversion.value || 0;
+        const timestamp = conversion.datetime || conversion.created_at || conversion.timestamp || new Date().toISOString();
 
         // Skip if no click ID
         if (!clickId) {
@@ -122,8 +126,24 @@ export async function GET(request: NextRequest) {
           continue;
         }
 
-        // Check if click already exists
-        const existingClick = await prisma.click.findFirst({
+        // Check if conversion already exists
+        const existingEvent = await prisma.event.findFirst({
+          where: {
+            eventType: 'Conversion',
+            metadata: {
+              path: ['clickId'],
+              equals: String(clickId),
+            },
+          },
+        });
+
+        if (existingEvent) {
+          results.skipped++;
+          continue;
+        }
+
+        // Find customer by clickId
+        const click = await prisma.click.findFirst({
           where: {
             OR: [
               { clickId: String(clickId) },
@@ -132,75 +152,53 @@ export async function GET(request: NextRequest) {
           },
         });
 
-        if (existingClick) {
+        if (!click || !click.customerId) {
+          // No customer found for this click, skip
           results.skipped++;
           continue;
         }
 
-        // Find or create user
-        const user = await UserService.findOrCreateUser({
-          clickId: String(clickId),
-          ip,
-        });
-
-        // Create click record
-        await prisma.click.create({
+        // Create event record for the conversion
+        await prisma.event.create({
           data: {
-            customerId: user?.id,
-            clickId: String(clickId),
-            subId1: String(clickId),
-            campaign: campaign || 'unknown',
-            source: source || 'redtrack',
-            ip,
-            userAgent: click.user_agent || click.userAgent || 'Redtrack Import',
-            clickTime: timestamp ? new Date(timestamp) : new Date(),
+            customerId: click.customerId,
+            eventType: 'Conversion',
+            eventName: conversionType,
+            eventTime: new Date(timestamp),
+            campaign: conversion.campaign || 'redtrack',
+            source: 'redtrack',
+            isRevenue: value > 0,
+            revenue: value,
+            metadata: {
+              clickId: String(clickId),
+              conversionType,
+              redtrackData: conversion,
+            },
           },
         });
 
-        // Update user click count
-        if (user) {
-          await prisma.customer.update({
-            where: { id: user.id },
-            data: {
-              totalClicks: { increment: 1 },
-              lastSeen: new Date(),
-            },
-          });
-        }
-
-        // Update campaign stats if campaign exists
-        if (campaign) {
-          const existingCampaign = await prisma.campaign.findFirst({
-            where: {
-              OR: [
-                { slug: { equals: campaign, mode: 'insensitive' } },
-                { name: { equals: campaign, mode: 'insensitive' } },
-              ],
-            },
-          });
-
-          if (existingCampaign) {
-            await prisma.campaign.update({
-              where: { id: existingCampaign.id },
-              data: {
-                totalClicks: { increment: 1 },
-              },
-            });
-          }
-        }
+        // Update customer stats
+        await prisma.customer.update({
+          where: { id: click.customerId },
+          data: {
+            totalEvents: { increment: 1 },
+            totalRevenue: { increment: value },
+            lastSeen: new Date(),
+          },
+        });
 
         results.imported++;
       } catch (error: any) {
-        results.errors.push(`Click ${click.click_id || 'unknown'}: ${error.message}`);
+        results.errors.push(`Conversion ${conversion.clickid || 'unknown'}: ${error.message}`);
       }
     }
 
-    console.log(`✅ [REDTRACK SYNC] Sync complete: ${results.imported} imported, ${results.skipped} skipped`);
+    console.log(`✅ [REDTRACK SYNC] Sync complete: ${results.imported} conversions imported, ${results.skipped} skipped`);
 
     return NextResponse.json({
       success: true,
       results,
-      endpoint: successfulEndpoint,
+      message: 'Conversions synced successfully. Clicks come via postback URL.',
       timestamp: new Date().toISOString(),
     });
   } catch (error: any) {
