@@ -90,11 +90,6 @@ export async function GET(
     offerName: searchParams.get('offername'),
   }
 
-  // Store click asynchronously (don't wait for it)
-  storeClick(clickData, link).catch(err => {
-    console.error('❌ [LINK BRIDGE] Error storing click:', err)
-  })
-
   // Build final destination URL with Redtrack params appended
   const destinationUrl = new URL(link.originalUrl)
 
@@ -102,7 +97,14 @@ export async function GET(
   if (clickData.subId1) destinationUrl.searchParams.set('sub_id', clickData.subId1)
   if (clickData.clickId) destinationUrl.searchParams.set('click_id', clickData.clickId)
 
-  // Immediate redirect (happens in ~1-5ms)
+  // Store click BEFORE redirect (wait for it to complete)
+  try {
+    await storeClick(clickData, link)
+  } catch (err) {
+    console.error('❌ [LINK BRIDGE] Error storing click:', err)
+  }
+
+  // Redirect after storage completes
   return NextResponse.redirect(destinationUrl.toString(), 302)
 }
 
