@@ -1,6 +1,6 @@
 import cron from 'node-cron';
 
-const PRODUCTION_URL = 'https://crm-system-miela-digitals-projects.vercel.app'; // Will update after deployment
+const PRODUCTION_URL = 'https://crm-system-7znnnqjs1-miela-digitals-projects.vercel.app';
 const CRON_SECRET = process.env.CRON_SECRET || 'hREcE2ftRlXHsggmtsoE9ROMzPQNXZQ2Vpdq3TEfvS0=';
 
 async function triggerRedtrackSync() {
