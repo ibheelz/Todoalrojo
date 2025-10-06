@@ -38,6 +38,12 @@ export async function POST(request: NextRequest) {
 
     // Merge URL params and body data (URL params take precedence for duplicates)
     const combinedData = { ...bodyData, ...urlParams }
+
+    // Convert string numbers to actual numbers (from URL params)
+    if (combinedData.value && typeof combinedData.value === 'string') {
+      combinedData.value = parseFloat(combinedData.value)
+    }
+
     console.log('📄 [POSTBACK API] Combined postback data:', JSON.stringify(combinedData, null, 2))
 
     console.log('✅ [POSTBACK API] Validating data with schema...')
