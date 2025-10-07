@@ -12,8 +12,8 @@ const CONFIG = {
   AIRTABLE_API_KEY:
     'patCu0mKmtp2MPQIw.a90c3234fc52abb951cdacc3725d97442bc7f364ac822eee5960ce09ce2f86cd', // local testing only
   PROXY_URL: 'https://verification-backend-isemtzpeo-miela-digitals-projects.vercel.app/api/airtable-proxy',
-  // CRM API endpoint (local development)
-  CRM_API_URL: 'http://localhost:3005/api/ingest/lead',
+  // CRM API endpoint (production)
+  CRM_API_URL: 'https://verification-backend-isemtzpeo-miela-digitals-projects.vercel.app/api/ingest/lead',
   DEFAULT_REDIRECT_URL: 'https://mieladigital.com',
   REDIRECT_DELAY: 0,
   DEBUG: true,
