@@ -119,141 +119,202 @@ export async function GET(request: NextRequest) {
         orderBy: { createdAt: 'desc' }
       })
 
-      // Calculate stats for each campaign
-      const campaignsWithStats = await Promise.all(
-        campaigns.map(async (campaign) => {
-          // Merge date range with campaign.resetAt (non-destructive reset)
-          const range: any = (dateWhere as any).createdAt ? { ...(dateWhere as any).createdAt } : {}
-          if ((campaign as any).resetAt) {
-            const r = (campaign as any).resetAt as Date
-            range.gte = range.gte ? new Date(Math.max(range.gte.getTime(), r.getTime())) : r
+      // OPTIMIZED: Get all stats in bulk queries instead of per-campaign
+      const campaignSlugs = campaigns.map(c => c.slug)
+
+      // Build date filter condition
+      let clickStatsRaw: any[] = []
+      let leadStatsRaw: any[] = []
+      let eventStatsRaw: any[] = []
+
+      if (Object.keys(dateWhere).length > 0) {
+        const filter = (dateWhere as any).createdAt
+        if (filter?.gte && filter?.lt) {
+          // Get all click stats in ONE query with date range
+          clickStatsRaw = await prisma.$queryRaw`
+            SELECT campaign,
+                   COUNT(*)::int as total,
+                   COUNT(CASE WHEN "isFraud" = true THEN 1 END)::int as fraud
+            FROM clicks
+            WHERE campaign = ANY(${campaignSlugs}::text[])
+              AND "createdAt" >= ${filter.gte}
+              AND "createdAt" < ${filter.lt}
+            GROUP BY campaign`
+
+          leadStatsRaw = await prisma.$queryRaw`
+            SELECT campaign,
+                   COUNT(*)::int as total,
+                   COALESCE(SUM(value), 0)::numeric as total_value,
+                   COALESCE(AVG("qualityScore"), 0)::numeric as avg_quality,
+                   COUNT(CASE WHEN "isDuplicate" = true THEN 1 END)::int as duplicates
+            FROM leads
+            WHERE campaign = ANY(${campaignSlugs}::text[])
+              AND "createdAt" >= ${filter.gte}
+              AND "createdAt" < ${filter.lt}
+            GROUP BY campaign`
+
+          eventStatsRaw = await prisma.$queryRaw`
+            SELECT campaign,
+                   COUNT(*)::int as total,
+                   COALESCE(SUM(value), 0)::numeric as total_value,
+                   COUNT(CASE WHEN "eventType" IN ('registration', 'signup', 'register') THEN 1 END)::int as registrations,
+                   COUNT(DISTINCT CASE WHEN ("eventType" IN ('deposit', 'ftd', 'first_deposit') OR "eventName" IN ('deposit', 'ftd', 'first_deposit')) AND "isRevenue" = true THEN "customerId" END)::int as ftd
+            FROM events
+            WHERE campaign = ANY(${campaignSlugs}::text[])
+              AND "createdAt" >= ${filter.gte}
+              AND "createdAt" < ${filter.lt}
+            GROUP BY campaign`
+        } else if (filter?.gte && filter?.lte) {
+          clickStatsRaw = await prisma.$queryRaw`
+            SELECT campaign,
+                   COUNT(*)::int as total,
+                   COUNT(CASE WHEN "isFraud" = true THEN 1 END)::int as fraud
+            FROM clicks
+            WHERE campaign = ANY(${campaignSlugs}::text[])
+              AND "createdAt" >= ${filter.gte}
+              AND "createdAt" <= ${filter.lte}
+            GROUP BY campaign`
+
+          leadStatsRaw = await prisma.$queryRaw`
+            SELECT campaign,
+                   COUNT(*)::int as total,
+                   COALESCE(SUM(value), 0)::numeric as total_value,
+                   COALESCE(AVG("qualityScore"), 0)::numeric as avg_quality,
+                   COUNT(CASE WHEN "isDuplicate" = true THEN 1 END)::int as duplicates
+            FROM leads
+            WHERE campaign = ANY(${campaignSlugs}::text[])
+              AND "createdAt" >= ${filter.gte}
+              AND "createdAt" <= ${filter.lte}
+            GROUP BY campaign`
+
+          eventStatsRaw = await prisma.$queryRaw`
+            SELECT campaign,
+                   COUNT(*)::int as total,
+                   COALESCE(SUM(value), 0)::numeric as total_value,
+                   COUNT(CASE WHEN "eventType" IN ('registration', 'signup', 'register') THEN 1 END)::int as registrations,
+                   COUNT(DISTINCT CASE WHEN ("eventType" IN ('deposit', 'ftd', 'first_deposit') OR "eventName" IN ('deposit', 'ftd', 'first_deposit')) AND "isRevenue" = true THEN "customerId" END)::int as ftd
+            FROM events
+            WHERE campaign = ANY(${campaignSlugs}::text[])
+              AND "createdAt" >= ${filter.gte}
+              AND "createdAt" <= ${filter.lte}
+            GROUP BY campaign`
+        } else if (filter?.gte) {
+          clickStatsRaw = await prisma.$queryRaw`
+            SELECT campaign,
+                   COUNT(*)::int as total,
+                   COUNT(CASE WHEN "isFraud" = true THEN 1 END)::int as fraud
+            FROM clicks
+            WHERE campaign = ANY(${campaignSlugs}::text[])
+              AND "createdAt" >= ${filter.gte}
+            GROUP BY campaign`
+
+          leadStatsRaw = await prisma.$queryRaw`
+            SELECT campaign,
+                   COUNT(*)::int as total,
+                   COALESCE(SUM(value), 0)::numeric as total_value,
+                   COALESCE(AVG("qualityScore"), 0)::numeric as avg_quality,
+                   COUNT(CASE WHEN "isDuplicate" = true THEN 1 END)::int as duplicates
+            FROM leads
+            WHERE campaign = ANY(${campaignSlugs}::text[])
+              AND "createdAt" >= ${filter.gte}
+            GROUP BY campaign`
+
+          eventStatsRaw = await prisma.$queryRaw`
+            SELECT campaign,
+                   COUNT(*)::int as total,
+                   COALESCE(SUM(value), 0)::numeric as total_value,
+                   COUNT(CASE WHEN "eventType" IN ('registration', 'signup', 'register') THEN 1 END)::int as registrations,
+                   COUNT(DISTINCT CASE WHEN ("eventType" IN ('deposit', 'ftd', 'first_deposit') OR "eventName" IN ('deposit', 'ftd', 'first_deposit')) AND "isRevenue" = true THEN "customerId" END)::int as ftd
+            FROM events
+            WHERE campaign = ANY(${campaignSlugs}::text[])
+              AND "createdAt" >= ${filter.gte}
+            GROUP BY campaign`
+        }
+      } else {
+        // No date filter - get all stats
+        clickStatsRaw = await prisma.$queryRaw`
+          SELECT campaign,
+                 COUNT(*)::int as total,
+                 COUNT(CASE WHEN "isFraud" = true THEN 1 END)::int as fraud
+          FROM clicks
+          WHERE campaign = ANY(${campaignSlugs}::text[])
+          GROUP BY campaign`
+
+        leadStatsRaw = await prisma.$queryRaw`
+          SELECT campaign,
+                 COUNT(*)::int as total,
+                 COALESCE(SUM(value), 0)::numeric as total_value,
+                 COALESCE(AVG("qualityScore"), 0)::numeric as avg_quality,
+                 COUNT(CASE WHEN "isDuplicate" = true THEN 1 END)::int as duplicates
+          FROM leads
+          WHERE campaign = ANY(${campaignSlugs}::text[])
+          GROUP BY campaign`
+
+        eventStatsRaw = await prisma.$queryRaw`
+          SELECT campaign,
+                 COUNT(*)::int as total,
+                 COALESCE(SUM(value), 0)::numeric as total_value,
+                 COUNT(CASE WHEN "eventType" IN ('registration', 'signup', 'register') THEN 1 END)::int as registrations,
+                 COUNT(DISTINCT CASE WHEN ("eventType" IN ('deposit', 'ftd', 'first_deposit') OR "eventName" IN ('deposit', 'ftd', 'first_deposit')) AND "isRevenue" = true THEN "customerId" END)::int as ftd
+          FROM events
+          WHERE campaign = ANY(${campaignSlugs}::text[])
+          GROUP BY campaign`
+      }
+
+      // Build lookup maps for O(1) access
+      const clickMap = new Map(clickStatsRaw.map(r => [r.campaign, r]))
+      const leadMap = new Map(leadStatsRaw.map(r => [r.campaign, r]))
+      const eventMap = new Map(eventStatsRaw.map(r => [r.campaign, r]))
+
+      // Transform campaigns with stats (no more async operations needed!)
+      const campaignsWithStats = campaigns.map((campaign) => {
+        const clicks = clickMap.get(campaign.slug) || { total: 0, fraud: 0 }
+        const leads = leadMap.get(campaign.slug) || { total: 0, total_value: 0, avg_quality: 0, duplicates: 0 }
+        const events = eventMap.get(campaign.slug) || { total: 0, total_value: 0, registrations: 0, ftd: 0 }
+
+        const totalClicks = clicks.total || 0
+        const totalLeads = leads.total || 0
+        const totalEvents = events.total || 0
+        const registrations = events.registrations || 0
+        const ftd = events.ftd || 0
+        const fraudClicks = clicks.fraud || 0
+        const duplicateLeads = leads.duplicates || 0
+
+        const conversionRate = totalClicks > 0 ? (totalLeads / totalClicks) * 100 : 0
+        const duplicateRate = totalLeads > 0 ? (duplicateLeads / totalLeads) * 100 : 0
+        const fraudRate = totalClicks > 0 ? (fraudClicks / totalClicks) * 100 : 0
+
+        return {
+          ...campaign,
+          influencerIds: campaign.campaignInfluencers.map(ci => ci.influencer.id),
+          influencers: campaign.campaignInfluencers.map(ci => ci.influencer),
+          stats: {
+            totalClicks,
+            totalLeads,
+            totalEvents,
+            registrations,
+            ftd,
+            approvedRegistrations: campaign.approvedRegistrations || 0,
+            qualifiedDeposits: campaign.qualifiedDeposits || 0,
+            uniqueCustomers: 0, // Not calculated in bulk for performance
+            duplicateLeads,
+            fraudClicks,
+            conversionRate: Math.round(conversionRate * 100) / 100,
+            duplicateRate: Math.round(duplicateRate * 100) / 100,
+            fraudRate: Math.round(fraudRate * 100) / 100,
+            avgQualityScore: Math.round(Number(leads.avg_quality || 0) * 100) / 100,
+            totalLeadValue: Number(leads.total_value || 0),
+            totalEventValue: Number(events.total_value || 0),
+            totalRevenue: Number(leads.total_value || 0) + Number(events.total_value || 0)
           }
-          const createdFilter = Object.keys(range).length > 0 ? { createdAt: range } : {}
-
-          const [clickStats, leadStats, eventStats, registrationStats, ftdStats, uniqueCustomers, duplicateLeads, fraudClicks] = await Promise.all([
-            // Clicks
-            prisma.click.aggregate({
-              where: {
-                campaign: campaign.slug,
-                ...createdFilter
-              },
-              _count: true
-            }),
-            // Leads
-            prisma.lead.aggregate({
-              where: {
-                campaign: campaign.slug,
-                ...createdFilter
-              },
-              _count: true,
-              _sum: { value: true },
-              _avg: { qualityScore: true }
-            }),
-            // Events
-            prisma.event.aggregate({
-              where: {
-                campaign: campaign.slug,
-                ...createdFilter
-              },
-              _count: true,
-              _sum: { value: true }
-            }),
-            // Registrations (registration, signup, register events)
-            prisma.event.aggregate({
-              where: {
-                campaign: campaign.slug,
-                eventType: { in: ['registration', 'signup', 'register'] },
-                ...createdFilter
-              },
-              _count: true
-            }),
-            // FTD events (we'll count unique customers below)
-            prisma.event.findMany({
-              where: {
-                campaign: campaign.slug,
-                OR: [
-                  { eventType: { in: ['deposit', 'ftd', 'first_deposit'] } },
-                  { eventName: { in: ['deposit', 'ftd', 'first_deposit'] } }
-                ],
-                isRevenue: true,
-                ...createdFilter
-              },
-              select: { customerId: true }
-            }),
-            // Get unique customers for this campaign (parallel)
-            prisma.customer.count({
-              where: {
-                OR: [
-                  { clicks: { some: { campaign: campaign.slug, ...createdFilter } } },
-                  { leads: { some: { campaign: campaign.slug, ...createdFilter } } },
-                  { events: { some: { campaign: campaign.slug, ...createdFilter } } }
-                ]
-              }
-            }),
-            // Get duplicates (parallel)
-            prisma.lead.count({
-              where: {
-                campaign: campaign.slug,
-                isDuplicate: true,
-                ...createdFilter
-              }
-            }),
-            // Get fraud flags (parallel)
-            prisma.click.count({
-              where: {
-                campaign: campaign.slug,
-                isFraud: true,
-                ...createdFilter
-              }
-            })
-          ])
-
-          // Count unique customers with deposits (FTD)
-          const ftd = new Set(ftdStats.map(e => e.customerId)).size
-
-          // Calculate rates
-          const totalClicks = clickStats._count || 0
-          const totalLeads = leadStats._count || 0
-          const totalEvents = eventStats._count || 0
-          const registrations = registrationStats._count || 0
-
-          const conversionRate = totalClicks > 0 ? (totalLeads / totalClicks) * 100 : 0
-          const duplicateRate = totalLeads > 0 ? (duplicateLeads / totalLeads) * 100 : 0
-          const fraudRate = totalClicks > 0 ? (fraudClicks / totalClicks) * 100 : 0
-
-          return {
-            ...campaign,
-            // Transform influencer data for backward compatibility
-            influencerIds: campaign.campaignInfluencers.map(ci => ci.influencer.id),
-            influencers: campaign.campaignInfluencers.map(ci => ci.influencer),
-            stats: {
-              totalClicks,
-              totalLeads,
-              totalEvents,
-              registrations,
-              ftd,
-              approvedRegistrations: campaign.approvedRegistrations || 0,
-              qualifiedDeposits: campaign.qualifiedDeposits || 0,
-              uniqueCustomers,
-              duplicateLeads,
-              fraudClicks,
-              conversionRate: Math.round(conversionRate * 100) / 100,
-              duplicateRate: Math.round(duplicateRate * 100) / 100,
-              fraudRate: Math.round(fraudRate * 100) / 100,
-              avgQualityScore: Math.round((leadStats._avg.qualityScore || 0) * 100) / 100,
-              totalLeadValue: Number(leadStats._sum.value || 0),
-              totalEventValue: Number(eventStats._sum.value || 0),
-              totalRevenue: Number(leadStats._sum.value || 0) + Number(eventStats._sum.value || 0)
-            }
-          }
-        })
-      )
+        }
+      })
 
       const result = {
         success: true,
         campaigns: campaignsWithStats
       }
-      cache.set(cacheKey, result, 180) // 3 minute TTL
+      cache.set(cacheKey, result, 300) // 5 minute TTL for faster repeated loads
       return NextResponse.json(result)
     } else {
       // Get basic campaign list with only necessary fields
@@ -302,7 +363,7 @@ export async function GET(request: NextRequest) {
         success: true,
         campaigns: transformedCampaigns
       }
-      cache.set(cacheKey, result, 180) // 3 minute TTL
+      cache.set(cacheKey, result, 300) // 5 minute TTL for faster repeated loads
       return NextResponse.json(result)
     }
 
