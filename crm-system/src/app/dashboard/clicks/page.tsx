@@ -146,7 +146,7 @@ export default function ClicksPage() {
         params.append('toDate', customDateRange.to)
       }
 
-      const response = await fetch(`/api/clicks?${params.toString()}`, { cache: 'no-store' })
+      const response = await fetch(`/api/clicks?${params.toString()}`)
       const data = await response.json()
 
       if (data.success) {

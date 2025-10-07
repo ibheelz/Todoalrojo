@@ -179,7 +179,7 @@ export default function LeadsPage() {
 
       if (search) params.append('search', search)
 
-      const response = await fetch(`/api/leads?${params}`, { cache: 'no-store' })
+      const response = await fetch(`/api/leads?${params}`)
       const data: LeadsResponse = await response.json()
 
       if (data.success) {

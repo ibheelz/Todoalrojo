@@ -210,7 +210,7 @@ export default function LinksPage() {
   const fetchCampaigns = async () => {
     try {
       console.log('📊 Fetching active campaigns for links page...', { timestamp: new Date().toISOString() })
-      const response = await fetch('/api/campaigns?activeOnly=true', { cache: 'no-store' })
+      const response = await fetch('/api/campaigns?activeOnly=true')
       const data = await response.json()
 
       if (data.success) {
@@ -237,7 +237,7 @@ export default function LinksPage() {
   const fetchInfluencers = async () => {
     try {
       console.log('👤 Fetching influencers for links page...', { timestamp: new Date().toISOString() })
-      const response = await fetch('/api/influencers?activeOnly=true', { cache: 'no-store' })
+      const response = await fetch('/api/influencers?activeOnly=true')
       const data = await response.json()
 
       if (data.success) {
@@ -268,7 +268,7 @@ export default function LinksPage() {
         timestamp: new Date().toISOString()
       })
 
-      const response = await fetch(`/api/links?${params}`, { cache: 'no-store' })
+      const response = await fetch(`/api/links?${params}`)
       const data = await response.json()
 
       if (data.success) {

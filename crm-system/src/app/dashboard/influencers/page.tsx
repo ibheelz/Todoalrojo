@@ -206,8 +206,8 @@ export default function InfluencersPage() {
       }
 
       const [influencersResponse, campaignsResponse] = await Promise.all([
-        fetch(`/api/influencers?${params.toString()}`, { cache: 'no-store' }),
-        fetch('/api/campaigns', { cache: 'no-store' })
+        fetch(`/api/influencers?${params.toString()}`),
+        fetch('/api/campaigns')
       ])
 
       if (influencersResponse.ok) {

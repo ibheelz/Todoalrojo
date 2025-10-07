@@ -98,7 +98,7 @@ export default function ConversionsPage() {
         params.append('toDate', customDateRange.to)
       }
 
-      const response = await fetch(`/api/conversions?${params.toString()}`, { cache: 'no-store' })
+      const response = await fetch(`/api/conversions?${params.toString()}`)
       const data = await response.json()
 
       if (data.success) {
