@@ -20,7 +20,7 @@ const CONFIG = {
   // Email verification service endpoint
   EMAIL_VERIFICATION_API: 'https://email-verification-backend-psi.vercel.app/api/email-verify',
   // SMS verification service endpoint - Real Laaffic SMS service
-  SMS_VERIFICATION_API: 'https://verification-backend-gp9n5xldp-miela-digitals-projects.vercel.app/api/phone-verify',
+  SMS_VERIFICATION_API: 'https://verification-backend-7hn3bofof-miela-digitals-projects.vercel.app/api/phone-verify',
 };
 
 /***********************************
