@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef, useMemo, useCallback, memo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { PlusIcon, TargetIcon, WarningIcon, SearchIcon } from '@/components/ui/icons'
@@ -144,31 +144,56 @@ export default function CampaignsPage() {
   }, [])
 
   // Subscribe to server-sent events to refresh instantly
+  // Throttled to reduce server load
   useEffect(() => {
-    const es = new EventSource('/api/events')
-    const onStats = (e: MessageEvent) => {
-      try {
-        const evt = JSON.parse((e as MessageEvent).data)
-        console.log('[CAMPAIGNS PAGE] SSE event', evt)
-        if (!evt || !evt.type) return
-        if (['click', 'lead', 'ftd', 'campaignDelta', 'resetCampaign'].includes(evt.type)) {
-          console.log('[CAMPAIGNS PAGE] SSE triggering fetchCampaigns')
-          fetchCampaigns()
-          const addToast = (text: string) => {
-            const id = Math.random().toString(36).slice(2)
-            setToasts((prev) => [...prev, { id, text }])
-            setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 3000)
+    let es: EventSource | null = null
+    let throttleTimeout: NodeJS.Timeout | null = null
+    let shouldRefresh = false
+
+    try {
+      es = new EventSource('/api/events')
+      const onStats = (e: MessageEvent) => {
+        try {
+          const evt = JSON.parse((e as MessageEvent).data)
+          console.log('[CAMPAIGNS PAGE] SSE event', evt)
+          if (!evt || !evt.type) return
+          if (['click', 'lead', 'ftd', 'campaignDelta', 'resetCampaign'].includes(evt.type)) {
+            shouldRefresh = true
+
+            // Throttle refreshes to max once per 3 seconds
+            if (!throttleTimeout) {
+              throttleTimeout = setTimeout(() => {
+                if (shouldRefresh) {
+                  console.log('[CAMPAIGNS PAGE] SSE triggering fetchCampaigns')
+                  fetchCampaigns()
+                  shouldRefresh = false
+                }
+                throttleTimeout = null
+              }, 3000)
+            }
+
+            const addToast = (text: string) => {
+              const id = Math.random().toString(36).slice(2)
+              setToasts((prev) => [...prev, { id, text }])
+              setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 3000)
+            }
+            if (evt.type === 'click') addToast('New click detected')
+            if (evt.type === 'lead') addToast('New lead recorded')
+            if (evt.type === 'ftd') addToast('New FTD conversion')
+            if (evt.type === 'resetCampaign') addToast('Campaign stats reset')
           }
-          if (evt.type === 'click') addToast('New click detected')
-          if (evt.type === 'lead') addToast('New lead recorded')
-          if (evt.type === 'ftd') addToast('New FTD conversion')
-          if (evt.type === 'resetCampaign') addToast('Campaign stats reset')
-        }
-      } catch {}
+        } catch {}
+      }
+      // @ts-ignore
+      es.addEventListener('stats', onStats)
+    } catch (error) {
+      console.error('SSE connection error:', error)
     }
-    // @ts-ignore
-    es.addEventListener('stats', onStats)
-    return () => es.close()
+
+    return () => {
+      if (es) es.close()
+      if (throttleTimeout) clearTimeout(throttleTimeout)
+    }
   }, [dateFilter, customDateRange])
 
   // Helper function to get influencer name
@@ -207,14 +232,17 @@ export default function CampaignsPage() {
   }, [customDateRange])
 
   // Filter campaigns by search only (metrics are already filtered by date on server)
-  const filteredCampaigns = campaigns.filter(campaign => {
-    const matchesSearch =
-      campaign.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      campaign.slug.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (campaign.description && campaign.description.toLowerCase().includes(searchQuery.toLowerCase()))
+  // Memoize to prevent unnecessary re-filtering
+  const filteredCampaigns = useMemo(() => {
+    return campaigns.filter(campaign => {
+      const matchesSearch =
+        campaign.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        campaign.slug.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (campaign.description && campaign.description.toLowerCase().includes(searchQuery.toLowerCase()))
 
-    return matchesSearch
-  })
+      return matchesSearch
+    })
+  }, [campaigns, searchQuery])
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -408,7 +436,8 @@ export default function CampaignsPage() {
     return `${day}/${month}/${year}`
   }
 
-  const handleCreateCampaign = async (campaignData: any) => {
+  // Memoize callback functions to prevent re-renders
+  const handleCreateCampaign = useCallback(async (campaignData: any) => {
     try {
       console.log('Creating campaign:', campaignData)
 
@@ -428,18 +457,18 @@ export default function CampaignsPage() {
     } catch (error) {
       console.error('Error creating campaign:', error)
     }
-  }
+  }, [])
 
-  const handleManageCampaign = (campaign: Campaign) => {
+  const handleManageCampaign = useCallback((campaign: Campaign) => {
     // Directly open the edit modal
     setManagingCampaign(campaign)
-  }
+  }, [])
 
-  const handleViewCampaign = (campaignId: string) => {
+  const handleViewCampaign = useCallback((campaignId: string) => {
     router.push(`/dashboard/campaigns/${campaignId}`)
-  }
+  }, [router])
 
-  const handleDeleteCampaign = async (campaignId: string) => {
+  const handleDeleteCampaign = useCallback(async (campaignId: string) => {
     try {
       const response = await fetch(`/api/campaigns/${campaignId}`, {
         method: 'DELETE'
@@ -455,55 +484,58 @@ export default function CampaignsPage() {
     } catch (error) {
       console.error('Error deleting campaign:', error)
     }
-  }
+  }, [])
 
 
 
   // Sort campaigns by selected field or default to status
-  const sortedCampaigns = filteredCampaigns.sort((a, b) => {
-    if (!sortField) {
-      // Default sort by status (active first, then paused, then inactive)
-      const statusOrder = { 'active': 0, 'paused': 1, 'inactive': 2 }
-      return statusOrder[a.status] - statusOrder[b.status]
-    }
-
-    let aValue: any
-    let bValue: any
-
-    switch (sortField) {
-      case 'name':
-        aValue = a.name.toLowerCase()
-        bValue = b.name.toLowerCase()
-        break
-      case 'status':
+  // Memoize sorting to prevent re-sorting on every render
+  const sortedCampaigns = useMemo(() => {
+    return [...filteredCampaigns].sort((a, b) => {
+      if (!sortField) {
+        // Default sort by status (active first, then paused, then inactive)
         const statusOrder = { 'active': 0, 'paused': 1, 'inactive': 2 }
-        aValue = statusOrder[a.status]
-        bValue = statusOrder[b.status]
-        break
-      case 'clicks':
-        aValue = a.stats.totalClicks
-        bValue = b.stats.totalClicks
-        break
-      case 'leads':
-        aValue = a.stats.totalLeads
-        bValue = b.stats.totalLeads
-        break
-      case 'conversion':
-        aValue = a.stats.conversionRate
-        bValue = b.stats.conversionRate
-        break
-      case 'created':
-        aValue = new Date(a.createdAt).getTime()
-        bValue = new Date(b.createdAt).getTime()
-        break
-      default:
-        return 0
-    }
+        return statusOrder[a.status] - statusOrder[b.status]
+      }
 
-    if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1
-    if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1
-    return 0
-  })
+      let aValue: any
+      let bValue: any
+
+      switch (sortField) {
+        case 'name':
+          aValue = a.name.toLowerCase()
+          bValue = b.name.toLowerCase()
+          break
+        case 'status':
+          const statusOrder = { 'active': 0, 'paused': 1, 'inactive': 2 }
+          aValue = statusOrder[a.status]
+          bValue = statusOrder[b.status]
+          break
+        case 'clicks':
+          aValue = a.stats.totalClicks
+          bValue = b.stats.totalClicks
+          break
+        case 'leads':
+          aValue = a.stats.totalLeads
+          bValue = b.stats.totalLeads
+          break
+        case 'conversion':
+          aValue = a.stats.conversionRate
+          bValue = b.stats.conversionRate
+          break
+        case 'created':
+          aValue = new Date(a.createdAt).getTime()
+          bValue = new Date(b.createdAt).getTime()
+          break
+        default:
+          return 0
+      }
+
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1
+      return 0
+    })
+  }, [filteredCampaigns, sortField, sortDirection])
 
   // Handle sorting
   const handleSort = (field: string) => {
