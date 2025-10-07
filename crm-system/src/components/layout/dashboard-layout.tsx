@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import {
   AnalyticsIcon,
@@ -44,11 +44,19 @@ const navigation = [
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname()
+  const router = useRouter()
   const { data: session } = useSession()
   const [searchQuery, setSearchQuery] = useState('')
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [compactUserMenuOpen, setCompactUserMenuOpen] = useState(false)
   const compactUserMenuRef = useRef<HTMLDivElement>(null)
+
+  // Preload all dashboard routes immediately for instant navigation
+  useEffect(() => {
+    navigation.forEach((item) => {
+      router.prefetch(item.href)
+    })
+  }, [router])
 
   // Close compact user menu when clicking outside
   useEffect(() => {
@@ -139,6 +147,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 <Link
                   key={item.name}
                   href={item.href}
+                  prefetch={true}
                   className={`group relative flex items-center transition-all duration-300 rounded-xl mb-2 p-2 lg:p-3 justify-center border-transparent ${
                     isActive
                       ? (sidebarCollapsed ? '' : 'lg:bg-primary/20 lg:border-primary/30 lg:shadow-lg lg:justify-start')
