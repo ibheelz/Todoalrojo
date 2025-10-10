@@ -17,9 +17,9 @@ module.exports = async (req, res) => {
     const { action } = req.body || {};
 
     // Airtable configuration
-    const AIRTABLE_BASE_ID = 'app2I0jOClbHteBNP';
-    const AIRTABLE_TABLE_NAME = 'Leads';
-    const AIRTABLE_API_KEY = 'patCu0mKmtp2MPQIw.a90c3234fc52abb951cdacc3725d97442bc7f364ac822eee5960ce09ce2f86cd';
+    const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID || 'app2I0jOClbHteBNP';
+    const AIRTABLE_TABLE_NAME = process.env.AIRTABLE_TABLE_NAME || 'Leads';
+    const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
 
     const baseEndpoint = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(AIRTABLE_TABLE_NAME)}`;
 

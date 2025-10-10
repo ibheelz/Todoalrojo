@@ -8,7 +8,7 @@
  * <script src="https://yourcrm.com/tracking-script.js"></script>
  * <script>
  *   TodoalrojoTracker.init({
- *     crmUrl: 'https://crm.mieladigital.com',
+ *     crmUrl: 'https://verification-backend-7hn3bofof-miela-digitals-projects.vercel.app',
  *     trackClicks: true,
  *     trackPageViews: true
  *   });
@@ -20,7 +20,7 @@
 
   // Configuration
   let config = {
-    crmUrl: 'https://crm.mieladigital.com',
+    crmUrl: 'https://verification-backend-7hn3bofof-miela-digitals-projects.vercel.app',
     trackClicks: true,
     trackPageViews: true,
     trackFormSubmissions: true,

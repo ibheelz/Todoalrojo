@@ -10,10 +10,10 @@ const CONFIG = {
   AIRTABLE_BASE_ID: 'app2I0jOClbHteBNP',
   AIRTABLE_TABLE_NAME: 'Leads',
   AIRTABLE_API_KEY:
-    'patCu0mKmtp2MPQIw.a90c3234fc52abb951cdacc3725d97442bc7f364ac822eee5960ce09ce2f86cd', // local testing only
-  PROXY_URL: 'https://verification-backend-7hn3bofof-miela-digitals-projects.vercel.app/api/airtable-proxy',
+    '', // API key stored securely in backend environment variables
+  PROXY_URL: 'https://verification-backend-cm2yrh7hn-miela-digitals-projects.vercel.app/api/airtable-proxy',
   // CRM API endpoint (production)
-  CRM_API_URL: 'https://crm.mieladigital.com/api/ingest/lead',
+  CRM_API_URL: 'https://verification-backend-7hn3bofof-miela-digitals-projects.vercel.app/api/ingest/lead',
   DEFAULT_REDIRECT_URL: 'https://mieladigital.com',
   REDIRECT_DELAY: 0,
   DEBUG: true,
@@ -1956,19 +1956,13 @@ async function handleSubmit(evt) {
       console.log('Skipping phone + source duplicate check (missing phone or source)');
     }
 
-    console.log('Starting dual submission (CRM + Airtable)...');
+    console.log('Starting Airtable submission...');
     debugLog('Form data', state.formData);
     toggleLoading(true);
 
-    // Submit to CRM first
-    console.log('Calling submitToCRM...');
-    const crmResult = await submitToCRM();
-
-    // Submit to Airtable as backup (always submit regardless of CRM result)
+    // Submit directly to Airtable
     console.log('Calling submitToAirtable...');
     await submitToAirtable();
-
-    console.log('Dual submission completed:', { crmResult });
 
     console.log('Airtable submission completed, tracking conversion...');
 
