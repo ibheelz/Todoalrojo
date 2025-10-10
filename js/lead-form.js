@@ -11,7 +11,7 @@ const CONFIG = {
   AIRTABLE_TABLE_NAME: 'Leads',
   AIRTABLE_API_KEY:
     '', // API key stored securely in backend environment variables
-  PROXY_URL: 'https://verification-backend-cm2yrh7hn-miela-digitals-projects.vercel.app/api/airtable-proxy',
+  PROXY_URL: 'https://verification-backend-l259qaune-miela-digitals-projects.vercel.app/api/airtable-proxy',
   // CRM API endpoint (production)
   CRM_API_URL: 'https://verification-backend-7hn3bofof-miela-digitals-projects.vercel.app/api/ingest/lead',
   DEFAULT_REDIRECT_URL: 'https://mieladigital.com',
